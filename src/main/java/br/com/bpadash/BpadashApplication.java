@@ -34,7 +34,5 @@ public class BpadashApplication {
 
 		app.setDefaultProperties(properties);
 		app.run(args);
-
 	}
-
 }

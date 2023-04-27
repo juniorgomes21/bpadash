@@ -1,0 +1,453 @@
+package br.com.bpadash.model;
+
+import br.com.bpadash.services.EncryptionService;
+
+import javax.persistence.*;
+
+@Entity
+public class Bpai {
+
+//    @Transient
+//    @Autowired
+//    private EncryptionService encryptionService;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Transient
+    private String line;
+    private String ident;
+    private String cnes;
+    private String cmp;
+    private String cnsmed;
+    private String cb;
+    private String dtaten;
+    private String fl;
+    private String se;
+    private String pa;
+    private String cnspac;
+    private String sexo;
+    private String ibge;
+    private String cid;
+    private String idad;
+    private String q;
+    private String caten;
+    private String naut;
+    private String org;
+    private String nmpac;
+    private String dtnasc;
+    private String raca;
+    private String etnia;
+    private String nac;
+    private String srv;
+    private String clf;
+    private String equipeSeq;
+    private String equipeArea;
+    private String cnpj;
+    private String cepPcnte;
+    private String logradPcnte;
+    private String endPcnte;
+    private String complPcnte;
+    private String numPcnte;
+    private String bairroPcnte;
+    private String ddtelPcnte;
+    private String emailPcnte;
+    private String ine;
+    private String fim;
+
+    @PostLoad
+    private void postLoad() {
+        this.cnspac = EncryptionService.decrypt(this.cnspac);
+        this.cid = EncryptionService.decrypt(this.cid);
+        this.nmpac = EncryptionService.decrypt(this.nmpac);
+        //TODO avaliar
+        this.dtnasc = EncryptionService.decrypt(this.dtnasc);
+        this.cepPcnte = EncryptionService.decrypt(this.cepPcnte);
+        this.logradPcnte = EncryptionService.decrypt(this.logradPcnte);
+        //---
+        this.endPcnte = EncryptionService.decrypt(this.endPcnte);
+        this.complPcnte = EncryptionService.decrypt(this.complPcnte);
+        this.numPcnte = EncryptionService.decrypt(this.numPcnte);
+        this.bairroPcnte = EncryptionService.decrypt(this.bairroPcnte);
+        this.ddtelPcnte = EncryptionService.decrypt(this.ddtelPcnte);
+        this.emailPcnte = EncryptionService.decrypt(this.emailPcnte);
+    }
+
+    @PrePersist
+    private void prePersist() {
+        this.cnspac = EncryptionService.encrypt(this.cnspac);
+        this.cid = EncryptionService.encrypt(this.cid);
+        this.nmpac = EncryptionService.encrypt(this.nmpac);
+        this.dtnasc = EncryptionService.encrypt(this.dtnasc);
+        this.cepPcnte = EncryptionService.encrypt(this.cepPcnte);
+        this.logradPcnte = EncryptionService.encrypt(this.logradPcnte);
+        this.endPcnte = EncryptionService.encrypt(this.endPcnte);
+        this.complPcnte = EncryptionService.encrypt(this.complPcnte);
+        this.numPcnte = EncryptionService.encrypt(this.numPcnte);
+        this.bairroPcnte = EncryptionService.encrypt(this.bairroPcnte);
+        this.ddtelPcnte = EncryptionService.encrypt(this.ddtelPcnte);
+        this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
+    }
+
+
+    public Bpai() {
+    }
+
+    public Bpai(String line, String ident, String cnes, String cmp, String cnsmed, String cb, String dtaten, String fl, String se, String pa, String cnspac, String sexo, String ibge, String cid, String idad, String q, String caten, String naut, String org, String nmpac, String dtnasc, String raca, String etnia, String nac, String srv, String clf, String equipeSeq , String equipeArea , String cnpj, String cepPcnte , String logradPcnte , String endPcnte , String complPcnte , String numPcnte , String bairroPcnte , String ddtelPcnte , String emailPcnte , String ine, String fim) {
+        this.line = line;
+        this.ident = ident;
+        this.cnes = cnes;
+        this.cmp = cmp;
+        this.cnsmed = cnsmed;
+        this.cb = cb;
+        this.dtaten = dtaten;
+        this.fl = fl;
+        this.se = se;
+        this.pa = pa;
+        this.cnspac = cnspac;
+        this.sexo = sexo;
+        this.ibge = ibge;
+        this.cid = cid;
+        this.idad = idad;
+        this.q = q;
+        this.caten = caten;
+        this.naut = naut;
+        this.org = org;
+        this.nmpac = nmpac;
+        this.dtnasc = dtnasc;
+        this.raca = raca;
+        this.etnia = etnia;
+        this.nac = nac;
+        this.srv = srv;
+        this.clf = clf;
+        this.equipeSeq = equipeSeq;
+        this.equipeArea = equipeArea;
+        this.cnpj = cnpj;
+        this.cepPcnte = cepPcnte;
+        this.logradPcnte = logradPcnte;
+        this.endPcnte = endPcnte;
+        this.complPcnte = complPcnte;
+        this.numPcnte = numPcnte;
+        this.bairroPcnte = bairroPcnte;
+        this.ddtelPcnte = ddtelPcnte;
+        this.emailPcnte = emailPcnte;
+        this.ine = ine;
+        this.fim = fim;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getLine() {
+        return line;
+    }
+
+    public void setLine(String line) {
+        this.line = line;
+    }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public void setIdent(String ident) {
+        this.ident = ident;
+    }
+
+    public String getCnes() {
+        return cnes;
+    }
+
+    public void setCnes(String cnes) {
+        this.cnes = cnes;
+    }
+
+    public String getCmp() {
+        return cmp;
+    }
+
+    public void setCmp(String cmp) {
+        this.cmp = cmp;
+    }
+
+    public String getCnsmed() {
+        return cnsmed;
+    }
+
+    public void setCnsmed(String cnsmed) {
+        this.cnsmed = cnsmed;
+    }
+
+    public String getCb() {
+        return cb;
+    }
+
+    public void setCb(String cb) {
+        this.cb = cb;
+    }
+
+    public String getDtaten() {
+        return dtaten;
+    }
+
+    public void setDtaten(String dtaten) {
+        this.dtaten = dtaten;
+    }
+
+    public String getFl() {
+        return fl;
+    }
+
+    public void setFl(String fl) {
+        this.fl = fl;
+    }
+
+    public String getSe() {
+        return se;
+    }
+
+    public void setSe(String se) {
+        this.se = se;
+    }
+
+    public String getPa() {
+        return pa;
+    }
+
+    public void setPa(String pa) {
+        this.pa = pa;
+    }
+
+    public String getCnspac() {
+        return cnspac;
+    }
+
+    public void setCnspac(String cnspac) {
+        this.cnspac = cnspac;
+    }
+
+    public String getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(String sexo) {
+        this.sexo = sexo;
+    }
+
+    public String getIbge() {
+        return ibge;
+    }
+
+    public void setIbge(String ibge) {
+        this.ibge = ibge;
+    }
+
+    public String getCid() {
+        return cid;
+    }
+
+    public void setCid(String cid) {
+        this.cid = cid;
+    }
+
+    public String getIdad() {
+        return idad;
+    }
+
+    public void setIdad(String idad) {
+        this.idad = idad;
+    }
+
+    public String getQ() {
+        return q;
+    }
+
+    public void setQ(String q) {
+        this.q = q;
+    }
+
+    public String getCaten() {
+        return caten;
+    }
+
+    public void setCaten(String caten) {
+        this.caten = caten;
+    }
+
+    public String getNaut() {
+        return naut;
+    }
+
+    public void setNaut(String naut) {
+        this.naut = naut;
+    }
+
+    public String getOrg() {
+        return org;
+    }
+
+    public void setOrg(String org) {
+        this.org = org;
+    }
+
+    public String getNmpac() {
+        return nmpac;
+    }
+
+    public void setNmpac(String nmpac) {
+        this.nmpac = nmpac;
+    }
+
+    public String getDtnasc() {
+        return dtnasc;
+    }
+
+    public void setDtnasc(String dtnasc) {
+        this.dtnasc = dtnasc;
+    }
+
+    public String getRaca() {
+        return raca;
+    }
+
+    public void setRaca(String raca) {
+        this.raca = raca;
+    }
+
+    public String getEtnia() {
+        return etnia;
+    }
+
+    public void setEtnia(String etnia) {
+        this.etnia = etnia;
+    }
+
+    public String getNac() {
+        return nac;
+    }
+
+    public void setNac(String nac) {
+        this.nac = nac;
+    }
+
+    public String getSrv() {
+        return srv;
+    }
+
+    public void setSrv(String srv) {
+        this.srv = srv;
+    }
+
+    public String getClf() {
+        return clf;
+    }
+
+    public void setClf(String clf) {
+        this.clf = clf;
+    }
+
+    public String getEquipeSeq() {
+        return equipeSeq;
+    }
+
+    public void setEquipeSeq(String equipeSeq) {
+        this.equipeSeq = equipeSeq;
+    }
+
+    public String getEquipeArea() {
+        return equipeArea;
+    }
+
+    public void setEquipeArea(String equipeArea) {
+        this.equipeArea = equipeArea;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
+    }
+
+    public String getCepPcnte() {
+        return cepPcnte;
+    }
+
+    public void setCepPcnte(String cepPcnte) {
+        this.cepPcnte = cepPcnte;
+    }
+
+    public String getLogradPcnte() {
+        return logradPcnte;
+    }
+
+    public void setLogradPcnte(String logradPcnte) {
+        this.logradPcnte = logradPcnte;
+    }
+
+    public String getEndPcnte() {
+        return endPcnte;
+    }
+
+    public void setEndPcnte(String endPcnte) {
+        this.endPcnte = endPcnte;
+    }
+
+    public String getComplPcnte() {
+        return complPcnte;
+    }
+
+    public void setComplPcnte(String complPcnte) {
+        this.complPcnte = complPcnte;
+    }
+
+    public String getNumPcnte() {
+        return numPcnte;
+    }
+
+    public void setNumPcnte(String numPcnte) {
+        this.numPcnte = numPcnte;
+    }
+
+    public String getBairroPcnte() {
+        return bairroPcnte;
+    }
+
+    public void setBairroPcnte(String bairroPcnte) {
+        this.bairroPcnte = bairroPcnte;
+    }
+
+    public String getDdtelPcnte() {
+        return ddtelPcnte;
+    }
+
+    public void setDdtelPcnte(String ddtelPcnte) {
+        this.ddtelPcnte = ddtelPcnte;
+    }
+
+    public String getEmailPcnte() {
+        return emailPcnte;
+    }
+
+    public void setEmailPcnte(String emailPcnte) {
+        this.emailPcnte = emailPcnte;
+    }
+
+    public String getIne() {
+        return ine;
+    }
+
+    public void setIne(String ine) {
+        this.ine = ine;
+    }
+
+    public String getFim() {
+        return fim;
+    }
+
+    public void setFim(String fim) {
+        this.fim = fim;
+    }
+}

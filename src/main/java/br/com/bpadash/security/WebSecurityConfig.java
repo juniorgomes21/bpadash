@@ -60,14 +60,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .authorizeRequests()
+                //---- auxiliar ----
+                .antMatchers("/api/aux/**").permitAll()
+
                 // ---- Padrão API ADM ----
                 .antMatchers("/api/ADM/auth").permitAll()
                 .antMatchers("/api/ADM/configurations/create").permitAll()
 
-                // ---- Padrão API CLIENTE ----
+                // ---- Padrão API USER ----
+                // <---------------------------------------------> rotas para atualizar permições.
+                .antMatchers("/dash/bpai/**").permitAll()
+                .antMatchers("/dash/bpac/**").permitAll()
+
+                // <--------------------------------------------->
+
                 .antMatchers("/api/auth").permitAll()
                 .antMatchers("/api/configurations/create").permitAll()
-
 
                 .antMatchers("/test/token").hasAnyAuthority(Role.USER.getNome(), Role.ADMINISTRATOR.getNome())
 
