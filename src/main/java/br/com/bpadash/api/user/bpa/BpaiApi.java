@@ -1,6 +1,7 @@
 package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.ErrorResponseDTO;
+import br.com.bpadash.model.Bpac;
 import br.com.bpadash.model.Bpai;
 import br.com.bpadash.repository.bpa.BpaiRepository;
 import br.com.bpadash.services.bpa.BpaiService;
@@ -59,9 +60,19 @@ public class BpaiApi {
         }
     }
 
+    /**
+     * Carrega do banco de dados todos os registros de BPAI.
+     * @return
+     */
+    @GetMapping("/get/all")
+    public ResponseEntity<Object> getBpai() {
+        List<Bpai> bpai = bpaiRepository.findAll();
+
+        return ResponseEntity.ok(bpai);
+    }
 
     /**
-     * Carrega do banco de dados uma entidade BPAI baseado no seu ID.
+     * Carrega do banco de dados um registro BPAI baseado no seu ID.
      * @param idBpai
      * @return
      */
