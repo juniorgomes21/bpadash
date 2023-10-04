@@ -1,4 +1,4 @@
-package br.com.bpadash.dto;
+package br.com.bpadash.dto.error;
 
 public class ErrorResponseDTO {
     private String msgError = "Ops, algo deu errado!";

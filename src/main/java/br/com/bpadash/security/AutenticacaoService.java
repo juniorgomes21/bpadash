@@ -30,25 +30,29 @@ public class AutenticacaoService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByEmail(username);
-        Optional<Administrator> adm = admRepository.findByCpf(username);
 
         if (user.isPresent()) {
+            //TODO fazer verificação de validade do usuário
             User userLogged = user.get();
+
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userLogged.getProfile());
             Set<GrantedAuthority> authorities = new HashSet<>();
             authorities.add(authority);
 
             return userLogged;
 
-        } else if (adm.isPresent()) {
+        }
+
+        Optional<Administrator> adm = admRepository.findByCpf(username);
+
+        if (adm.isPresent()) {
             Administrator administrator = adm.get();
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(administrator.getProfile());
             Set<GrantedAuthority> authorities = new HashSet<>();
             authorities.add(authority);
 
             return administrator;
-        }
-        else {
+        } else {
             throw new UsernameNotFoundException("Dados inválidos!");
         }
     }

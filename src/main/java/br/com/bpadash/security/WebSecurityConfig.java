@@ -69,15 +69,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // ---- Padrão API USER ----
                 // <---------------------------------------------> rotas para atualizar permições.
-                .antMatchers("/dash/bpai/**").permitAll()
-                .antMatchers("/dash/bpac/**").permitAll()
+//                .antMatchers("/api/dash/bpa/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/title/**").permitAll()
+                .antMatchers("/api/bpa/**").permitAll()
+                .antMatchers("/api/bpai/**").permitAll()
+                .antMatchers("/api/bpac/**").permitAll()
 
                 // <--------------------------------------------->
 
                 .antMatchers("/api/auth").permitAll()
                 .antMatchers("/api/configurations/create").permitAll()
 
-                .antMatchers("/test/token").hasAnyAuthority(Role.USER.getNome(), Role.ADMINISTRATOR.getNome())
+                .antMatchers("/test/token").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
 
                 .anyRequest().authenticated()
                 .and().csrf().disable()

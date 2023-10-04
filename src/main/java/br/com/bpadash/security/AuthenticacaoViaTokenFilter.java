@@ -54,8 +54,8 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
 
     // Para o user
     private void authenticateUser(String token) {
-        String emailJogador = tokenApp.getEmailx(token);
-        User user = this.userRepository.findByEmail(emailJogador).get();
+        String emailUser = tokenApp.getEmailx(token);
+        User user = this.userRepository.findByEmail(emailUser).get();
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

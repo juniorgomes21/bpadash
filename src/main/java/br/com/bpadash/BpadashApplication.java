@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,6 +15,8 @@ import java.util.Collections;
 import java.util.Properties;
 
 @SpringBootApplication
+@EnableSpringDataWebSupport
+@EnableTransactionManagement
 public class BpadashApplication {
 
 	public static void main(String[] args) throws IOException {

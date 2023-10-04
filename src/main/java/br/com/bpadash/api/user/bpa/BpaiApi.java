@@ -1,85 +1,114 @@
 package br.com.bpadash.api.user.bpa;
 
-import br.com.bpadash.dto.ErrorResponseDTO;
-import br.com.bpadash.model.Bpac;
+import br.com.bpadash.dto.bpa.BpaiDTO;
+import br.com.bpadash.dto.error.ErrorResponseDTO;
+import br.com.bpadash.dto.error.ErrorValidationDTO;
+import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpai;
-import br.com.bpadash.repository.bpa.BpaiRepository;
+import br.com.bpadash.model.User;
+import br.com.bpadash.params.bpa.ParamDeleteBpai;
+import br.com.bpadash.params.bpa.ParamUpdateBpai;
+import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
-import br.com.bpadash.services.bpa.ScannerFile;
+import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/dash/bpai")
+@RequestMapping("/api/bpai")
 public class BpaiApi {
-
-    @Autowired
-    private BpaiRepository bpaiRepository;
-
-    @Autowired
-    private ScannerFile scannerFile;
 
     @Autowired
     private BpaiService bpaiService;
 
-    /**
-     * Lê um arquivo BPAI e salva no banco de dados.
-     * @param file
-     * @return
-     */
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> bpaCreate(@RequestParam("file") MultipartFile file) {
+    @Autowired
+    private BpaService bpaService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/get/{month}/{year}")
+    public ResponseEntity<Page<BpaiDTO>> getBpai(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
+            @PathVariable int month,
+            @PathVariable int year,
+            Authentication authentication
+    ) {
+        User user = userService.userInDb(1L);
+        Bpa bpa = bpaService.getForDate(month, year, user);
+
+        Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
+
+        return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/get/{identifier}")
+    public ResponseEntity<Page<BpaiDTO>> getBpaiIdent(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
+            @PathVariable @Valid @NotBlank String identifier,
+            Authentication authentication
+    ) {
+        User user = userService.userInDb(1L);
+        Bpa bpa = bpaService.get(identifier, user);
+        Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
+
+        return ResponseEntity.ok(page);
+    }
+
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<List<ErrorValidationDTO>> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
         try {
-            // Verifica se o arquivo é um arquivo de texto (.txt)
-            if (!file.getOriginalFilename().endsWith(".txt")) {
-                return ResponseEntity.badRequest().body("O arquivo enviado não é um arquivo de texto válido.");
-            }
+            List<ErrorValidationDTO> erros = new ArrayList<>();
+            if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
+                if(!paramUpdateBpai.getRaca().equals("05")) { // TODO A partir da competência Out/2010.
+                    erros.add(new ErrorValidationDTO("etnia", "Preencher somente se o campo raça/cor for 05 - Indígena."));
 
-            List<Bpai> bpaiList;
-            try {
-                bpaiList = scannerFile.bpaiCreate(file);
-                if (bpaiList != null) {
-                    bpaiService.save(bpaiList);
+                    return ResponseEntity.badRequest().body(erros);
                 }
-            } catch (StringIndexOutOfBoundsException e) {
-                return ResponseEntity.badRequest().body(new ErrorResponseDTO("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage()));
             }
 
-//            String response = bpaiService.isValidBpai(bpaiList);
+            Optional<Bpai> optionalBpai = bpaiService.bpacId(id);
+            if(!optionalBpai.isPresent()) {
+                erros.add(new ErrorValidationDTO("id", "O id não existe."));
+                return ResponseEntity.badRequest().body(erros);
+            }
 
-            return ResponseEntity.ok().body(bpaiList);
+            Bpai bpacUpdated = bpaiService.edit(optionalBpai.get(), paramUpdateBpai);
 
+            bpaiService.save(bpacUpdated);
+
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(new ErrorResponseDTO());
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    /**
-     * Carrega do banco de dados todos os registros de BPAI.
-     * @return
-     */
-    @GetMapping("/get/all")
-    public ResponseEntity<Object> getBpai() {
-        List<Bpai> bpai = bpaiRepository.findAll();
 
-        return ResponseEntity.ok(bpai);
-    }
+    @PostMapping("/delete")
+    public ResponseEntity<Object> editBpac(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
+        try {
+            User user = userService.userInDb(1L);
+            Bpa bpa = bpaService.get(paramDeleteBpai.getIdentifier(), user);
+            int size = bpaiService.sizeByte(paramDeleteBpai.getList());
 
-    /**
-     * Carrega do banco de dados um registro BPAI baseado no seu ID.
-     * @param idBpai
-     * @return
-     */
-    @GetMapping("/get/{idBpai}")
-    public ResponseEntity<Object> getBpai(@PathVariable Long idBpai) {
-        Bpai bpai = bpaiRepository.findById(idBpai).get();
+            bpaiService.deleteById(paramDeleteBpai.getList());
+            bpaService.updatebyte(bpa, size, false);
 
-        return ResponseEntity.ok(bpai);
+            return ResponseEntity.ok(size);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO());
+        }
     }
 }

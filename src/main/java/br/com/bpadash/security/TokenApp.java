@@ -44,7 +44,7 @@ public class TokenApp {
 
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser().setSigningKey("usuarioLogado").parseClaimsJws(token);
+            Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -52,18 +52,18 @@ public class TokenApp {
     }
 
     public Long getId(String token) {
-        Claims claims = Jwts.parser().setSigningKey("usuarioLogado").parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token).getBody();
         return Long.parseLong(claims.getSubject());
     }
 
     public String getEmailx(String token) {
-        Claims claims = Jwts.parser().setSigningKey("usuarioLogado").parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token).getBody();
 
         return claims.getSubject();
     }
 
     public String getCpf(String token) {
-        Claims claims = Jwts.parser().setSigningKey("usuarioLogado").parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token).getBody();
 
         return claims.getSubject();
     }

@@ -1,153 +1,89 @@
-package br.com.bpadash.model;
+package br.com.bpadash.params.bpa;
 
-import br.com.bpadash.services.EncryptionService;
-import org.hibernate.annotations.BatchSize;
+import br.com.bpadash.validations.bpa.BpaValid;
+import br.com.bpadash.validations.bpa.org.OrgValid;
+import br.com.bpadash.validations.bpa.race.RaceValid;
+import br.com.bpadash.validations.bpa.sexo.SexoValid;
 
-import javax.persistence.*;
-
-@Entity
-@BatchSize(size = 1000)
-public class Bpai {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @ManyToOne
-    private Bpa bpa;
-    @Transient
-    private String line;
+public class ParamUpdateBpai {
+    //TODO fazer valida com arquivo errado no banco de dados
+    //TODO alguns campos não podem ser brancos
+    @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. O campo deverá ser preenchido apenas com números.")
     private String ident;
+    @BpaValid(size = 7, message = "O tamanho do campo deve ser 7. O campo deverá ser preenchido apenas com números adicionar zeros à esquerda.")
     private String cnes;
+    @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. O campo deverá ser preenchido apenas com números formato AAAAMM.")
     private String cmp;
+    @BpaValid(size = 15, message = "O tamanho do campo deve ser 15. O campo deverá ser preenchido apenas com números.")
     private String cnsmed;
+    @BpaValid(size = 6, alfa = true, message = "O tamanho do campo deve ser 6. Código conforme a Classificação Brasileira de ocupações (CBO).")
     private String cbo;
+    @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. O campo deverá ser preenchido apenas com números formato AAAAMMDD")
     private String dtaten;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Adicionar zeros à esquerda de um inteiro.")
     private String flh;
+    @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. Adicionar zeros à esquerda de um inteiro.")
     private String seq;
+    @BpaValid(size = 10, message = "O tamanho do campo deve ser 10. Adicionar zeros à esquerda.")
     private String pa;
+    @BpaValid(size = 15, message = "O tamanho do campo deve ser 15. Este campo é obrigatório quando o procedimento informado exigir e deverá ser preenchido apenas com números.")
     private String cnspac;
+    @SexoValid
     private String sexo;
+    @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. Quando preenchido, deverá ser apenas com números.")
     private String ibge;
+    @BpaValid(size = 4, message = "O tamanho do campo deve ser 4.")
     private String cid;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3.")
     private String idade;
+    @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. Adicionar zeros à esquerda de um inteiro.")
     private String qt;
+    @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. Quando preenchido, deverá ser apenas com números adicionar zeros à esquerda.")
     private String caten;
+    @BpaValid(size = 13, message = "O tamanho do campo deve ser 13. Quando preenchido, deverá ser apenas com números.")
     private String naut;
+    @OrgValid
     private String org;
+    @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
     private String nmpac;
+    @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Formato AAAAMMDD.")
     private String dtnasc;
+    @RaceValid
     private String raca;
+    @BpaValid(size = 4, message = "O tamanho do campo deve ser 4. Quando preenchido, deverá conter apenas números.")
     private String etnia;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String nac;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String srv;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String clf;
+    @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Quando preenchido, deverá conter apenas números.")
     private String equipeSeq;
+    @BpaValid(size = 4, message = "O tamanho do campo deve ser 4. Quando preenchido, deverá conter apenas números.")
     private String equipeArea;
+    @BpaValid(size = 14, message = "O tamanho do campo deve ser 14. Quando preenchido, deverá conter apenas números.")
     private String cnpj;
+    @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Quando preenchido, deverá conter apenas números.")
     private String cepPcnte;
+    @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String logradPcnte;
+    @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
     private String endPcnte;
+    @BpaValid(size = 10, alfa = true, message = "O tamanho do campo deve ser 10. Adicionar espaço em branco a direita até completar total caracteres.")
     private String complPcnte;
+    @BpaValid(size = 5, alfa = true, message = "O tamanho do campo deve ser 5. Adicionar espaço em branco a direita até completar total caracteres.")
     private String numPcnte;
+    @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
     private String bairroPcnte;
+    @BpaValid(size = 11, message = "O tamanho do campo deve ser 11. Quando preenchido, deverá conter apenas números. Senão preencher com branco a direita até completar total caracteres.")
     private String ddtelPcnte;
+    @BpaValid(size = 40, alfa = true, message = "O tamanho do campo deve ser 40. Adicionar espaço em branco a direita até completar total caracteres.")
     private String emailPcnte;
+    @BpaValid(size = 10, message = "O tamanho do campo deve ser 10. Quando preenchido, deverá conter apenas números. Adicionar zeros à esquerda. Apartir da competência 08/2015")
     private String ine;
-    private String fim;
 
-    @PostLoad
-    private void postLoad() {
-        this.cnspac = EncryptionService.decrypt(this.cnspac);
-        this.cid = EncryptionService.decrypt(this.cid);
-        this.nmpac = EncryptionService.decrypt(this.nmpac);
-        //TODO avaliar
-        this.dtnasc = EncryptionService.decrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.decrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.decrypt(this.logradPcnte);
-        //---
-        this.endPcnte = EncryptionService.decrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.decrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.decrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.decrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.decrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.decrypt(this.emailPcnte);
-    }
-
-    @PrePersist
-    private void prePersist() {
-        this.updateData();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updateData();
-    }
-
-    public Bpai() {
-
-    }
-
-    public Bpai(Bpa bpa, String line, String ident, String cnes, String cmp, String cnsmed, String cbo , String dtaten, String flh , String seq , String pa, String cnspac, String sexo, String ibge, String cid, String idade , String qt , String caten, String naut, String org, String nmpac, String dtnasc, String raca, String etnia, String nac, String srv, String clf, String equipeSeq , String equipeArea , String cnpj, String cepPcnte , String logradPcnte , String endPcnte , String complPcnte , String numPcnte , String bairroPcnte , String ddtelPcnte , String emailPcnte , String ine, String fim) {
-        this.bpa = bpa;
-        this.line = line;
-        this.ident = ident;
-        this.cnes = cnes;
-        this.cmp = cmp;
-        this.cnsmed = cnsmed;
-        this.cbo = cbo;
-        this.dtaten = dtaten;
-        this.flh = flh;
-        this.seq = seq;
-        this.pa = pa;
-        this.cnspac = cnspac;
-        this.sexo = sexo;
-        this.ibge = ibge;
-        this.cid = cid;
-        this.idade = idade;
-        this.qt = qt;
-        this.caten = caten;
-        this.naut = naut;
-        this.org = org;
-        this.nmpac = nmpac;
-        this.dtnasc = dtnasc;
-        this.raca = raca;
-        this.etnia = etnia;
-        this.nac = nac;
-        this.srv = srv;
-        this.clf = clf;
-        this.equipeSeq = equipeSeq;
-        this.equipeArea = equipeArea;
-        this.cnpj = cnpj;
-        this.cepPcnte = cepPcnte;
-        this.logradPcnte = logradPcnte;
-        this.endPcnte = endPcnte;
-        this.complPcnte = complPcnte;
-        this.numPcnte = numPcnte;
-        this.bairroPcnte = bairroPcnte;
-        this.ddtelPcnte = ddtelPcnte;
-        this.emailPcnte = emailPcnte;
-        this.ine = ine;
-        this.fim = fim;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Bpa getBpa() {
-        return bpa;
-    }
-
-    public void setBpa(Bpa bpa) {
-        this.bpa = bpa;
-    }
-
-    public String getLine() {
-        return line;
-    }
-
-    public void setLine(String line) {
-        this.line = line;
+    public ParamUpdateBpai() {
     }
 
     public String getIdent() {
@@ -231,11 +167,11 @@ public class Bpai {
     }
 
     public String getSexo() {
-        return sexo;
+        return sexo.toUpperCase();
     }
 
     public void setSexo(String sexo) {
-        this.sexo = sexo;
+        this.sexo = sexo.toUpperCase();
     }
 
     public String getIbge() {
@@ -445,28 +381,4 @@ public class Bpai {
     public void setIne(String ine) {
         this.ine = ine;
     }
-
-    public String getFim() {
-        return fim;
-    }
-
-    public void setFim(String fim) {
-        this.fim = fim;
-    }
-
-    private void updateData() {
-        this.cnspac = EncryptionService.encrypt(this.cnspac);
-        this.cid = EncryptionService.encrypt(this.cid);
-        this.nmpac = EncryptionService.encrypt(this.nmpac);
-        this.dtnasc = EncryptionService.encrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.encrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.encrypt(this.logradPcnte);
-        this.endPcnte = EncryptionService.encrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.encrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.encrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.encrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.encrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
-    }
-
 }

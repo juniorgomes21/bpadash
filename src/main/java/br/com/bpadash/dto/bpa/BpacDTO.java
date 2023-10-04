@@ -1,18 +1,12 @@
-package br.com.bpadash.model;
+package br.com.bpadash.dto.bpa;
 
-import org.hibernate.annotations.BatchSize;
+import br.com.bpadash.model.Bpac;
 
-import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
-@BatchSize(size = 200)
-public class Bpac {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BpacDTO {
     private Long id;
-    @ManyToOne
-    private Bpa bpa;
     private String iden;
     private String cnes;
     private String cmp;
@@ -25,42 +19,38 @@ public class Bpac {
     private String org;
     private String fim;
 
-    public Bpac() {
+    public BpacDTO() {
     }
 
-    public Bpac(Bpa bpa, String iden , String cnes , String cmp , String cbo , String flh , String seq , String pa , String idade , String qt , String org , String fim) {
-        this.bpa = bpa;
-        this.iden = iden;
-        this.cnes = cnes;
-        this.cmp = cmp;
-        this.cbo = cbo;
-        this.flh = flh;
-        this.seq = seq;
-        this.pa = pa;
-        this.idade = idade;
-        this.qt = qt;
-        this.org = org;
-        this.fim = fim;
+    public BpacDTO(Bpac bpac) {
+        this.id = bpac.getId();
+        this.iden = bpac.getIden();
+        this.cnes = bpac.getCnes();
+        this.cmp = bpac.getCmp();
+        this.cbo = bpac.getCbo();
+        this.flh = bpac.getFlh();
+        this.seq = bpac.getSeq();
+        this.pa = bpac.getPa();
+        this.idade = bpac.getIdade();
+        this.qt = bpac.getQt();
+        this.org = bpac.getOrg();
+        this.fim = bpac.getFim();
     }
 
     public Long getId() {
         return id;
     }
 
-    public Bpa getBpa() {
-        return bpa;
-    }
-
-    public void setBpa(Bpa bpa) {
-        this.bpa = bpa;
-    }
-
-    public void setIden(String iden) {
-        this.iden = iden;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getIden() {
         return iden;
+    }
+
+    public void setIden(String iden) {
+        this.iden = iden;
     }
 
     public String getCnes() {
@@ -141,5 +131,15 @@ public class Bpac {
 
     public void setFim(String fim) {
         this.fim = fim;
+    }
+
+    public static List<BpacDTO> listDTO(List<Bpac> list) {
+        List<BpacDTO> bpacDTOS = new ArrayList<>();
+
+        list.forEach( bpac -> {
+            bpacDTOS.add(new BpacDTO(bpac));
+        });
+
+        return bpacDTOS;
     }
 }

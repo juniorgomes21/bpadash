@@ -1,5 +1,6 @@
 package br.com.bpadash.services.user;
 
+import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.User;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.params.ParamNewUser;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,39 +25,47 @@ public class UserService {
             user = (User) authentication.getPrincipal();
         }
 
-        return this.playerInDb(user.getId());
+        return user;
     }
 
-    public User playerInDb(Long id) {
+    public User userInDb(Long id) {
         Optional<User> user = userRepository.findById(id);
 
-        if (user.isPresent()) {
-            return user.get();
-        }
+        return user.orElse(null);
 
-        return null;
     }
 
-    public User playerInDb(String cpf) {
+    public User userInDb(String cpf) {
         Optional<User> player = userRepository.findByCpf(cpf);
 
-        if (player.isPresent()) {
-            return player.get();
-        }
+        return player.orElse(null);
 
-        return null;
     }
 
     public void createUser(ParamNewUser paramNewUser) {
-        User newUser = new User();
+        User user = new User();
 
-        newUser.setName(paramNewUser.getName());
-        newUser.setCpf(paramNewUser.getCpf());
-        newUser.setEmail(paramNewUser.getEmail());
-        newUser.setCell(paramNewUser.getCell());
-        newUser.setProfile(Role.USER.name());
-        newUser.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
+        user.setName(paramNewUser.getName());
+        user.setCpf(paramNewUser.getCpf());
+        user.setEmail(paramNewUser.getEmail());
+        user.setCell(paramNewUser.getCell());
+        user.setProfile(Role.USER.name());
+        user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
 
-        userRepository.save(newUser);
+        this.save(user);
+    }
+
+    public void addBpa(User user, Bpa bpa) {
+        user.getBpas().add(bpa);
+
+        this.save(user);
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    public List<User> save(List<User> users) {
+        return userRepository.saveAll(users);
     }
 }

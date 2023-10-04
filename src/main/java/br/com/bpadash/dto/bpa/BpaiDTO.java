@@ -1,21 +1,13 @@
-package br.com.bpadash.model;
+package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.services.EncryptionService;
-import org.hibernate.annotations.BatchSize;
+import br.com.bpadash.model.Bpai;
 
-import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
-@BatchSize(size = 1000)
-public class Bpai {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BpaiDTO {
     private Long id;
-    @ManyToOne
-    private Bpa bpa;
-    @Transient
-    private String line;
+    private String identifier;
     private String ident;
     private String cnes;
     private String cmp;
@@ -55,99 +47,66 @@ public class Bpai {
     private String ine;
     private String fim;
 
-    @PostLoad
-    private void postLoad() {
-        this.cnspac = EncryptionService.decrypt(this.cnspac);
-        this.cid = EncryptionService.decrypt(this.cid);
-        this.nmpac = EncryptionService.decrypt(this.nmpac);
-        //TODO avaliar
-        this.dtnasc = EncryptionService.decrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.decrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.decrypt(this.logradPcnte);
-        //---
-        this.endPcnte = EncryptionService.decrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.decrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.decrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.decrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.decrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.decrypt(this.emailPcnte);
+    public BpaiDTO() {
     }
 
-    @PrePersist
-    private void prePersist() {
-        this.updateData();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updateData();
-    }
-
-    public Bpai() {
-
-    }
-
-    public Bpai(Bpa bpa, String line, String ident, String cnes, String cmp, String cnsmed, String cbo , String dtaten, String flh , String seq , String pa, String cnspac, String sexo, String ibge, String cid, String idade , String qt , String caten, String naut, String org, String nmpac, String dtnasc, String raca, String etnia, String nac, String srv, String clf, String equipeSeq , String equipeArea , String cnpj, String cepPcnte , String logradPcnte , String endPcnte , String complPcnte , String numPcnte , String bairroPcnte , String ddtelPcnte , String emailPcnte , String ine, String fim) {
-        this.bpa = bpa;
-        this.line = line;
-        this.ident = ident;
-        this.cnes = cnes;
-        this.cmp = cmp;
-        this.cnsmed = cnsmed;
-        this.cbo = cbo;
-        this.dtaten = dtaten;
-        this.flh = flh;
-        this.seq = seq;
-        this.pa = pa;
-        this.cnspac = cnspac;
-        this.sexo = sexo;
-        this.ibge = ibge;
-        this.cid = cid;
-        this.idade = idade;
-        this.qt = qt;
-        this.caten = caten;
-        this.naut = naut;
-        this.org = org;
-        this.nmpac = nmpac;
-        this.dtnasc = dtnasc;
-        this.raca = raca;
-        this.etnia = etnia;
-        this.nac = nac;
-        this.srv = srv;
-        this.clf = clf;
-        this.equipeSeq = equipeSeq;
-        this.equipeArea = equipeArea;
-        this.cnpj = cnpj;
-        this.cepPcnte = cepPcnte;
-        this.logradPcnte = logradPcnte;
-        this.endPcnte = endPcnte;
-        this.complPcnte = complPcnte;
-        this.numPcnte = numPcnte;
-        this.bairroPcnte = bairroPcnte;
-        this.ddtelPcnte = ddtelPcnte;
-        this.emailPcnte = emailPcnte;
-        this.ine = ine;
-        this.fim = fim;
+    public BpaiDTO(String identifier, Bpai bpai) {
+        this.id = bpai.getId();
+        this.identifier = identifier;
+        this.ident = bpai.getIdent();
+        this.cnes = bpai.getCnes();
+        this.cmp = bpai.getCmp();
+        this.cnsmed = bpai.getCnsmed();
+        this.cbo = bpai.getCbo();
+        this.dtaten = bpai.getDtaten();
+        this.flh = bpai.getFlh();
+        this.seq = bpai.getSeq();
+        this.pa = bpai.getPa();
+        this.cnspac = bpai.getCnspac();
+        this.sexo = bpai.getSexo();
+        this.ibge = bpai.getIbge();
+        this.cid = bpai.getCid();
+        this.idade = bpai.getIdade();
+        this.qt = bpai.getQt();
+        this.caten = bpai.getCaten();
+        this.naut = bpai.getNaut();
+        this.org = bpai.getOrg();
+        this.nmpac = bpai.getNmpac();
+        this.dtnasc = bpai.getDtnasc();
+        this.raca = bpai.getRaca();
+        this.etnia = bpai.getEtnia();
+        this.nac = bpai.getNac();
+        this.srv = bpai.getSrv();
+        this.clf = bpai.getClf();
+        this.equipeSeq = bpai.getEquipeSeq();
+        this.equipeArea = bpai.getEquipeArea();
+        this.cnpj = bpai.getCnpj();
+        this.cepPcnte = bpai.getCepPcnte();
+        this.logradPcnte = bpai.getLogradPcnte();
+        this.endPcnte = bpai.getEndPcnte();
+        this.complPcnte = bpai.getComplPcnte();
+        this.numPcnte = bpai.getNumPcnte();
+        this.bairroPcnte = bpai.getBairroPcnte();
+        this.ddtelPcnte = bpai.getDdtelPcnte();
+        this.emailPcnte = bpai.getEmailPcnte();
+        this.ine = bpai.getIne();
+        this.fim = bpai.getFim();
     }
 
     public Long getId() {
         return id;
     }
 
-    public Bpa getBpa() {
-        return bpa;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setBpa(Bpa bpa) {
-        this.bpa = bpa;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public String getLine() {
-        return line;
-    }
-
-    public void setLine(String line) {
-        this.line = line;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getIdent() {
@@ -452,21 +411,6 @@ public class Bpai {
 
     public void setFim(String fim) {
         this.fim = fim;
-    }
-
-    private void updateData() {
-        this.cnspac = EncryptionService.encrypt(this.cnspac);
-        this.cid = EncryptionService.encrypt(this.cid);
-        this.nmpac = EncryptionService.encrypt(this.nmpac);
-        this.dtnasc = EncryptionService.encrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.encrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.encrypt(this.logradPcnte);
-        this.endPcnte = EncryptionService.encrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.encrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.encrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.encrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.encrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
     }
 
 }

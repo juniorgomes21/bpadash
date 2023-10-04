@@ -1,11 +1,14 @@
 package br.com.bpadash.model;
 
 import br.com.bpadash.model.enumModel.Role;
+import br.com.bpadash.model.enumModel.ZoneTime;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Entity
@@ -19,6 +22,11 @@ public class User implements UserDetails {
     private String password;
     private String cell;
     private String profile;
+    private boolean valid = true;
+    private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
+    private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
+    @OneToMany
+    private List<Bpa> bpas = new ArrayList<>();
 
     public User() {}
 
@@ -70,10 +78,42 @@ public class User implements UserDetails {
         this.profile = profile;
     }
 
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+    public LocalDateTime getDateCreateAccount() {
+        return dateCreateAccount;
+    }
+
+    public void setDateCreateAccount(LocalDateTime dateCreateAccount) {
+        this.dateCreateAccount = dateCreateAccount;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public List<Bpa> getBpas() {
+        return bpas;
+    }
+
+    public void setBpas(List<Bpa> bpas) {
+        this.bpas = bpas;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority(Role.USER.getNome()));
+        authorities.add(new SimpleGrantedAuthority(Role.USER.getName()));
 
         return authorities;
     }
