@@ -2,12 +2,10 @@ package br.com.bpadash.dto.bpa;
 
 import br.com.bpadash.model.Bpac;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BpacDTO {
     private Long id;
-    private String iden;
+    private String identifier;
+    private String ident;
     private String cnes;
     private String cmp;
     private String cbo;
@@ -22,9 +20,10 @@ public class BpacDTO {
     public BpacDTO() {
     }
 
-    public BpacDTO(Bpac bpac) {
+    public BpacDTO(Bpac bpac, String identifier) {
         this.id = bpac.getId();
-        this.iden = bpac.getIden();
+        this.identifier = identifier;
+        this.ident = bpac.getIdent();
         this.cnes = bpac.getCnes();
         this.cmp = bpac.getCmp();
         this.cbo = bpac.getCbo();
@@ -45,12 +44,20 @@ public class BpacDTO {
         this.id = id;
     }
 
-    public String getIden() {
-        return iden;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setIden(String iden) {
-        this.iden = iden;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public void setIdent(String ident) {
+        this.ident = ident;
     }
 
     public String getCnes() {
@@ -133,13 +140,4 @@ public class BpacDTO {
         this.fim = fim;
     }
 
-    public static List<BpacDTO> listDTO(List<Bpac> list) {
-        List<BpacDTO> bpacDTOS = new ArrayList<>();
-
-        list.forEach( bpac -> {
-            bpacDTOS.add(new BpacDTO(bpac));
-        });
-
-        return bpacDTOS;
-    }
 }

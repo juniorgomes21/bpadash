@@ -5,7 +5,6 @@ import org.hibernate.annotations.BatchSize;
 import javax.persistence.*;
 
 @Entity
-@BatchSize(size = 200)
 public class Bpac {
 
     @Id
@@ -13,7 +12,7 @@ public class Bpac {
     private Long id;
     @ManyToOne
     private Bpa bpa;
-    private String iden;
+    private String ident;
     private String cnes;
     private String cmp;
     private String cbo;
@@ -28,9 +27,9 @@ public class Bpac {
     public Bpac() {
     }
 
-    public Bpac(Bpa bpa, String iden , String cnes , String cmp , String cbo , String flh , String seq , String pa , String idade , String qt , String org , String fim) {
+    public Bpac(Bpa bpa, String ident , String cnes , String cmp , String cbo , String flh , String seq , String pa , String idade , String qt , String org , String fim) {
         this.bpa = bpa;
-        this.iden = iden;
+        this.ident = ident;
         this.cnes = cnes;
         this.cmp = cmp;
         this.cbo = cbo;
@@ -55,12 +54,12 @@ public class Bpac {
         this.bpa = bpa;
     }
 
-    public void setIden(String iden) {
-        this.iden = iden;
+    public void setIdent(String ident) {
+        this.ident = ident;
     }
 
-    public String getIden() {
-        return iden;
+    public String getIdent() {
+        return ident;
     }
 
     public String getCnes() {
@@ -141,5 +140,10 @@ public class Bpac {
 
     public void setFim(String fim) {
         this.fim = fim;
+    }
+
+    @Override
+    public String toString() {
+        return ident  + cnes + cmp + cbo + flh +  seq + pa + idade + qt + org + fim;
     }
 }

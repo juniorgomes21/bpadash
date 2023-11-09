@@ -1,5 +1,6 @@
 package br.com.bpadash.api.user.bpa;
 
+import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.dto.error.ErrorResponseDTO;
 import br.com.bpadash.dto.error.ErrorValidationDTO;
@@ -10,18 +11,22 @@ import br.com.bpadash.params.bpa.ParamDeleteBpai;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.bpa.ScannerFile;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +42,9 @@ public class BpaiApi {
     private BpaService bpaService;
 
     @Autowired
+    private ScannerFile scannerFile;
+
+    @Autowired
     private UserService userService;
 
     @GetMapping("/get/{month}/{year}")
@@ -48,6 +56,10 @@ public class BpaiApi {
     ) {
         User user = userService.userInDb(1L);
         Bpa bpa = bpaService.getForDate(month, year, user);
+
+        if(bpa == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
         Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
 
@@ -65,6 +77,28 @@ public class BpaiApi {
         Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
 
         return ResponseEntity.ok(page);
+    }
+
+    @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BpaDTO> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+        try {
+//            User user = userService.logged(authentication);
+            User user = userService.userInDb(1L);
+            LocalDate localDate = LocalDate.of(year, month, 1);
+            Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
+            if(bpaOptional.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Bpa bpa = scannerFile.createBpai(file, bpaOptional.get());
+
+            return ResponseEntity.ok(new BpaDTO(bpa));
+
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("A estrutura do arquivo está incorreta: " + e.getMessage());
+        }
     }
 
     @PostMapping("/edit/{id}")
@@ -99,12 +133,12 @@ public class BpaiApi {
     @PostMapping("/delete")
     public ResponseEntity<Object> editBpac(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
         try {
-            User user = userService.userInDb(1L);
-            Bpa bpa = bpaService.get(paramDeleteBpai.getIdentifier(), user);
-            int size = bpaiService.sizeByte(paramDeleteBpai.getList());
+            Bpai bpai = bpaiService.bpacId(paramDeleteBpai.getList().get(0)).get();
+
+            Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
 
             bpaiService.deleteById(paramDeleteBpai.getList());
-            bpaService.updatebyte(bpa, size, false);
+            bpaService.updatebyte(bpai.getBpa(), size, false);
 
             return ResponseEntity.ok(size);
         } catch (Exception e) {

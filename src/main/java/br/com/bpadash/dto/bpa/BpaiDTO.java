@@ -50,7 +50,7 @@ public class BpaiDTO {
     public BpaiDTO() {
     }
 
-    public BpaiDTO(String identifier, Bpai bpai) {
+    public BpaiDTO(Bpai bpai, String identifier) {
         this.id = bpai.getId();
         this.identifier = identifier;
         this.ident = bpai.getIdent();

@@ -158,4 +158,21 @@ public class TitleBpa {
     public void setFim(String fim) {
         this.fim = fim;
     }
+
+    @Override
+    public String toString() {
+        return  iden +
+                hdr +
+                mvm +
+                lin +
+                flh +
+                smtVrf +
+                rsp +
+                sgl +
+                cgccpf +
+                dst +
+                dstIn +
+                versao +
+                fim;
+    }
 }

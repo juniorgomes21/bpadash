@@ -18,5 +18,7 @@ public interface TitleBpaRepository extends JpaRepository<TitleBpa, Long> {
             "LENGTH(b.flh) + LENGTH(b.smtVrf) + LENGTH(b.rsp) + LENGTH(b.sgl) + " +
             "LENGTH(b.cgccpf) + LENGTH(b.dst) + LENGTH(b.dstIn) + " +
             "LENGTH(b.versao) + LENGTH(b.fim)) FROM TitleBpa b WHERE b.id IN :id")
-    int calculateSizeById(@Param("id") Long id);
+    Long calculateSizeById(@Param("id") Long id);
+
+    void deleteByBpa(Bpa bpa);
 }

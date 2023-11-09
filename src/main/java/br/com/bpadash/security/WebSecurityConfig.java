@@ -71,9 +71,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // <---------------------------------------------> rotas para atualizar permições.
 //                .antMatchers("/api/dash/bpa/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/title/**").permitAll()
+                .antMatchers("/api/user/**").permitAll()
                 .antMatchers("/api/bpa/**").permitAll()
                 .antMatchers("/api/bpai/**").permitAll()
                 .antMatchers("/api/bpac/**").permitAll()
+                .antMatchers("/api/fpo/**").permitAll()
 
                 // <--------------------------------------------->
 
@@ -99,3 +101,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/js/**");
     }
 }
+

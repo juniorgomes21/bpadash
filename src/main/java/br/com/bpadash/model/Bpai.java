@@ -6,7 +6,6 @@ import org.hibernate.annotations.BatchSize;
 import javax.persistence.*;
 
 @Entity
-@BatchSize(size = 1000)
 public class Bpai {
 
     @Id
@@ -469,4 +468,86 @@ public class Bpai {
         this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
     }
 
+    public String toStringEncrypt() {
+        return  ident +
+                cnes +
+                cmp +
+                cnsmed +
+                cbo +
+                dtaten +
+                flh +
+                seq +
+                pa +
+                EncryptionService.encrypt(cnspac) +
+                sexo +
+                ibge +
+                EncryptionService.encrypt(cid) +
+                idade +
+                qt +
+                caten +
+                naut +
+                org +
+                EncryptionService.encrypt(nmpac) +
+                EncryptionService.encrypt(dtnasc) +
+                raca +
+                etnia +
+                nac +
+                srv +
+                clf +
+                equipeSeq +
+                equipeArea +
+                cnpj +
+                EncryptionService.encrypt(cepPcnte) +
+                EncryptionService.encrypt(logradPcnte) +
+                EncryptionService.encrypt(endPcnte) +
+                EncryptionService.encrypt(complPcnte) +
+                EncryptionService.encrypt(numPcnte) +
+                EncryptionService.encrypt(bairroPcnte) +
+                EncryptionService.encrypt(ddtelPcnte) +
+                EncryptionService.encrypt(emailPcnte) +
+                ine +
+                fim;
+    }
+
+    @Override
+    public String toString() {
+        return  ident +
+                cnes +
+                cmp +
+                cnsmed +
+                cbo +
+                dtaten +
+                flh +
+                seq +
+                pa +
+                cnspac +
+                sexo +
+                ibge +
+                cid +
+                idade +
+                qt +
+                caten +
+                naut +
+                org +
+                nmpac +
+                dtnasc +
+                raca +
+                etnia +
+                nac +
+                srv +
+                clf +
+                equipeSeq +
+                equipeArea +
+                cnpj +
+                cepPcnte +
+                logradPcnte +
+                endPcnte +
+                complPcnte +
+                numPcnte +
+                bairroPcnte +
+                ddtelPcnte +
+                emailPcnte +
+                ine +
+                fim;
+    }
 }

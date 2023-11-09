@@ -13,11 +13,15 @@ import java.util.List;
 
 @Repository
 public interface BpacRepository extends JpaRepository<Bpac, Long> {
+    List<Bpac> findByBpa(Bpa bpa);
+
     Page<Bpac> findByBpa(Bpa bpa, Pageable pageable);
 
     @Query(value = "SELECT SUM(" +
-            "LENGTH(b.iden) + LENGTH(b.cnes) + LENGTH(b.cmp) + LENGTH(b.org) + " +
+            "LENGTH(b.ident) + LENGTH(b.cnes) + LENGTH(b.cmp) + LENGTH(b.org) + " +
             "LENGTH(b.flh) + LENGTH(b.seq) + LENGTH(b.pa) + LENGTH(b.idade) + " +
             "LENGTH(b.qt) + LENGTH(b.org) + LENGTH(b.fim)) FROM Bpac b WHERE b.id IN :idList")
-    int calculateSizeById(@Param("idList") List<Long> idList);
+    Long calculateSizeById(@Param("idList") List<Long> idList);
+
+    void deleteByBpa(Bpa bpa);
 }

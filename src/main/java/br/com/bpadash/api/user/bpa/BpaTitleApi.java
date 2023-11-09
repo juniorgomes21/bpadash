@@ -36,6 +36,19 @@ public class BpaTitleApi {
         Bpa bpa = bpaService.get(identifier, user);
         TitleBpa titleBpa = titleBpaService.get(bpa);
 
+        if(bpa == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        return ResponseEntity.ok(new TitleBpaDTO(titleBpa));
+    }
+
+    @GetMapping("/get/{month}/{year}")
+    public ResponseEntity<TitleBpaDTO> titleBpaDTO(@PathVariable int month, @PathVariable int year) {
+        User user = userService.userInDb(1L);
+        Bpa bpa = bpaService.getForDate(month, year, user);
+        TitleBpa titleBpa = titleBpaService.get(bpa);
+
         return ResponseEntity.ok(new TitleBpaDTO(titleBpa));
     }
 }

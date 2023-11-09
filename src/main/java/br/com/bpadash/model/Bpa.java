@@ -17,7 +17,7 @@ public class Bpa {
     private String name;
     private String description;
     private LocalDate date;
-    private int fileSizeInBytes;
+    private Long fileSizeInBytes;
     @ManyToOne
     private User user;
 
@@ -29,7 +29,7 @@ public class Bpa {
         this.name = paramNewBpa.getName();
         this.description = paramNewBpa.getDescription();
         this.date = LocalDate.of(Integer.valueOf(paramNewBpa.getDate().split("-")[0]), Integer.valueOf(paramNewBpa.getDate().split("-")[1]), Integer.valueOf(paramNewBpa.getDate().split("-")[2]));
-        this.fileSizeInBytes = paramNewBpa.getBytes();
+        this.fileSizeInBytes = 0L;
         this.user = user;
     }
 
@@ -69,7 +69,7 @@ public class Bpa {
         this.date = date;
     }
 
-    public int getFileSizeInBytesInt() {
+    public Long getFileSizeInBytesInt() {
         return this.fileSizeInBytes;
     }
 
@@ -83,7 +83,7 @@ public class Bpa {
         }
     }
 
-    public void setFileSizeInBytes(int fileSizeInBytes) {
+    public void setFileSizeInBytes(Long fileSizeInBytes) {
         this.fileSizeInBytes = fileSizeInBytes;
     }
 

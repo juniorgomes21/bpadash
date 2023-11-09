@@ -8,7 +8,7 @@ public class ParamNewBpa {
     private String name;
     private String description;
     private String date;
-    private int bytes;
+    private Long bytes;
 
     public String getName() {
         return name;
@@ -34,11 +34,11 @@ public class ParamNewBpa {
         this.date = date;
     }
 
-    public int getBytes() {
+    public Long getBytes() {
         return bytes;
     }
 
-    public void setBytes(int bytes) {
+    public void setBytes(Long bytes) {
         this.bytes = bytes;
     }
 

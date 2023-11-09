@@ -1,38 +1,25 @@
 package br.com.bpadash.dto.bpa;
 
-
 import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.TitleBpa;
 
 import java.time.LocalDate;
-import java.util.List;
 
-public class BpaDTO {
-    private String identifier;
+public class TimeLineUserDTO {
     private String name;
     private String description;
+    private String fileSize;
     private LocalDate date;
-    private String sizeFile;
+    private String identifier;
 
-    public BpaDTO() {
+    public TimeLineUserDTO() {
     }
 
-    public BpaDTO(Bpa bpa) {
+    public TimeLineUserDTO(Bpa bpa) {
         this.name = bpa.getName();
+        this.description = bpa.getDescription();
+        this.fileSize = bpa.getFileSizeInBytes();
         this.date = bpa.getDate();
         this.identifier = bpa.getIdentifier();
-        this.description = bpa.getDescription();
-        this.sizeFile = bpa.getFileSizeInBytes();
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
     }
 
     public String getName() {
@@ -51,6 +38,14 @@ public class BpaDTO {
         this.description = description;
     }
 
+    public String getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(String fileSize) {
+        this.fileSize = fileSize;
+    }
+
     public LocalDate getDate() {
         return date;
     }
@@ -59,11 +54,11 @@ public class BpaDTO {
         this.date = date;
     }
 
-    public String getSizeFile() {
-        return sizeFile;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setSizeFile(String sizeFile) {
-        this.sizeFile = sizeFile;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 }

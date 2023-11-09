@@ -22,11 +22,19 @@ public class User implements UserDetails {
     private String password;
     private String cell;
     private String profile;
+    private Long storageUsed = 0L;
+    private Long storageFree = 1073741824L;
+    private Long storageTotal = 1073741824L; // 1GB
     private boolean valid = true;
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     @OneToMany
     private List<Bpa> bpas = new ArrayList<>();
+    @OneToOne
+    private BpacValidation bpacValidation;
+    @OneToOne
+    private BpaiValidation bpaiValidation;
+
 
     public User() {}
 
@@ -78,6 +86,30 @@ public class User implements UserDetails {
         this.profile = profile;
     }
 
+    public Long getStorageUsed() {
+        return storageUsed;
+    }
+
+    public void setStorageUsed(Long storageUsed) {
+        this.storageUsed = storageUsed;
+    }
+
+    public Long getStorageFree() {
+        return storageFree;
+    }
+
+    public void setStorageFree(Long storageFree) {
+        this.storageFree = storageFree;
+    }
+
+    public Long getStorageTotal() {
+        return storageTotal;
+    }
+
+    public void setStorageTotal(Long storageTotal) {
+        this.storageTotal = storageTotal;
+    }
+
     public boolean isValid() {
         return valid;
     }
@@ -108,6 +140,22 @@ public class User implements UserDetails {
 
     public void setBpas(List<Bpa> bpas) {
         this.bpas = bpas;
+    }
+
+    public BpacValidation getBpacValidation() {
+        return bpacValidation;
+    }
+
+    public void setBpacValidation(BpacValidation bpacValidation) {
+        this.bpacValidation = bpacValidation;
+    }
+
+    public BpaiValidation getBpaiValidation() {
+        return bpaiValidation;
+    }
+
+    public void setBpaiValidation(BpaiValidation bpaiValidation) {
+        this.bpaiValidation = bpaiValidation;
     }
 
     @Override

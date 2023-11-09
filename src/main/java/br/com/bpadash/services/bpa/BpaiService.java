@@ -3,8 +3,10 @@ package br.com.bpadash.services.bpa;
 import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpai;
+import br.com.bpadash.model.BpaiValidation;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.repository.bpa.BpaiRepository;
+import br.com.bpadash.repository.bpa.BpaiValidationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -21,7 +23,11 @@ public class BpaiService {
     @Autowired
     private BpaiRepository bpaiRepository;
 
-    public Bpai createBpai(String line, int lineNumber, Bpa bpa) {
+    @Autowired
+    private BpaiValidationRepository bpaiValidationRepository;
+
+
+    public Bpai create(String line, int lineNumber, Bpa bpa) {
         String ident = line.substring(0, 2);  // 1
         String cnes = line.substring(2, 9);  // 2
         String cmp = line.substring(9, 15);  // 3
@@ -163,6 +169,10 @@ public class BpaiService {
         bpaiRepository.delete(bpai);
     }
 
+    public void delete(Bpa bpa) {
+        bpaiRepository.deleteByBpa(bpa);
+    }
+
     public void deleteById(List<Long> bpai) {
         bpaiRepository.deleteAllById(bpai);
     }
@@ -175,7 +185,7 @@ public class BpaiService {
         return bpaiRepository.saveAll(bpaiList);
     }
 
-    public int sizeByte(List<Long> listIds) {
+    public Long sizeByte(List<Long> listIds) {
         return bpaiRepository.calculateSizeById(listIds);
     }
 
@@ -183,10 +193,20 @@ public class BpaiService {
         Page<Bpai> page = bpaiRepository.findByBpa(bpa, pageable);
 
         List<BpaiDTO> bpacDTOList = page.getContent().stream()
-                .map(bpai -> new BpaiDTO(bpa.getIdentifier(), bpai))
+                .map(bpai -> new BpaiDTO(bpai, bpa.getIdentifier()))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
+    }
+
+    public List<Bpai> getBpaiList(Bpa bpa) {
+        return bpaiRepository.findByBpa(bpa);
+    }
+
+    public BpaiValidation createBpaiValidation() {
+        BpaiValidation bpaiValidation = new BpaiValidation();
+
+        return bpaiValidationRepository.save(bpaiValidation);
     }
 }
 

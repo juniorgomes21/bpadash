@@ -28,7 +28,11 @@ public interface BpaiRepository extends JpaRepository<Bpai, Long> {
             "LENGTH(b.ine) + LENGTH(b.fim)" +
             ") " +
             "FROM Bpai b WHERE b.id IN :idList")
-    int calculateSizeById(@Param("idList") List<Long> idList);
+    Long calculateSizeById(@Param("idList") List<Long> idList);
+
+    List<Bpai> findByBpa(Bpa bpa);
 
     Page<Bpai> findByBpa(Bpa bpa , Pageable pageable);
+
+    void deleteByBpa(Bpa bpa);
 }
