@@ -1,9 +1,10 @@
-package br.com.bpadash.dto.error;
+package br.com.bpadash.errorValidation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ErrorsFile {
+    private String errorType;
     private String line;
     private List<ErrorValidationDTO> messages = new ArrayList<>();
 
@@ -13,6 +14,19 @@ public class ErrorsFile {
     public ErrorsFile(String line , List<ErrorValidationDTO> messages) {
         this.line = line;
         this.messages = messages;
+    }
+
+    public ErrorsFile(String errorType) {
+        this.errorType = errorType;
+        this.line = "0";
+    }
+
+    public String getErrorType() {
+        return errorType;
+    }
+
+    public void setErrorType(String errorType) {
+        this.errorType = errorType;
     }
 
     public String getLine() {

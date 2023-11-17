@@ -5,6 +5,7 @@ import org.hibernate.annotations.BatchSize;
 import javax.persistence.*;
 
 @Entity
+//@BatchSize(size = 10) 28381
 public class Bpac {
 
     @Id

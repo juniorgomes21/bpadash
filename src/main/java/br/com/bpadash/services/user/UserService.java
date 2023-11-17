@@ -1,10 +1,7 @@
 package br.com.bpadash.services.user;
 
 import br.com.bpadash.dto.bpa.TimeLineUserDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.BpacValidation;
-import br.com.bpadash.model.BpaiValidation;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.*;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.params.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
@@ -13,7 +10,6 @@ import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,16 +66,22 @@ public class UserService {
         this.save(user);
     }
 
+    public void addFpo(User user, LinkFpo linkFpo, Long totalBytes) {
+        user.getLinkFpos().add(linkFpo);
+        this.updateStorageAndSave(user, totalBytes, "sub");
+    }
+
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
         user.getBpas().add(bpa);
-        user.setStorageUsed(user.getStorageUsed() + totalBytes);
-        user.setStorageFree(user.getStorageFree() - totalBytes);
-
-        this.save(user);
+        this.updateStorageAndSave(user, totalBytes, "sub");
     }
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    public User saveAndFlush(User user) {
+        return userRepository.saveAndFlush(user);
     }
 
     public List<User> save(List<User> users) {
@@ -156,5 +158,21 @@ public class UserService {
         timeLineUserDTOS.sort(dateComparator);
 
         return timeLineUserDTOS;
+    }
+
+    public void addProfessionals(List<ProfessionalComplete> professionals, User user) {
+        user.getProfessionalList().addAll(professionals);
+    }
+
+    public void updateStorageAndSave(User user, Long totalBytes, String action) {
+        if(action.equals("sub")) {
+            user.setStorageUsed(user.getStorageUsed() + totalBytes);
+            user.setStorageFree(user.getStorageFree() - totalBytes);
+        } else {
+            user.setStorageUsed(user.getStorageUsed() - totalBytes);
+            user.setStorageFree(user.getStorageFree() + totalBytes);
+        }
+
+        this.saveAndFlush(user);
     }
 }

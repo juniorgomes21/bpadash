@@ -1,4 +1,4 @@
-package br.com.bpadash.dto.error;
+package br.com.bpadash.errorValidation;
 
 import java.util.ArrayList;
 import java.util.List;

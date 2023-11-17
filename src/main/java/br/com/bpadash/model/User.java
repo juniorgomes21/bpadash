@@ -22,6 +22,8 @@ public class User implements UserDetails {
     private String password;
     private String cell;
     private String profile;
+    private int profissionalNumberFree = 500;
+    private int totalProfissional = 500;
     private Long storageUsed = 0L;
     private Long storageFree = 1073741824L;
     private Long storageTotal = 1073741824L; // 1GB
@@ -29,12 +31,15 @@ public class User implements UserDetails {
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     @OneToMany
+    private List<LinkFpo> linkFpos = new ArrayList<>();
+    @OneToMany
     private List<Bpa> bpas = new ArrayList<>();
     @OneToOne
     private BpacValidation bpacValidation;
     @OneToOne
     private BpaiValidation bpaiValidation;
-
+    @OneToMany
+    private List<ProfessionalComplete> professionalList = new ArrayList<>();
 
     public User() {}
 
@@ -57,6 +62,7 @@ public class User implements UserDetails {
     public void setCpf(String cpf) {
         this.cpf = cpf;
     }
+
 
     public String getEmail() {
         return email;
@@ -84,6 +90,22 @@ public class User implements UserDetails {
 
     public void setProfile(String profile) {
         this.profile = profile;
+    }
+
+    public int getProfissionalNumberFree() {
+        return profissionalNumberFree;
+    }
+
+    public void setProfissionalNumberFree(int profissionalNumberFree) {
+        this.profissionalNumberFree = profissionalNumberFree;
+    }
+
+    public int getTotalProfissional() {
+        return totalProfissional;
+    }
+
+    public void setTotalProfissional(int totalProfissional) {
+        this.totalProfissional = totalProfissional;
     }
 
     public Long getStorageUsed() {
@@ -156,6 +178,22 @@ public class User implements UserDetails {
 
     public void setBpaiValidation(BpaiValidation bpaiValidation) {
         this.bpaiValidation = bpaiValidation;
+    }
+
+    public List<LinkFpo> getLinkFpos() {
+        return linkFpos;
+    }
+
+    public void setLinkFpos(List<LinkFpo> linkFpos) {
+        this.linkFpos = linkFpos;
+    }
+
+    public List<ProfessionalComplete> getProfessionalList() {
+        return professionalList;
+    }
+
+    public void setProfessionalList(List<ProfessionalComplete> professionalList) {
+        this.professionalList = professionalList;
     }
 
     @Override

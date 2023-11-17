@@ -76,6 +76,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/bpai/**").permitAll()
                 .antMatchers("/api/bpac/**").permitAll()
                 .antMatchers("/api/fpo/**").permitAll()
+                .antMatchers("/api/prof/**").permitAll()
 
                 // <--------------------------------------------->
 

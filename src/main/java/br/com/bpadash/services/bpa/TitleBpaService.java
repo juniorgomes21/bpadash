@@ -1,13 +1,12 @@
 package br.com.bpadash.services.bpa;
 
-import br.com.bpadash.dto.error.ErrorValidationDTO;
-import br.com.bpadash.dto.error.ErrorsFile;
+import br.com.bpadash.errorValidation.ErrorValidationDTO;
+import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.TitleBpa;
 import br.com.bpadash.repository.bpa.TitleBpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;

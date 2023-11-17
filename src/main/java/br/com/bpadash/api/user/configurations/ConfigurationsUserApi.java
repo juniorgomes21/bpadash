@@ -1,6 +1,6 @@
 package br.com.bpadash.api.user.configurations;
 
-import br.com.bpadash.dto.error.ErrorResponseDTO;
+import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.params.ParamNewUser;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

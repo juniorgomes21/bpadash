@@ -1,21 +1,17 @@
 package br.com.bpadash.api.user.bpa;
 
-import br.com.bpadash.dto.bpa.BpaDTO;
-import br.com.bpadash.dto.error.ErrorResponseDTO;
+import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.dto.bpa.BpacDTO;
-import br.com.bpadash.dto.error.ErrorsFile;
+import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpac;
-import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
-import br.com.bpadash.services.bpa.ScannerFile;
+import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

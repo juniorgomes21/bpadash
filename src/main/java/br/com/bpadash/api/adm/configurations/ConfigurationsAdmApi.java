@@ -1,6 +1,6 @@
 package br.com.bpadash.api.adm.configurations;
 
-import br.com.bpadash.dto.error.ErrorResponseDTO;
+import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.params.ParamNewAdm;
 import br.com.bpadash.services.adm.AdmServices;
 import org.springframework.beans.factory.annotation.Autowired;

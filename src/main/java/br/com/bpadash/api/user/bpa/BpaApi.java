@@ -1,15 +1,16 @@
 package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.bpa.BpaDTO;
-import br.com.bpadash.dto.error.ErrorValidationDTO;
-import br.com.bpadash.dto.error.ErrorsFile;
+import br.com.bpadash.errorValidation.ErrorValidationDTO;
+import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.services.bpa.*;
-import br.com.bpadash.services.user.StorageService;
+import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -105,6 +106,8 @@ public class BpaApi {
     @PostMapping( value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
         try {
+            StopWatch stopWatch = StopWatch.createStarted();
+
             User user = userService.userInDb(1L);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -113,7 +116,7 @@ public class BpaApi {
             List<ErrorsFile> errorsFileList = new ArrayList<>();
             List<ErrorValidationDTO> errors = new ArrayList<>();
 
-            String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList);
+            String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch);
             switch (response) {
                 case "ERROR FILE" -> {
                     return ResponseEntity.badRequest().body(errorsFileList);

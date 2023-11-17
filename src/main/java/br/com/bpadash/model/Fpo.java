@@ -1,10 +1,8 @@
 package br.com.bpadash.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 public class Fpo {
@@ -20,13 +18,16 @@ public class Fpo {
     private BigDecimal valueProd;
     private int quantApro;
     private BigDecimal valueApro;
+    @ManyToOne
+    private LinkFpo linkFpo;
 
     public Fpo() {
     }
 
-    public Fpo(String pa , String description , String quantOrcada , String valueUnit , String valueOrcado , String quantProd , String valueProd , String quantApro , String valueApro) {
+    public Fpo(LinkFpo linkFpo, String pa, String description , String quantOrcada , String valueUnit , String valueOrcado , String quantProd , String valueProd , String quantApro , String valueApro) {
         this.pa = pa;
-        this.description = description;
+        this.linkFpo = linkFpo;
+        this.description = description.isEmpty() ? "Sem descrição" : description;
         this.quantOrcada = Integer.parseInt(quantOrcada.isEmpty() ? "0" : quantOrcada);
         this.valueUnit = BigDecimal.valueOf(Double.parseDouble(valueUnit.isEmpty() ? "0" : valueUnit));
         this.valueOrcado = BigDecimal.valueOf(Double.parseDouble(valueOrcado.isEmpty() ? "0" : valueOrcado));
@@ -34,6 +35,12 @@ public class Fpo {
         this.valueProd = BigDecimal.valueOf(Double.parseDouble(valueProd.isEmpty() ? "0" : valueProd));
         this.quantApro = Integer.parseInt(quantApro.isEmpty() ? "0" : quantApro);
         this.valueApro = BigDecimal.valueOf(Double.parseDouble(valueApro.isEmpty() ? "0" : valueApro));
+    }
+
+
+
+    public Long getId() {
+        return id;
     }
 
     public String getPa() {
@@ -106,6 +113,14 @@ public class Fpo {
 
     public void setValueApro(BigDecimal valueApro) {
         this.valueApro = valueApro;
+    }
+
+    public LinkFpo getLinkFpo() {
+        return linkFpo;
+    }
+
+    public void setLinkFpo(LinkFpo linkFpo) {
+        this.linkFpo = linkFpo;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package br.com.bpadash.dto.error;
+package br.com.bpadash.errorValidation;
 
 public class ErrorValidationDTO {
     private String field;

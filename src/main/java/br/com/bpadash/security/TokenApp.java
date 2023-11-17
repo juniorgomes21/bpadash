@@ -56,13 +56,7 @@ public class TokenApp {
         return Long.parseLong(claims.getSubject());
     }
 
-    public String getEmailx(String token) {
-        Claims claims = Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token).getBody();
-
-        return claims.getSubject();
-    }
-
-    public String getCpf(String token) {
+    public String getSubject(String token) {
         Claims claims = Jwts.parser().setSigningKey("userLogged").parseClaimsJws(token).getBody();
 
         return claims.getSubject();

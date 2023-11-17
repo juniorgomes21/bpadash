@@ -17,11 +17,11 @@ import java.util.Optional;
 
 public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
 
-    private TokenApp tokenApp;
+    private final TokenApp tokenApp;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    private AdministratorRepository admRepository;
+    private final AdministratorRepository admRepository;
     
     public AuthenticacaoViaTokenFilter(TokenApp tokenApp, UserRepository userRepository, AdministratorRepository admRepository) {
         this.tokenApp = tokenApp;
@@ -38,44 +38,36 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
             boolean valido = tokenApp.isTokenValid(token);
 
             if(valido) {
-                String usarioEmail = tokenApp.getEmailx(token);
-                Optional<User> userOptional = userRepository.findByEmail(usarioEmail);
-
-                if (userOptional.isPresent()) {
-                    authenticateUser(token);
-                } else {
-                    authenticateADM(token);
-                }
+                authenticate(token);
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    // Para o user
-    private void authenticateUser(String token) {
-        String emailUser = tokenApp.getEmailx(token);
-        User user = this.userRepository.findByEmail(emailUser).get();
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
+    private void authenticate(String token) {
+        String subject = tokenApp.getSubject(token);
 
-    // Para ADM
-    private void authenticateADM(String token) {
-        String idAdm = tokenApp.getEmailx(token);
-        Administrator adm = this.admRepository.findByCpf(idAdm).get();
+        UsernamePasswordAuthenticationToken authentication;
+        if(subject.matches("\\d+")) {
+            Administrator adm = this.admRepository.findByCpf(subject).get();
+            authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
+        } else {
+            User user = this.userRepository.findByEmail(subject).get();
+            authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        }
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String recuperarToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
 
-        if(token == null || token.isEmpty() || !token.startsWith("Bearer ")) {
+        if(token == null || !token.startsWith("Bearer ")) {
             return null;
         }
 
-        return token.substring(7, token.length());
+        return token.substring(7);
     }
 }

@@ -38,6 +38,22 @@ public class StorageService {
         return this.createFile(titleBpa, bpacList, bpaiList);
     }
 
+    public long hasStorage(List<ProfessionalComplete> list) {
+
+        StringBuilder fileContent = new StringBuilder();
+
+        // Adicione os dados de Bpai
+        for (ProfessionalComplete professionalComplete : list) {
+            fileContent.append(professionalComplete.toString());
+            fileContent.append("\n");
+            fileContent.append(professionalComplete.getDadosVinc().toString());
+        }
+
+
+        return fileContent.toString().getBytes().length;
+    }
+
+
     private Long getBytes(Object object) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -69,7 +85,7 @@ public class StorageService {
 
         // Adicione os dados de Bpai
         for (Bpai bpai : bpaiList) {
-            fileContent.append(bpai.toStringEncrypt());
+            fileContent.append(bpai.toString());
             fileContent.append("\n");
         }
 

@@ -7,11 +7,14 @@ import br.com.bpadash.model.BpaiValidation;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.repository.bpa.BpaiRepository;
 import br.com.bpadash.repository.bpa.BpaiValidationRepository;
+import br.com.bpadash.services.EncryptionService;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -181,8 +184,12 @@ public class BpaiService {
         bpaiRepository.save(bpai);
     }
 
-    public List<Bpai> save(List<Bpai> bpaiList) {
-        return bpaiRepository.saveAll(bpaiList);
+    @Transactional
+    public List<Bpai> save(List<Bpai> bpaiList, StopWatch startTime) {
+        System.out.println("salvando BPAI: " + startTime.getTime() +"/ " + startTime.getTime()/1000);
+        List<Bpai> x =  bpaiRepository.saveAll(bpaiList);
+        System.out.println("salvo BPAI "+ startTime.getTime() +"/ " + startTime.getTime()/1000);
+        return x;
     }
 
     public Long sizeByte(List<Long> listIds) {
@@ -208,5 +215,6 @@ public class BpaiService {
 
         return bpaiValidationRepository.save(bpaiValidation);
     }
+
 }
 

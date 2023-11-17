@@ -3,6 +3,7 @@ package br.com.bpadash.api.user;
 import br.com.bpadash.dto.StorageDTO;
 import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.TimeLineUserDTO;
+import br.com.bpadash.dto.professional.CountProfessionalDTO;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
@@ -46,6 +47,13 @@ public class UserApi {
         User user = userService.userInDb(1L);
 
         return ResponseEntity.ok(new StorageDTO(user));
+    }
+
+    @GetMapping("/count/professional")
+    public ResponseEntity<CountProfessionalDTO> countProfessionalDTO(Authentication authentication) {
+        User user = userService.userInDb(1L);
+
+        return ResponseEntity.ok(new CountProfessionalDTO(user));
     }
 
     @PostMapping("/set/validations/bpac")

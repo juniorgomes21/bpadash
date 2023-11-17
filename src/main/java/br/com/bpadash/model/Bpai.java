@@ -72,7 +72,7 @@ public class Bpai {
         this.emailPcnte = EncryptionService.decrypt(this.emailPcnte);
     }
 
-    @PrePersist
+//    @PrePersist
     private void prePersist() {
         this.updateData();
     }

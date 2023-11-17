@@ -1,6 +1,6 @@
 package br.com.bpadash.api.adm.cep;
 
-import br.com.bpadash.services.bpa.ScannerFile;
+import br.com.bpadash.services.scanner.ScannerFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

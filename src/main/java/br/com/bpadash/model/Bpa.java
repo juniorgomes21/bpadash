@@ -1,6 +1,7 @@
 package br.com.bpadash.model;
 
 import br.com.bpadash.params.bpa.ParamNewBpa;
+import br.com.bpadash.utilities.Utilities;
 import net.minidev.json.annotate.JsonIgnore;
 
 import javax.persistence.*;
@@ -28,7 +29,7 @@ public class Bpa {
         this.identifier = identifier;
         this.name = paramNewBpa.getName();
         this.description = paramNewBpa.getDescription();
-        this.date = LocalDate.of(Integer.valueOf(paramNewBpa.getDate().split("-")[0]), Integer.valueOf(paramNewBpa.getDate().split("-")[1]), Integer.valueOf(paramNewBpa.getDate().split("-")[2]));
+        this.date = Utilities.formatDate(paramNewBpa.getDate());
         this.fileSizeInBytes = 0L;
         this.user = user;
     }
