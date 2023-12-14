@@ -54,36 +54,7 @@ public class Bpai {
     private String ine;
     private String fim;
 
-    @PostLoad
-    private void postLoad() {
-        this.cnspac = EncryptionService.decrypt(this.cnspac);
-        this.cid = EncryptionService.decrypt(this.cid);
-        this.nmpac = EncryptionService.decrypt(this.nmpac);
-        //TODO avaliar
-        this.dtnasc = EncryptionService.decrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.decrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.decrypt(this.logradPcnte);
-        //---
-        this.endPcnte = EncryptionService.decrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.decrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.decrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.decrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.decrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.decrypt(this.emailPcnte);
-    }
-
-//    @PrePersist
-    private void prePersist() {
-        this.updateData();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updateData();
-    }
-
     public Bpai() {
-
     }
 
     public Bpai(Bpa bpa, String line, String ident, String cnes, String cmp, String cnsmed, String cbo , String dtaten, String flh , String seq , String pa, String cnspac, String sexo, String ibge, String cid, String idade , String qt , String caten, String naut, String org, String nmpac, String dtnasc, String raca, String etnia, String nac, String srv, String clf, String equipeSeq , String equipeArea , String cnpj, String cepPcnte , String logradPcnte , String endPcnte , String complPcnte , String numPcnte , String bairroPcnte , String ddtelPcnte , String emailPcnte , String ine, String fim) {
@@ -479,7 +450,7 @@ public class Bpai {
                 seq +
                 pa +
                 EncryptionService.encrypt(cnspac) +
-                sexo +
+                EncryptionService.encrypt(sexo) +
                 ibge +
                 EncryptionService.encrypt(cid) +
                 idade +
@@ -489,7 +460,7 @@ public class Bpai {
                 org +
                 EncryptionService.encrypt(nmpac) +
                 EncryptionService.encrypt(dtnasc) +
-                raca +
+                EncryptionService.encrypt(raca) +
                 etnia +
                 nac +
                 srv +

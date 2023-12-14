@@ -1,13 +1,12 @@
-package br.com.bpadash.dto.fpo;
+package br.com.bpadash.dto;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class FpoDatesDTO {
+public class DatesDTO {
     private List<List<Integer>> dates = new ArrayList<>();
 
-    public FpoDatesDTO() {
+    public DatesDTO() {
     }
 
     public List<List<Integer>> getDates() {

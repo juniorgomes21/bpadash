@@ -1,13 +1,23 @@
 package br.com.bpadash.api.user.bpa;
 
-import br.com.bpadash.dto.bpa.BpaDTO;
+import br.com.bpadash.dto.DatesDTO;
+import br.com.bpadash.dto.bpa.*;
+import br.com.bpadash.dto.sigtap.*;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamNewBpa;
+import br.com.bpadash.params.sigtap.ParamInconsistency;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.*;
+import br.com.bpadash.services.fpo.FpoService;
+import br.com.bpadash.services.fpo.LinkFpoService;
+import br.com.bpadash.services.professional.LinkProfessionalsService;
+import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.sigtap.*;
 import br.com.bpadash.services.user.UserService;
+import br.com.bpadash.utilities.Utilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.StopWatch;
@@ -19,8 +29,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bpa")
@@ -28,12 +38,36 @@ public class BpaApi {
 
     @Autowired
     private ScannerFile scannerFile;
-
     @Autowired
     private BpaService bpaService;
-
+    @Autowired
+    private TitleBpaService titleBpaService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private FpoService fpoService;
+    @Autowired
+    private LinkFpoService linkFpoService;
+    @Autowired
+    private LinkCepService linkCepService;
+    @Autowired
+    private LinkProcedureService linkProcedureService;
+    @Autowired
+    private LinkOccupationService linkOccupationService;
+    @Autowired
+    private LinkProfessionalsService linkProfessionalsService;
+    @Autowired
+    private ProfessionalService professionalService;
+    @Autowired
+    private BpacService bpacService;
+    @Autowired
+    private BpaiService bpaiService;
+    @Autowired
+    private CepService cepService;
+    @Autowired
+    private ProcedureService procedureService;
+    @Autowired
+    private DatesSigtapService datesSigtapService;
 
     @GetMapping("/get/all")
     public ResponseEntity<List<BpaDTO>> getAll(Authentication authentication) {
@@ -62,12 +96,9 @@ public class BpaApi {
             User user = userService.userInDb(1L);
             Bpa bpa = bpaService.get(identifier, user);
 
-            // Crie um objeto StringBuilder para construir o conteúdo do arquivo
             StringBuilder fileContent = bpaService.createFile(bpa);
 
-            // Converta o conteúdo para um array de bytes
             byte[] fileBytes = fileContent.toString().getBytes();
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", "arquivo.txt");
@@ -91,6 +122,388 @@ public class BpaApi {
 
 
         return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * Se idade em (bpaI) está no formato yyyymmdd, se é inferior a 1900 ou superior à data atual
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/date/age")
+    public ResponseEntity<Object> inconsistencyDates(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        if(bpaOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptBpaiDtNasc(bpaiListDB);
+
+            List<ErrorAgeDatesDTO> errorAgeDatesDTOS = bpaService.verifyErrorsDate(bpaiListDB);
+
+            return ResponseEntity.ok(errorAgeDatesDTOS);
+        }
+
+        return ResponseEntity.badRequest().body("NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Idade em (bpaI) está dentro do intervalo de idade máxima e mínima em tb_procedimento
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/date/procedure")
+    public ResponseEntity<Object> inconsistencyDatesProcedure(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkProcedure> linkProcedureOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkProcedureOptional = linkProcedureService.get(user);
+        } else {
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkProcedure linkProcedure = linkProcedureOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptBpaiIdade(bpaiListDB);
+
+            List<ErrorAgeProcedureDTO> errosDates = procedureService.verifyErrorsAge(bpaiListDB, linkProcedure.getProcedureList());
+
+            return ResponseEntity.ok(errosDates);
+
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS PROCEDURE" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Cep (bpaI) contigo em (banco de ceps válidos).
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/cep")
+    public ResponseEntity<Object> inconsistencyCep(@RequestBody ParamInconsistency paramInconsistency) {
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkCep> linkCepOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkCepOptional = linkCepService.get(user);
+        } else {
+            linkCepOptional = linkCepService.get(datesSigtap.getDateCep(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkCepOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkCep linkCep = linkCepOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptBpaiCep(bpaiListDB);
+
+            List<ErrorCEPsDTO> errorsCEPs = cepService.verifyErrors(bpaiListDB, linkCep);
+
+            return ResponseEntity.ok(errorsCEPs);
+
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS CEP" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Quantidade de procedimentos em (bpaI) está permitido em tb_procedimento (quantidade máxima).
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/qtServices")
+    public ResponseEntity<Object> inconsistencyQtServices(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkProcedure> linkProcedureOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkProcedureOptional = linkProcedureService.get(user);
+        } else {
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkProcedure linkProcedure = linkProcedureOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            List<ErrorQtMaxDTODTO> errors = bpaiService.verifyErrorsQtServices(linkProcedure.getProcedureList(), bpaiListDB);
+
+            return ResponseEntity.ok(errors);
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS FPO" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Data atendimento em (bpaI) está dentro da compência (cmp) do mês do arquivo
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/service")
+    public ResponseEntity<Object> inconsistencyMonthBpa(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        if(bpaOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            TitleBpa titleBpa = titleBpaService.get(bpa);
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            List<ErrorDtAtendDTODTO> errors = bpaService.verifyErrorsDtAtend(bpaiListDB, titleBpa);
+
+            return ResponseEntity.ok(errors);
+
+        }
+
+        return ResponseEntity.badRequest().body("NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Raca em (bpaI) é diferente de ["01", "02", "03", "04", "05"]
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/race")
+    public ResponseEntity<Object> inconsistencyRace(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        if(bpaOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptRace(bpaiListDB);
+
+            List<ErrorRaceDTO> errors = bpaService.verifyErrorsRace(bpaiListDB);
+
+            return ResponseEntity.ok(errors);
+
+        }
+
+        return ResponseEntity.badRequest().body("NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * CNSMED em (bpaI) está em Profissionais.XML (Arquivo XML extraído do SCNES)
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/professionals")
+    public ResponseEntity<Object> inconsistencyProfessionals(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkProfessionals> linkProfessionalsOptional;
+        if (datesSigtap.isDateProfessionalsAuto()) {
+            linkProfessionalsOptional = linkProfessionalsService.get(user);
+        } else {
+            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkProfessionalsOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            List<ProfessionalComplete> professionalCompleteList = linkProfessionals.getProfessionalCompleteList();
+
+            EncryptionService.decryptProfessionalCns(professionalCompleteList);
+
+            List<ErrorSigTapDTO> errors = professionalService.verifyErrors(bpaiListDB, professionalCompleteList);
+
+            return ResponseEntity.ok(errors);
+
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS PROFESSIONALS" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Se PA de (bpaC e bpaI) estão em FPO.
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/fpo")
+    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkFpo> linkFpoOptional;
+        if(datesSigtap.isDateFpoAuto()) {
+            linkFpoOptional = linkFpoService.get(user);
+        } else {
+            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
+        }
+
+        Optional<LinkProcedure> linkProcedureOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkProcedureOptional = linkProcedureService.get(user);
+        } else {
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+        }
+
+        Optional<LinkOccupation> linkOccupationOptional;
+        if(datesSigtap.isDateOccupationAuto()) {
+            linkOccupationOptional = linkOccupationService.get(user);
+        } else {
+            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkFpoOptional.isPresent() && linkProcedureOptional.isPresent() && linkOccupationOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            LinkFpo linkFpo = linkFpoOptional.get();
+            LinkProcedure linkProcedure = linkProcedureOptional.get();
+            LinkOccupation linkOccupation = linkOccupationOptional.get();
+
+            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            //Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
+            Set<String> procedurePa = linkProcedure.getProcedureList().stream().map(Procedure::getCodProcedimento).collect(Collectors.toSet());
+            //Se PA e CBO de (bpaC e bpaI) estão em tb_procedimento_ocupação
+            Set<String> occupationPa = linkOccupation.getOccupationList().stream().map(Occupation::getCodProcedimento).collect(Collectors.toSet());
+
+            List<ErrorPaDTO> errorsPaBpacDTOS = bpacService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpacListDB);
+            List<ErrorPaDTO> errorsPaBpaiDTOS = bpaiService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpaiListDB);
+
+            return ResponseEntity.ok(new InconsistencyPaDTO(errorsPaBpacDTOS, errorsPaBpaiDTOS));
+
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS FPO" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/procedure")
+    public ResponseEntity<Object> inconsistencyProdution(@RequestBody ParamInconsistency paramInconsistency) {
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkProcedure> linkProcedureOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkProcedureOptional = linkProcedureService.get(user);
+        } else {
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkProcedure linkProcedure = linkProcedureOptional.get();
+
+            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptBpaiSex(bpaiListDB);
+
+            List<ErrorPaDTO> errorsPaBpac = procedureService.verifyErrorsPaBpac(bpacListDB, linkProcedure.getProcedureList());
+            List<ErrorProcedureDTO> errorsPaBpai = procedureService.verifyErrorsPaAndSexBpai(bpaiListDB, linkProcedure.getProcedureList());
+
+            return ResponseEntity.ok(new InconsistencyProcedureDTO(errorsPaBpac, errorsPaBpai));
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS CEP" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Se PA e CBO de (bpaC e bpaI) estão em tb_procedimento_ocupação
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/occupation")
+    public ResponseEntity<Object> inconsistencyOccupation(@RequestBody ParamInconsistency paramInconsistency) {
+
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkOccupation> linkOccupationOptional;
+        if(datesSigtap.isDateOccupationAuto()) {
+            linkOccupationOptional = linkOccupationService.get(user);
+        } else {
+            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation(), user);
+        }
+
+        if(bpaOptional.isPresent() && linkOccupationOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkOccupation linkOccupation = linkOccupationOptional.get();
+
+            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            Set<String> occupationPa = linkOccupation.getOccupationList().stream()
+                    .map(Occupation::getCodProcedimento)
+                    .collect(Collectors.toSet());
+
+            Set<String> occupationCBO = linkOccupation.getOccupationList().stream()
+                    .map(Occupation::getCodOcupacao)
+                    .collect(Collectors.toSet());
+
+            //Verifica se PA de BPAC e BPAI existe no arquivo FPO.
+            List<ErrorOccupationDTO> errorsOccupationBpacDTOS = bpacService.verifyErrorsOccupation(occupationPa, occupationCBO, bpacListDB);
+
+            List<ErrorOccupationDTO> errorsOccupationBpaiDTOS = bpaiService.verifyErrorsOccupation(occupationPa, occupationCBO, bpaiListDB);
+
+
+            return ResponseEntity.ok(new InconsistencyOccupationDTO(errorsOccupationBpacDTOS, errorsOccupationBpaiDTOS));
+
+        }
+
+        return ResponseEntity.badRequest().body("NOT DATE EXISTS FPO");
     }
 
     @PostMapping("/delete/{identifier}")
@@ -122,7 +535,7 @@ public class BpaApi {
                     return ResponseEntity.badRequest().body(errorsFileList);
                 }
                 case "NOT STORAGE" -> {
-                    errors.add(new ErrorValidationDTO("ARMAZENAMENTO" , "Espaço de armazenamento insuficiente."));
+                    errors.add(new ErrorValidationDTO("NOT STORAGE" , "Espaço de armazenamento insuficiente."));
                     errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
 
                     return ResponseEntity.badRequest().body(errorsFileList);
@@ -144,5 +557,14 @@ public class BpaApi {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @GetMapping("/dates")
+    public ResponseEntity<DatesDTO> dates(Authentication authentication) {
+        User user = userService.userInDb(1L);
+
+        DatesDTO datesDTO = bpaService.getDates(user);
+
+        return ResponseEntity.ok(datesDTO);
     }
 }

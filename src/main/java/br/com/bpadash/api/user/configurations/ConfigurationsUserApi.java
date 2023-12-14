@@ -1,7 +1,10 @@
 package br.com.bpadash.api.user.configurations;
 
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
+import br.com.bpadash.model.DatesSigtap;
+import br.com.bpadash.model.User;
 import br.com.bpadash.params.ParamNewUser;
+import br.com.bpadash.services.sigtap.DatesSigtapService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +22,14 @@ public class ConfigurationsUserApi {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private DatesSigtapService datesSigtapService;
+
     @PostMapping("/create")
     public ResponseEntity<Object> createUser(@Valid @RequestBody ParamNewUser paramNewUser) {
         try {
-            userService.createUser(paramNewUser);
+            User user = userService.createUser(paramNewUser);
+            datesSigtapService.create(user);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {

@@ -1,7 +1,7 @@
 package br.com.bpadash.api.user.fpo;
 
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.dto.fpo.FpoDatesDTO;
+import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.fpo.ParamNewFpo;
 import br.com.bpadash.params.fpo.ParamNewLineFpo;
@@ -40,26 +40,26 @@ public class FpoAPi {
     @PostMapping("/create")
     public ResponseEntity<List<ErrorsFile>> createFpo(@RequestPart("file") MultipartFile file, @RequestParam("paramNewFpo") String paramNewBpaJson, Authentication authentication) throws JsonProcessingException {
         User user = userService.userInDb(1L);
-        List<ErrorsFile> errorsFileList = new ArrayList<>();
+        List<ErrorsFile> errorsFiles = new ArrayList<>();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ParamNewFpo paramNewFpo = objectMapper.readValue(paramNewBpaJson, ParamNewFpo.class);
 
-        String response = scannerFile.createFpo(file, paramNewFpo, user, errorsFileList);
+        String response = scannerFile.createFpo(file, paramNewFpo, user, errorsFiles);
 
         switch (response) {
             case "ERROR FILE" -> {
-                return ResponseEntity.badRequest().body(errorsFileList);
+                return ResponseEntity.badRequest().body(errorsFiles);
             }
             case "NOT STORAGE" -> {
-                errorsFileList.add(new ErrorsFile("NOT STORAGE"));
+                errorsFiles.add(new ErrorsFile("NOT STORAGE"));
 
-                return ResponseEntity.badRequest().body(errorsFileList);
+                return ResponseEntity.badRequest().body(errorsFiles);
             }
             case "EXIST DATE" -> {
-                errorsFileList.add(new ErrorsFile("EXIST DATE"));
+                errorsFiles.add(new ErrorsFile("EXIST DATE"));
 
-                return ResponseEntity.badRequest().body(errorsFileList);
+                return ResponseEntity.badRequest().body(errorsFiles);
             }
         }
 
@@ -72,13 +72,13 @@ public class FpoAPi {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/dates")
-    public ResponseEntity<FpoDatesDTO> dates(Authentication authentication) {
+    @GetMapping("/dates") //TODO concluido
+    public ResponseEntity<DatesDTO> dates(Authentication authentication) {
         User user = userService.userInDb(1L);
 
-        FpoDatesDTO fpoDatesDTO = linkFpoService.getDates(user);
+        DatesDTO datesDTO = linkFpoService.getDates(user);
 
-        return ResponseEntity.ok(fpoDatesDTO);
+        return ResponseEntity.ok(datesDTO);
     }
 
     @PostMapping("/delete")

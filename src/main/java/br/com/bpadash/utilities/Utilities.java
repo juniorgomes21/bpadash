@@ -5,6 +5,6 @@ import java.time.LocalDate;
 public class Utilities {
 
     public static LocalDate formatDate(String dateString) {
-        return LocalDate.of(Integer.valueOf(dateString.split("-")[0]), Integer.valueOf(dateString.split("-")[1]), Integer.valueOf(dateString.split("-")[2]));
+        return LocalDate.of(Integer.parseInt(dateString.split("-")[0]), Integer.parseInt(dateString.split("-")[1]), Integer.parseInt(dateString.split("-")[2]));
     }
 }

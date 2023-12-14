@@ -2,6 +2,6 @@ package br.com.bpadash.projections;
 
 import java.time.LocalDate;
 
-public interface FpoDateProjection {
+public interface DateProjection {
     LocalDate getDate();
 }

@@ -17,13 +17,13 @@ public class TitleBpaService {
     @Autowired
     private TitleBpaRepository titleBpaRepository;
 
-    public TitleBpa createTitleBpa(String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) throws IllegalArgumentException {
+    public TitleBpa create(String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) throws IllegalArgumentException {
 
         List<ErrorValidationDTO> errors = new ArrayList<>();
 
-        if (line.length() < 131) {
+        if (line.length() < 127) {
             //TODO perguntar a respeito do tamanho do titulo
-            errors.add(errorValidation("LINHA", "O título do arquivo não contém 131 caracteres"));
+            errors.add(errorValidation("LINHA", "O título do arquivo não contém 127 caracteres"));
             errorsFileList.add(new ErrorsFile(String.valueOf(lineNumber), errors));
 
             return null;

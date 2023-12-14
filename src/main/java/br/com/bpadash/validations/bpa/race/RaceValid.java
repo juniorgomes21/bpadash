@@ -13,4 +13,5 @@ public @interface RaceValid {
     String message() default "Apenas números. Valores aceitos 01 Branca, 02 Preta, 03 Parda, 04 Amarela, 05 Indígena, 99 Sem informação";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+    boolean updateErrors() default false;
 }

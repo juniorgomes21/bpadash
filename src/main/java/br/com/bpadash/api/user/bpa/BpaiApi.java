@@ -1,18 +1,20 @@
 package br.com.bpadash.api.user.bpa;
 
-import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
+import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpai;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
+import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
+import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,32 +81,53 @@ public class BpaiApi {
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BpaDTO> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+    @PostMapping(value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+
+        List<ErrorsFile> errorsFiles = new ArrayList<>();
         try {
-//            User user = userService.logged(authentication);
             User user = userService.userInDb(1L);
             LocalDate localDate = LocalDate.of(year, month, 1);
             Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
+
             if(bpaOptional.isEmpty()) {
-                return ResponseEntity.badRequest().build();
+                errorsFiles.add(new ErrorsFile("NOT EXIST DATE"));
+
+                return ResponseEntity.badRequest().body(errorsFiles);
             }
 
-            Bpa bpa = scannerFile.createBpai(file, bpaOptional.get());
+            String response = scannerFile.createBpai(file, bpaOptional.get(), user, errorsFiles);
 
-            return ResponseEntity.ok(new BpaDTO(bpa));
+            switch (response) {
+                case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                case "NOT STORAGE" -> {
+                    errorsFiles.add(new ErrorsFile("NOT STORAGE"));
 
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("A estrutura do arquivo está incorreta: " + e.getMessage());
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                case "EXIST DATE" -> {
+                    errorsFiles.add(new ErrorsFile("EXIST DATE"));
+
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+            }
+
+            return ResponseEntity.ok().build();
+
+        } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
+            errorsFiles.add(new ErrorsFile("FILE INVALID"));
+
+            return ResponseEntity.badRequest().body(errorsFiles);
         }
     }
 
     @PostMapping("/edit/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
+    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
         try {
             List<ErrorValidationDTO> erros = new ArrayList<>();
+
             if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
                 if(!paramUpdateBpai.getRaca().equals("05")) { // TODO A partir da competência Out/2010.
                     erros.add(new ErrorValidationDTO("etnia", "Preencher somente se o campo raça/cor for 05 - Indígena."));
@@ -113,15 +136,13 @@ public class BpaiApi {
                 }
             }
 
-            Optional<Bpai> optionalBpai = bpaiService.bpacId(id);
-            if(!optionalBpai.isPresent()) {
+            Optional<Bpai> optionalBpai = bpaiService.get(id);
+            if(optionalBpai.isEmpty()) {
                 erros.add(new ErrorValidationDTO("id", "O id não existe."));
                 return ResponseEntity.badRequest().body(erros);
             }
 
-            Bpai bpacUpdated = bpaiService.edit(optionalBpai.get(), paramUpdateBpai);
-
-            bpaiService.save(bpacUpdated);
+            bpaiService.editAndSave(optionalBpai.get(), paramUpdateBpai);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -129,11 +150,49 @@ public class BpaiApi {
         }
     }
 
+    /**
+     * Atualiza PA inválidos em BPAI
+     * @param id
+     * @param paramBpa
+     * @return
+     */
+    @PostMapping("/update/{id}")
+    public ResponseEntity<List<ErrorValidationDTO>> updatBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+        User user = null;
+        Optional<Bpa> bpaOptional = Optional.empty();
+        List<ErrorValidationDTO> erros = new ArrayList<>();
+
+        if(paramBpa.getDateBpaInvalid() != null) {
+            user  = userService.userInDb(1L);
+            bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid().split("/")[1]), user);
+
+            if(bpaOptional.isPresent()) {
+                erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
+
+                return ResponseEntity.badRequest().body(erros);
+            }
+         }
+
+
+        Optional<Bpai> optionalBpai = bpaiService.get(id);
+        if(optionalBpai.isEmpty()) {
+            erros.add(new ErrorValidationDTO("ID", "O id não existe."));
+            return ResponseEntity.badRequest().body(erros);
+        }
+
+        Bpai bpai = optionalBpai.get();
+
+        bpaiService.editAndSave(bpai, paramBpa, user, bpaOptional.orElse(null));
+
+        return ResponseEntity.ok().build();
+    }
+
+
 
     @PostMapping("/delete")
-    public ResponseEntity<Object> editBpac(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
+    public ResponseEntity<Object> editBpai(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
         try {
-            Bpai bpai = bpaiService.bpacId(paramDeleteBpai.getList().get(0)).get();
+            Bpai bpai = bpaiService.get(paramDeleteBpai.getList().get(0)).get();
 
             Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
 
@@ -145,4 +204,8 @@ public class BpaiApi {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
     }
+
 }
+
+
+

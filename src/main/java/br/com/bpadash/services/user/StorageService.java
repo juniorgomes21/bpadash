@@ -29,11 +29,13 @@ public class StorageService {
         }
     }
 
-    public static Long porcent(Long totalBytes, Long bytesUsed) {
-        return Math.round((double) bytesUsed / totalBytes * 100);
+    public static String porcent(Long totalBytes, Long bytesUsed) {
+        double percent = ((double) bytesUsed / totalBytes) * 100;
+
+        return String.format("%.2f", percent);
     }
 
-    public Long hasStorage(Bpa bpa, TitleBpa titleBpa , List<Bpac> bpacList , List<Bpai> bpaiList) {
+    public Long hasStorage(TitleBpa titleBpa , List<Bpac> bpacList , List<Bpai> bpaiList) {
 
         return this.createFile(titleBpa, bpacList, bpaiList);
     }
@@ -73,22 +75,24 @@ public class StorageService {
     private long createFile(TitleBpa titleBpa , List<Bpac> bpacList , List<Bpai> bpaiList) {
         StringBuilder fileContent = new StringBuilder();
 
-        // Adicione o título
-        fileContent.append(titleBpa.toString() );
-        fileContent.append("\n");
-
-        // Adicione os dados de Bpac
-        for (Bpac bpac : bpacList) {
-            fileContent.append(bpac.toString());
+        if(titleBpa!= null) {
+            fileContent.append(titleBpa.toString());
             fileContent.append("\n");
         }
 
-        // Adicione os dados de Bpai
-        for (Bpai bpai : bpaiList) {
-            fileContent.append(bpai.toString());
-            fileContent.append("\n");
+        if(bpacList != null) {
+            for (Bpac bpac : bpacList) {
+                fileContent.append(bpac.toString());
+                fileContent.append("\n");
+            }
         }
 
+        if(bpaiList != null) {
+            for (Bpai bpai : bpaiList) {
+                fileContent.append(bpai.toString());
+                fileContent.append("\n");
+            }
+        }
 
         return fileContent.toString().getBytes().length;
     }

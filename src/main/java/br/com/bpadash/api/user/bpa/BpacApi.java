@@ -2,12 +2,15 @@ package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.dto.bpa.BpacDTO;
+import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
+import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpac;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
+import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.scanner.ScannerFile;
@@ -81,9 +84,8 @@ public class BpacApi {
     @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
         try {
-//            User user = userService.logged(authentication);
             User user = userService.userInDb(1L);
-            List<ErrorsFile> errorsFileList = new ArrayList<>();
+            List<ErrorsFile> errorsFiles = new ArrayList<>();
 
             LocalDate localDate = LocalDate.of(year, month, 1);
 
@@ -93,10 +95,22 @@ public class BpacApi {
             }
 
 
-            Bpa bpa = scannerFile.createBpac(user, file, bpaOptional.get(), errorsFileList);
+            String response = scannerFile.createBpac(user, file, bpaOptional.get(), errorsFiles);
 
-            if(bpa == null) {
-                return ResponseEntity.badRequest().body(errorsFileList);
+            switch (response) {
+                case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                case "NOT STORAGE" -> {
+                    errorsFiles.add(new ErrorsFile("NOT STORAGE"));
+
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                case "EXIST DATE" -> {
+                    errorsFiles.add(new ErrorsFile("EXIST DATE"));
+
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
             }
 
             return ResponseEntity.ok().build();
@@ -113,14 +127,30 @@ public class BpacApi {
         try {
             Bpac bpac = bpacService.bpacId(id);
 
-            Bpac bpacUpdated = bpacService.edit(bpac, paramUpdateBpac);
-
-            bpacService.save(bpacUpdated);
+            bpacService.editAndSave(bpac, paramUpdateBpac);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
+    }
+
+    @PostMapping("/update/{id}")
+    public ResponseEntity<String> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
+
+        Optional<Bpac> optionalBpac = bpacService.get(id);
+        if(optionalBpac.isEmpty()) {
+            return ResponseEntity.badRequest().body("O id não existe.");
+        }
+
+        Bpac bpac = optionalBpac.get();
+        if(bpac.getPa().equals(paramBpa.getPa())) {
+            return ResponseEntity.ok().build();
+        }
+
+        bpacService.editAndSave(bpac, paramBpa);
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/delete")

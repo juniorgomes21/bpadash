@@ -16,6 +16,11 @@ public class ErrorsFile {
         this.messages = messages;
     }
 
+    public ErrorsFile(String errorType , String line) {
+        this.errorType = errorType;
+        this.line = line;
+    }
+
     public ErrorsFile(String errorType) {
         this.errorType = errorType;
         this.line = "0";

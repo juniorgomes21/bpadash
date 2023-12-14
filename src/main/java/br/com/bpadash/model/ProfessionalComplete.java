@@ -9,6 +9,7 @@ public class ProfessionalComplete {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String profId;
+    private String keyProfId;
     private String cpf;
     private String pispasep;
     private String name;
@@ -56,16 +57,18 @@ public class ProfessionalComplete {
     private String portaria;
     private String dtNatur;
     private String codCountry;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private DadosVinc dadosVinc;
     @ManyToOne
-    private User userId;
+    private LinkProfessionals linkProfessionals;
 
     public ProfessionalComplete() {
     }
 
-    public ProfessionalComplete(String profId , String cpf , String pispasep , String name , String nameMother , String birthDate , String codMun , String sexo , String numBook , String numSheet , String numTerm , String codorgemis , String dateEmiss , String numIdent , String siglaEst , String dtemiident , String dateEntra , String ctpsNumer , String serie , String sigestctps , String dtemisctps , String logradouro , String number , String complement , String bairrodist , String codCep , String siglaUf , String codEscolar , String codCertid , String indNacio , String nameCarto , String codBanc , String nameCountry , String numAgenc , String contaCc , String codCns , String dTercsih , String status , String statusmov , String date , String user , String cdRaca , String telephone , String nameFather , String cdTpLogr , String portaria , String dtNatur , String codCountry) {
+    public ProfessionalComplete(LinkProfessionals linkProfessionals , String profId , String cpf , String pispasep , String name , String nameMother , String birthDate , String codMun , String sexo , String numBook , String numSheet , String numTerm , String codorgemis , String dateEmiss , String numIdent , String siglaEst , String dtemiident , String dateEntra , String ctpsNumer , String serie , String sigestctps , String dtemisctps , String logradouro , String number , String complement , String bairrodist , String codCep , String siglaUf , String codEscolar , String codCertid , String indNacio , String nameCarto , String codBanc , String nameCountry , String numAgenc , String contaCc , String codCns , String dTercsih , String status , String statusmov , String date , String user , String cdRaca , String telephone , String nameFather , String cdTpLogr , String portaria , String dtNatur , String codCountry) {
+        this.linkProfessionals = linkProfessionals;
         this.profId = profId;
+        this.keyProfId = profId;
         this.cpf = cpf;
         this.pispasep = pispasep;
         this.name = name;
@@ -121,6 +124,14 @@ public class ProfessionalComplete {
 
     public String getProfId() {
         return profId;
+    }
+
+    public String getKeyProfId() {
+        return keyProfId;
+    }
+
+    public void setKeyProfId(String keyProfId) {
+        this.keyProfId = keyProfId;
     }
 
     public void setProfId(String profId) {
@@ -511,12 +522,12 @@ public class ProfessionalComplete {
         this.dadosVinc = dadosVinc;
     }
 
-    public User getUserId() {
-        return userId;
+    public LinkProfessionals getMainProfessionals() {
+        return linkProfessionals;
     }
 
-    public void setUserId(User userId) {
-        this.userId = userId;
+    public void setMainProfessionals(LinkProfessionals linkProfessionals) {
+        this.linkProfessionals = linkProfessionals;
     }
 
     @Override

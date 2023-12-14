@@ -18,7 +18,7 @@ public class LinkFpo {
     private String name;
     private Long fileSizeInBytes;
     private LocalDate date;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkFpo")
     private List<Fpo> fpoList = new ArrayList<>();
     @ManyToOne
     private User user;
@@ -26,10 +26,10 @@ public class LinkFpo {
     public LinkFpo() {
     }
 
-    public LinkFpo(ParamNewFpo paramNewFpo, User user, LocalDate date) {
+    public LinkFpo(ParamNewFpo paramNewFpo, Long fileSizeInBytes, User user) {
         this.name = paramNewFpo.getName();
-        this.fileSizeInBytes = paramNewFpo.getBytes();
-        this.date = date;
+        this.fileSizeInBytes = fileSizeInBytes;
+        this.date = Utilities.formatDate(paramNewFpo.getDate());
         this.user = user;
     }
 

@@ -5,6 +5,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_pa", columnList = "pa")
+})
 public class Fpo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

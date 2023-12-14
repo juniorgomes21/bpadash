@@ -2,6 +2,7 @@ package br.com.bpadash.model;
 
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.enumModel.ZoneTime;
+import br.com.bpadash.model.treatment.TreatmentFile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,15 +32,13 @@ public class User implements UserDetails {
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     @OneToMany
-    private List<LinkFpo> linkFpos = new ArrayList<>();
-    @OneToMany
     private List<Bpa> bpas = new ArrayList<>();
     @OneToOne
     private BpacValidation bpacValidation;
     @OneToOne
     private BpaiValidation bpaiValidation;
-    @OneToMany
-    private List<ProfessionalComplete> professionalList = new ArrayList<>();
+    @OneToOne
+    private TreatmentFile treatmentFile;
 
     public User() {}
 
@@ -180,20 +179,12 @@ public class User implements UserDetails {
         this.bpaiValidation = bpaiValidation;
     }
 
-    public List<LinkFpo> getLinkFpos() {
-        return linkFpos;
+    public TreatmentFile getTreatmentFile() {
+        return treatmentFile;
     }
 
-    public void setLinkFpos(List<LinkFpo> linkFpos) {
-        this.linkFpos = linkFpos;
-    }
-
-    public List<ProfessionalComplete> getProfessionalList() {
-        return professionalList;
-    }
-
-    public void setProfessionalList(List<ProfessionalComplete> professionalList) {
-        this.professionalList = professionalList;
+    public void setTreatmentFile(TreatmentFile treatmentFile) {
+        this.treatmentFile = treatmentFile;
     }
 
     @Override

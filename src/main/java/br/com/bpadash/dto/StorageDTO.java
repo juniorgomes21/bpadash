@@ -6,7 +6,7 @@ import br.com.bpadash.services.user.StorageService;
 public class StorageDTO {
     private String storageTotal;
     private String storageUsed;
-    private Long storagePorcent;
+    private String storagePorcent;
 
     public StorageDTO() {
     }
@@ -33,11 +33,11 @@ public class StorageDTO {
         this.storageUsed = storageUsed;
     }
 
-    public Long getStoragePorcent() {
+    public String getStoragePorcent() {
         return storagePorcent;
     }
 
-    public void setStoragePorcent(Long storagePorcent) {
+    public void setStoragePorcent(String storagePorcent) {
         this.storagePorcent = storagePorcent;
     }
 }

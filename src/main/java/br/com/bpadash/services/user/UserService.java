@@ -51,7 +51,7 @@ public class UserService {
 
     }
 
-    public void createUser(ParamNewUser paramNewUser) {
+    public User createUser(ParamNewUser paramNewUser) {
         User user = new User();
 
         user.setName(paramNewUser.getName());
@@ -63,13 +63,9 @@ public class UserService {
         user.setBpaiValidation(bpaiService.createBpaiValidation());
         user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
 
-        this.save(user);
+        return this.save(user);
     }
 
-    public void addFpo(User user, LinkFpo linkFpo, Long totalBytes) {
-        user.getLinkFpos().add(linkFpo);
-        this.updateStorageAndSave(user, totalBytes, "sub");
-    }
 
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
         user.getBpas().add(bpa);
@@ -160,9 +156,6 @@ public class UserService {
         return timeLineUserDTOS;
     }
 
-    public void addProfessionals(List<ProfessionalComplete> professionals, User user) {
-        user.getProfessionalList().addAll(professionals);
-    }
 
     public void updateStorageAndSave(User user, Long totalBytes, String action) {
         if(action.equals("sub")) {

@@ -1,13 +1,13 @@
 package br.com.bpadash.services.bpa;
 
 import br.com.bpadash.dto.bpa.BpacDTO;
+import br.com.bpadash.dto.sigtap.ErrorOccupationDTO;
+import br.com.bpadash.dto.sigtap.ErrorPaDTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.BpacValidation;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
+import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpacRepository;
 import br.com.bpadash.repository.bpa.BpacValidationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,13 +28,12 @@ public class BpacService {
     @Autowired
     private BpacValidationRepository bpacValidationRepository;
 
-    public Bpac createBpac(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
+    public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 
             List<ErrorValidationDTO> errors = new ArrayList<>();
-
-
-            if (!(line.length() >= 48)) {
-                errors.add(errorValidation("LINHA","A linha Não contém 48 caracteres."));
+            
+            if (line.length() < 48) {
+                errors.add(errorValidation("LINHA","A linha Não contém 49 caracteres."));
             }
 
             String iden = line.substring(0, 2);
@@ -91,7 +88,7 @@ public class BpacService {
             }
 
             String qt = line.substring(39, 45);
-            if(user.getBpacValidation().isCmp()) {
+            if(user.getBpacValidation().isQt()) {
                 if(!cmp.matches("\\d+")) {
                     errors.add(errorValidation("QT", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
                 }
@@ -119,20 +116,20 @@ public class BpacService {
                 return null;
             }
 
-        return new Bpac(
-                bpa,
-                iden,
-                cnes,
-                cmp,
-                cbo,
-                flh,
-                seq,
-                pa,
-                idade,
-                qt,
-                org,
-                fim
-        );
+            return new Bpac(
+                    bpa,
+                    iden,
+                    cnes,
+                    cmp,
+                    cbo,
+                    flh,
+                    seq,
+                    pa,
+                    idade,
+                    qt,
+                    org,
+                    fim
+            );
     }
 
     public Bpac bpacId(Long id) {
@@ -145,7 +142,7 @@ public class BpacService {
         return bpacRepository.calculateSizeById(listIds);
     }
 
-    public Bpac edit(Bpac bpac , ParamUpdateBpac paramUpdateBpac) {
+    public Bpac editAndSave(Bpac bpac , ParamUpdateBpac paramUpdateBpac) {
         bpac.setCnes(paramUpdateBpac.getCnes());
         bpac.setCmp(paramUpdateBpac.getCmp());
         bpac.setCbo(paramUpdateBpac.getCbo());
@@ -156,11 +153,28 @@ public class BpacService {
         bpac.setQt(paramUpdateBpac.getQt());
         bpac.setOrg(paramUpdateBpac.getOrg());
 
-        return bpac;
+        return this.save(bpac);
     }
 
-    public void save(Bpac bpac) {
-        bpacRepository.save(bpac);
+    public String editAndSave(Bpac bpac , ParamUpdateErrorsBpa paramBpa) {
+        boolean hasChange = false;
+
+        if(paramBpa.getPa() != null && !bpac.getPa().equals(paramBpa.getPa())) {
+            bpac.setPa(paramBpa.getPa());
+            hasChange = true;
+
+        } else if (paramBpa.getCbo() != null) {
+            bpac.setCbo(paramBpa.getCbo());
+            hasChange = true;
+        }
+
+        if(hasChange) this.save(bpac);
+
+        return "OK";
+    }
+
+    public Bpac save(Bpac bpac) {
+        return bpacRepository.save(bpac);
     }
 
     public List<Bpac> save(List<Bpac> bpacList) {
@@ -184,6 +198,11 @@ public class BpacService {
         return bpacRepository.findByBpa(bpa);
     }
 
+    public Optional<Bpac> get(Long id) {
+
+        return bpacRepository.findById(id);
+    }
+
     public Page<BpacDTO> get(Bpa bpa , Pageable pageable) {
         Page<Bpac> page = bpacRepository.findByBpa(bpa, pageable);
 
@@ -203,4 +222,60 @@ public class BpacService {
 
         return bpacValidationRepository.save(bpacValidation);
     }
+
+
+    public List<ErrorPaDTO> verifyErrorsPa(List<Fpo> fpoList, Set<String> procedurePaSet, Set<String> occupationPaSet, List<Bpac> bpacListDB) {
+        List<ErrorPaDTO> errorsPa = new ArrayList<>();
+
+        bpacListDB.forEach( bpac -> {
+
+            String pa = bpac.getPa().substring(0, 9);
+            String flh = bpac.getFlh();
+            String seq = bpac.getSeq();
+
+            boolean paExists = fpoList.stream().anyMatch(fpo -> fpo.getPa().equals(pa));
+
+            if (!paExists) {
+                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "BPAC - NOT EXIST PA", bpac.getPa(), "FPO"));
+            }
+
+            if(!occupationPaSet.contains(pa)) {
+                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "NOT EXIST PA", bpac.getPa(), "OCCUPATION"));
+            }
+
+            if(!procedurePaSet.contains(bpac.getPa())) {
+                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "NOT EXIST PA", bpac.getPa(), "PROCEDURE"));
+            }
+
+
+        });
+
+        return errorsPa;
+    }
+
+    public List<ErrorOccupationDTO> verifyErrorsOccupation(Set<String> occupationPa, Set<String> occupationCBO, List<Bpac> bpacListDB) {
+        List<ErrorOccupationDTO> errors = new ArrayList<>();
+
+        for (Bpac bpac: bpacListDB) {
+
+            String pa = bpac.getPa().substring(0, 9);
+            String cbo = bpac.getCbo();
+            String flh = bpac.getFlh();
+            String seq = bpac.getSeq();
+
+
+            if (occupationPa.contains(pa)) {
+
+                boolean exitsCBO = occupationCBO.stream().anyMatch(cboString -> cboString.contains(cbo));
+
+                if(!exitsCBO) {
+                    errors.add(new ErrorOccupationDTO(bpac.getId(), flh, seq, cbo, bpac.getPa(), "NOT EXIST CBO IN OCCUPATION BPAC"));
+                }
+            }
+        }
+
+
+        return errors;
+    }
+
 }

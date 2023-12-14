@@ -13,4 +13,5 @@ public @interface SexoValid {
     String message() default "M - Masculino, F - Feminino";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+    boolean updateErrors() default false;
 }
