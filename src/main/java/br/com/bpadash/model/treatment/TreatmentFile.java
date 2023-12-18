@@ -1,7 +1,5 @@
 package br.com.bpadash.model.treatment;
 
-import br.com.bpadash.model.User;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +9,13 @@ public class TreatmentFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToMany
+    private int count = 20;
+    @OneToMany(cascade = CascadeType.ALL)
     private List<RuleTreatmentPa> ruleTreatmentPaList = new ArrayList<>();
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<RuleTreatmentPaCbo> ruleTreatmentPaCboList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<RuleTreatmentPaDelete> ruleTreatmentPaDeleteList = new ArrayList<>();
 
     public TreatmentFile() {
     }
@@ -22,6 +23,14 @@ public class TreatmentFile {
 
     public Long getId() {
         return id;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public List<RuleTreatmentPa> getRuleTreatmentPaList() {
@@ -38,5 +47,13 @@ public class TreatmentFile {
 
     public void setRuleTreatmentPaCboList(List<RuleTreatmentPaCbo> ruleTreatmentPaCboList) {
         this.ruleTreatmentPaCboList = ruleTreatmentPaCboList;
+    }
+
+    public List<RuleTreatmentPaDelete> getRuleTreatmentPaDeleteList() {
+        return ruleTreatmentPaDeleteList;
+    }
+
+    public void setRuleTreatmentPaDeleteList(List<RuleTreatmentPaDelete> ruleTreatmentPaDeleteList) {
+        this.ruleTreatmentPaDeleteList = ruleTreatmentPaDeleteList;
     }
 }

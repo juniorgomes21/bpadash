@@ -6,41 +6,32 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class RuleTreatmentPa {
+public class RuleTreatmentPaDelete {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String paCurrent;
-    private String paNew;
+    private String pa;
     private boolean executeBpac = true;
     private boolean executeBpai = true;
 
-    public RuleTreatmentPa() {
+
+    public RuleTreatmentPaDelete() {
     }
 
-    public RuleTreatmentPa(String paCurrent , String paNew) {
-        this.paCurrent = paCurrent;
-        this.paNew = paNew;
+    public RuleTreatmentPaDelete(String pa) {
+        this.pa = pa;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getPaCurrent() {
-        return paCurrent;
+    public String getPa() {
+        return pa;
     }
 
-    public void setPaCurrent(String paCurrent) {
-        this.paCurrent = paCurrent;
-    }
-
-    public String getPaNew() {
-        return paNew;
-    }
-
-    public void setPaNew(String paNew) {
-        this.paNew = paNew;
+    public void setPa(String pa) {
+        this.pa = pa;
     }
 
     public boolean isExecuteBpac() {

@@ -136,7 +136,7 @@ public class BpacApi {
     }
 
     @PostMapping("/update/{id}")
-    public ResponseEntity<String> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
+    public ResponseEntity<String> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
 
         Optional<Bpac> optionalBpac = bpacService.get(id);
         if(optionalBpac.isEmpty()) {
@@ -154,13 +154,13 @@ public class BpacApi {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Object> editBpac(@RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
+    public ResponseEntity<Object> deleteBpac(@RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
         try {
             Bpac bpac = bpacService.bpacId(paramDeleteBpac.getList().get(0));
 
             Long size = bpacService.sizeByte(paramDeleteBpac.getList());
 
-            bpacService.delete(paramDeleteBpac.getList());
+            bpacService.deleteByIds(paramDeleteBpac.getList());
             bpaService.updatebyte(bpac.getBpa(), size, false);
 
             return ResponseEntity.ok(size);

@@ -1,6 +1,7 @@
 package br.com.bpadash.api;
 
 import br.com.bpadash.model.*;
+import br.com.bpadash.model.treatment.TreatmentFile;
 import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.repository.bpa.BpaRepository;
 import br.com.bpadash.repository.bpa.BpacRepository;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -63,16 +65,13 @@ public class auxApi {
 
     @PostMapping("/ping")
     public ResponseEntity<Object> ping() {
-        Bpa bpa = bpaRepository.findById(4L).get();
-        List<Bpai> bapis = bpaiRepository.findByBpa(bpa);
+        User user = userRepository.getById(1L);
+        Bpa bpa = bpaRepository.getById(4L);
 
-        bapis.forEach( bpai -> {
-            if(EncryptionService.decrypt(bpai.getCepPcnte()).isBlank()) {
-                System.out.println("É BRANCO");
-            }
-        });
+        List<Bpac> bpacList = new ArrayList<>();
+        for (int i = 0; i <= 400; i++) {
 
-        System.out.println(EncryptionService.encrypt("        "));
+        }
 
         return ResponseEntity.ok("pong");
     }

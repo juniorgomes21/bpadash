@@ -1,10 +1,6 @@
 package br.com.bpadash.services.user;
 
-import br.com.bpadash.dto.bpa.BpacDTO;
-import br.com.bpadash.dto.bpa.BpaiDTO;
-import br.com.bpadash.dto.bpa.TitleBpaDTO;
 import br.com.bpadash.model.*;
-import br.com.bpadash.services.bpa.BpaiService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -35,12 +31,12 @@ public class StorageService {
         return String.format("%.2f", percent);
     }
 
-    public Long hasStorage(TitleBpa titleBpa , List<Bpac> bpacList , List<Bpai> bpaiList) {
+    public Long quantityBytes(TitleBpa titleBpa, List<Bpac> bpacList, List<Bpai> bpaiList) {
 
         return this.createFile(titleBpa, bpacList, bpaiList);
     }
 
-    public long hasStorage(List<ProfessionalComplete> list) {
+    public long quantityBytes(List<ProfessionalComplete> list) {
 
         StringBuilder fileContent = new StringBuilder();
 
@@ -55,7 +51,6 @@ public class StorageService {
         return fileContent.toString().getBytes().length;
     }
 
-
     private Long getBytes(Object object) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -65,11 +60,6 @@ public class StorageService {
             e.printStackTrace();
             return 0L;
         }
-    }
-
-    public void updateStorage(Bpa bpa, User user) {
-        user.setStorageUsed(user.getStorageUsed() - bpa.getFileSizeInBytesInt());
-        user.setStorageFree(user.getStorageFree() + bpa.getFileSizeInBytesInt());
     }
 
     private long createFile(TitleBpa titleBpa , List<Bpac> bpacList , List<Bpai> bpaiList) {

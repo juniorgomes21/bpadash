@@ -161,7 +161,7 @@ public class BpaService {
         bpaiService.delete(bpa);
         titleBpaService.delete(bpa);
 
-        storageService.updateStorage(bpa, user);
+        userService.updateStorageAndSave(user, bpa.getFileSizeInBytesInt(), "subtract");
         userService.save(user);
 
         bpaRepository.delete(bpa);

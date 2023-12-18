@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -181,15 +182,23 @@ public class BpacService {
         return bpacRepository.saveAll(bpacList);
     }
 
+    @Transactional
     public void delete(Bpac bpac) {
         bpacRepository.delete(bpac);
     }
 
+    @Transactional
+    public void delete(List<Bpac> bpacList) {
+        bpacRepository.deleteAll(bpacList);
+    }
+
+    @Transactional
     public void delete(Bpa bpa) {
         bpacRepository.deleteByBpa(bpa);
     }
 
-    public void delete(List<Long> listIds) {
+    @Transactional
+    public void deleteByIds(List<Long> listIds) {
         bpacRepository.deleteAllById(listIds);
     }
 
@@ -216,13 +225,6 @@ public class BpacService {
     private ErrorValidationDTO errorValidation(String field, String message) {
         return new ErrorValidationDTO(field, message);
     }
-
-    public BpacValidation createBpacValidation() {
-        BpacValidation bpacValidation = new BpacValidation();
-
-        return bpacValidationRepository.save(bpacValidation);
-    }
-
 
     public List<ErrorPaDTO> verifyErrorsPa(List<Fpo> fpoList, Set<String> procedurePaSet, Set<String> occupationPaSet, List<Bpac> bpacListDB) {
         List<ErrorPaDTO> errorsPa = new ArrayList<>();

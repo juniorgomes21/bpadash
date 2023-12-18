@@ -26,10 +26,10 @@ public class ConfigurationsUserApi {
     private DatesSigtapService datesSigtapService;
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createUser(@Valid @RequestBody ParamNewUser paramNewUser) {
+    public ResponseEntity<Object> createUser(@RequestBody @Valid ParamNewUser paramNewUser) {
         try {
-            User user = userService.createUser(paramNewUser);
-            datesSigtapService.create(user);
+            userService.createUser(paramNewUser);
+//            datesSigtapService.create(user);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {

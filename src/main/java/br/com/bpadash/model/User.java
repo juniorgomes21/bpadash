@@ -33,11 +33,11 @@ public class User implements UserDetails {
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     @OneToMany
     private List<Bpa> bpas = new ArrayList<>();
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private BpacValidation bpacValidation;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private BpaiValidation bpaiValidation;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private TreatmentFile treatmentFile;
 
     public User() {}

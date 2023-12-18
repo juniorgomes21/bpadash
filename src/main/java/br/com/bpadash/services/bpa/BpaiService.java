@@ -366,6 +366,12 @@ public class BpaiService {
         return "OK";
     }
 
+    @Transactional
+    public void delete(List<Bpai> bpaiList) {
+        bpaiRepository.deleteAll(bpaiList);
+    }
+
+    @Transactional
     public void delete(Bpai bpai) {
         bpaiRepository.delete(bpai);
     }
@@ -401,12 +407,6 @@ public class BpaiService {
 
     private ErrorValidationDTO errorValidation(String field, String message) {
         return new ErrorValidationDTO(field, message);
-    }
-
-    public BpaiValidation createBpaiValidation() {
-        BpaiValidation bpaiValidation = new BpaiValidation();
-
-        return bpaiValidationRepository.save(bpaiValidation);
     }
 
     public List<ErrorPaDTO> verifyErrorsPa(List<Fpo> fpoList, Set<String> procedurePaSet, Set<String> occupationPaSet, List<Bpai> bpaiListDB) {

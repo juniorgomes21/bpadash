@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public void  handleException(Exception e) {
         ExceptionErroLog erroLog = new ExceptionErroLog(e.getMessage(), getStackTraceAsString(e));
-        exceptionErroLogRepository.save(erroLog);
+//        exceptionErroLogRepository.save(erroLog);
     }
 
     private String getStackTraceAsString(Exception e) {

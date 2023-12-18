@@ -1,30 +1,32 @@
-package br.com.bpadash.model.treatment;
+package br.com.bpadash.dto.treatment;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import br.com.bpadash.model.treatment.RuleTreatmentPa;
 
-@Entity
-public class RuleTreatmentPa {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class RuleTreatmentPaDTO {
     private Long id;
     private String paCurrent;
     private String paNew;
-    private boolean executeBpac = true;
-    private boolean executeBpai = true;
+    private boolean executeBpac;
+    private boolean executeBpai;
 
-    public RuleTreatmentPa() {
+
+    public RuleTreatmentPaDTO() {
     }
 
-    public RuleTreatmentPa(String paCurrent , String paNew) {
-        this.paCurrent = paCurrent;
-        this.paNew = paNew;
+    public RuleTreatmentPaDTO(RuleTreatmentPa ruleTreatmentPa) {
+        this.id = ruleTreatmentPa.getId();
+        this.paCurrent = ruleTreatmentPa.getPaCurrent();
+        this.paNew = ruleTreatmentPa.getPaNew();
+        this.executeBpac = ruleTreatmentPa.isExecuteBpac();
+        this.executeBpai = ruleTreatmentPa.isExecuteBpai();
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getPaCurrent() {

@@ -3,16 +3,19 @@ package br.com.bpadash.services.user;
 import br.com.bpadash.dto.bpa.TimeLineUserDTO;
 import br.com.bpadash.model.*;
 import br.com.bpadash.model.enumModel.Role;
+import br.com.bpadash.model.treatment.TreatmentFile;
 import br.com.bpadash.params.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
 import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.treatment.TreatmentFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -51,6 +54,7 @@ public class UserService {
 
     }
 
+    @Transactional
     public User createUser(ParamNewUser paramNewUser) {
         User user = new User();
 
@@ -59,8 +63,9 @@ public class UserService {
         user.setEmail(paramNewUser.getEmail());
         user.setCell(paramNewUser.getCell());
         user.setProfile(Role.USER.name());
-        user.setBpacValidation(bpacService.createBpacValidation());
-        user.setBpaiValidation(bpaiService.createBpaiValidation());
+        user.setBpacValidation(new BpacValidation());
+        user.setBpaiValidation(new BpaiValidation());
+        user.setTreatmentFile(new TreatmentFile());
         user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
 
         return this.save(user);

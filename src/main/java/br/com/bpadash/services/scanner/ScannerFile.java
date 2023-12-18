@@ -145,7 +145,7 @@ public class ScannerFile {
 
             System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
-            Long totalBytes = storageService.hasStorage(titleBpa, bpacList, bpaiList);
+            Long totalBytes = storageService.quantityBytes(titleBpa, bpacList, bpaiList);
 
             System.out.println("Calculou o tamanho do arquivo: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
@@ -204,7 +204,7 @@ public class ScannerFile {
                 return "ERROR FILE";
             }
 
-            Long totalBytes = storageService.hasStorage(null, bpacList, null);
+            Long totalBytes = storageService.quantityBytes(null, bpacList, null);
 
             if(user.getStorageFree() < totalBytes) {
                 return "NOT STORAGE";
@@ -251,7 +251,7 @@ public class ScannerFile {
 
             EncryptionService.encryptBpai(bpaiList);
 
-            Long totalBytes = storageService.hasStorage(null, null, bpaiList);
+            Long totalBytes = storageService.quantityBytes(null, null, bpaiList);
 
             if(user.getStorageFree() < totalBytes) {
                 return "NOT STORAGE";
@@ -623,7 +623,7 @@ public class ScannerFile {
 
             EncryptionService.encrypt(professionalCompleteList);
 
-            long totalBytes = storageService.hasStorage(professionalCompleteList);
+            long totalBytes = storageService.quantityBytes(professionalCompleteList);
 
             if(user.getStorageFree() < totalBytes) {
                 return "NOT STORAGE";
