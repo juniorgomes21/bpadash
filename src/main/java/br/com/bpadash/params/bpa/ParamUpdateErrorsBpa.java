@@ -1,6 +1,5 @@
 package br.com.bpadash.params.bpa;
 
-import br.com.bpadash.validations.bpa.BpaValid;
 import br.com.bpadash.validations.bpa.qtService.ValidQtService;
 import br.com.bpadash.validations.bpa.race.RaceValid;
 import br.com.bpadash.validations.bpa.sexo.SexoValid;
@@ -11,15 +10,20 @@ import javax.validation.constraints.Size;
 import java.util.List;
 
 public class ParamUpdateErrorsBpa {
-    @BpaValid(size = 10, message = "PA deve ter 10 caracteres")
+    @Size(min = 23, max = 23, message = "PA deve ter 23 caracteres")
     private String pa;
     @Size(min = 8, max = 8, message = "Deve conter 10 caracteres")
     private String date;
-    @Size(min = 8, max = 8, message = "Deve conter 10 caracteres")
+    @Size(min = 10, max = 10, message = "Deve conter 10 caracteres")
+    private String dateBpa;
+    @Size(min = 8, max = 8, message = "Deve conter 8 caracteres")
     private String cep;
+    //TODO FAZER VALIDAÇÃO
+    private String key;
+    private List<Long> ids;
     @ValidQtService
     private List<Integer> qtService;
-    @Size(min = 21, max = 21, message = "Deve conter 21 caracteres")
+    @Size(min = 10, max = 10, message = "Deve conter 10    caracteres")
     private String dateBpaInvalid;
     @RaceValid(updateErrors = true)
     private String race;
@@ -27,7 +31,7 @@ public class ParamUpdateErrorsBpa {
     private String cnsmed;
     @SexoValid(updateErrors = true)
     private String sexCurrent;
-    @Size(min = 6, max = 6, message = "Deve conter 6 caracteres")
+    @Size(min = 15, max = 15, message = "Deve conter 13 caracteres")
     private String cbo;
     @Min(0)
     @Max(130)
@@ -52,12 +56,28 @@ public class ParamUpdateErrorsBpa {
         this.date = date;
     }
 
+    public String getDateBpa() {
+        return dateBpa;
+    }
+
+    public void setDateBpa(String dateBpa) {
+        this.dateBpa = dateBpa;
+    }
+
     public String getCep() {
         return cep;
     }
 
     public void setCep(String cep) {
         this.cep = cep;
+    }
+
+    public List<Long> getIds() {
+        return ids;
+    }
+
+    public void setIds(List<Long> ids) {
+        this.ids = ids;
     }
 
     public List<Integer> getQtService() {
@@ -114,5 +134,13 @@ public class ParamUpdateErrorsBpa {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 }

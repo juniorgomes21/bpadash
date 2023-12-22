@@ -2,6 +2,7 @@ package br.com.bpadash.repository.bpa;
 
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
+import br.com.bpadash.model.Bpai;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,6 @@ public interface BpacRepository extends JpaRepository<Bpac, Long> {
     Long calculateSizeById(@Param("idList") List<Long> idList);
 
     void deleteByBpa(Bpa bpa);
+
+    List<Bpac> findByPaAndBpa(String oldPa , Bpa bpa);
 }

@@ -13,4 +13,5 @@ public interface CepRepository extends JpaRepository<Cep, Long> {
     boolean existsByCepAndLinkCep(String cep , LinkCep linkCep);
 
     List<CepProjection> findByLinkCep(LinkCep linkCep);
+
 }

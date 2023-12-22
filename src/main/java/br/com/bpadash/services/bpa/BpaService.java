@@ -204,7 +204,7 @@ public class BpaService {
             } catch (Exception e) {
                 String name = EncryptionService.decrypt(bpai.getNmpac());
                 String age = EncryptionService.decrypt(bpai.getIdade());
-
+                System.out.println("bpia " + bpai.getId());
                 String date = bpai.getDtnasc().substring(0, 4) + "-" + bpai.getDtnasc().substring(4, 6) + "-" + bpai.getDtnasc().substring(6, 8);
                 errors.add(new ErrorAgeDatesDTO(
                         bpai.getId(),

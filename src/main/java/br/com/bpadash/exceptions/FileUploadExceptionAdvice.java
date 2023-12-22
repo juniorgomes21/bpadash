@@ -1,4 +1,4 @@
-package br.com.bpadash.api;
+package br.com.bpadash.exceptions;
 
 
 import br.com.bpadash.errorValidation.ErrorsFile;

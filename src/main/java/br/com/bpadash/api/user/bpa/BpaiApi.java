@@ -151,43 +151,41 @@ public class BpaiApi {
     }
 
     /**
-     * Atualiza PA inválidos em BPAI
+     * Atualiza o campo não nulo passado pela requisição inválidos
      * @param id
      * @param paramBpa
      * @return
      */
     @PostMapping("/update/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> updatBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
-        User user = null;
+    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+        User user = userService.userInDb(1L);//carregar do DB
+
         Optional<Bpa> bpaOptional = Optional.empty();
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
-        if(paramBpa.getDateBpaInvalid() != null) {
-            user  = userService.userInDb(1L);
-            bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid().split("/")[1]), user);
-
-            if(bpaOptional.isPresent()) {
-                erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
-
-                return ResponseEntity.badRequest().body(erros);
-            }
-         }
-
-
-        Optional<Bpai> optionalBpai = bpaiService.get(id);
-        if(optionalBpai.isEmpty()) {
-            erros.add(new ErrorValidationDTO("ID", "O id não existe."));
-            return ResponseEntity.badRequest().body(erros);
+        switch (paramBpa.getKey()) {
+            case "cbo" , "cnsmedProfessional" , "birthDate" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+            case "dateBpaInvalid" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid()), user);
         }
 
-        Bpai bpai = optionalBpai.get();
 
-        bpaiService.editAndSave(bpai, paramBpa, user, bpaOptional.orElse(null));
+        Bpai bpai = null;
+        if(id != 0) {
+            Optional<Bpai> optionalBpai = bpaiService.get(id);
+            if(optionalBpai.isEmpty()) {
+                erros.add(new ErrorValidationDTO("ID", "O id não existe."));
+                return ResponseEntity.badRequest().body(erros);
+            }
+
+            bpai = optionalBpai.get();
+        }
+
+
+
+        int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
 
         return ResponseEntity.ok().build();
     }
-
-
 
     @PostMapping("/delete")
     public ResponseEntity<Object> editBpai(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {

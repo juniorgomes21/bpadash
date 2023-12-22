@@ -12,5 +12,5 @@ import java.util.List;
 @Repository
 public interface ProcedureRepository extends JpaRepository<Procedure, Long> {
 
-    List<ProcedurePaProjection> findByLinkProcedure(LinkProcedure linkProcedure);
+    List<Procedure> findByLinkProcedure(LinkProcedure linkProcedure);
 }

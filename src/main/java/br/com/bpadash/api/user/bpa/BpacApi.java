@@ -15,6 +15,7 @@ import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
+import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -136,19 +137,31 @@ public class BpacApi {
     }
 
     @PostMapping("/update/{id}")
-    public ResponseEntity<String> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
+    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
 
         Optional<Bpac> optionalBpac = bpacService.get(id);
         if(optionalBpac.isEmpty()) {
-            return ResponseEntity.badRequest().body("O id não existe.");
+            return ResponseEntity.badRequest().body("O ID não existe.");
         }
 
         Bpac bpac = optionalBpac.get();
-        if(bpac.getPa().equals(paramBpa.getPa())) {
-            return ResponseEntity.ok().build();
+
+        User user;
+        Optional<Bpa> bpaOptional = Optional.empty();
+        List<ErrorValidationDTO> erros = new ArrayList<>();
+
+        if(paramBpa.getDateBpa() != null) {
+            user  = userService.userInDb(1L);
+            bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+
+            if(bpaOptional.isEmpty()) {
+                erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
+
+                return ResponseEntity.badRequest().body(erros);
+            }
         }
 
-        bpacService.editAndSave(bpac, paramBpa);
+        bpacService.editAndSave(bpac, paramBpa, bpaOptional.orElse(null));
 
         return ResponseEntity.ok().build();
     }

@@ -6,17 +6,19 @@ public class ErrorAgeProcedureDTO extends ErrorSigTapDTO {
     private int ageMin;
     private int ageMax;
     private boolean ageMinB;
+    private String dateNasc;
 
     public ErrorAgeProcedureDTO() {
     }
 
-    public ErrorAgeProcedureDTO(Long id, String flh, String seq, String msg, String name , int age , int ageMin , int ageMax , boolean ageMinB) {
-        super(id , msg, flh, seq);
-        this.age = age;
+    public ErrorAgeProcedureDTO(Long id , String msg , String flh , String seq , String name , int age , int ageMin , int ageMax , boolean ageMinB , String dateNasc) {
+        super(id , msg , flh , seq);
         this.name = name;
+        this.age = age;
         this.ageMin = ageMin;
         this.ageMax = ageMax;
         this.ageMinB = ageMinB;
+        this.dateNasc = dateNasc;
     }
 
     public String getName() {
@@ -57,5 +59,13 @@ public class ErrorAgeProcedureDTO extends ErrorSigTapDTO {
 
     public void setAgeMinB(boolean ageMinB) {
         this.ageMinB = ageMinB;
+    }
+
+    public String getDateNasc() {
+        return dateNasc;
+    }
+
+    public void setDateNasc(String dateNasc) {
+        this.dateNasc = dateNasc;
     }
 }

@@ -10,6 +10,7 @@ import br.com.bpadash.params.bpa.ParamUpdateBpac;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpacRepository;
 import br.com.bpadash.repository.bpa.BpacValidationRepository;
+import br.com.bpadash.utilities.PaChecked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -157,12 +158,26 @@ public class BpacService {
         return this.save(bpac);
     }
 
-    public String editAndSave(Bpac bpac , ParamUpdateErrorsBpa paramBpa) {
+    public String editAndSave(Bpac bpac, ParamUpdateErrorsBpa paramBpa, Bpa bpa) {
         boolean hasChange = false;
 
-        if(paramBpa.getPa() != null && !bpac.getPa().equals(paramBpa.getPa())) {
-            bpac.setPa(paramBpa.getPa());
-            hasChange = true;
+        if(paramBpa.getPa() != null) {
+            String newPa = paramBpa.getPa().split("-")[0];
+            String updateAll = paramBpa.getPa().split("-")[1];
+            String oldPa = paramBpa.getPa().split("-")[2];
+
+            if(updateAll.equals("1")) {
+                List<Bpac> bpacList = bpacRepository.findByPaAndBpa(oldPa, bpa);
+
+                bpacList.forEach( bpacx -> {
+                    bpacx.setPa(newPa);
+                });
+
+                this.save(bpacList);
+            } else {
+                bpac.setPa(newPa);
+                hasChange = true;
+            }
 
         } else if (paramBpa.getCbo() != null) {
             bpac.setCbo(paramBpa.getCbo());
@@ -237,18 +252,22 @@ public class BpacService {
 
             boolean paExists = fpoList.stream().anyMatch(fpo -> fpo.getPa().equals(pa));
 
+            ErrorPaDTO errorPaDTO = new ErrorPaDTO(bpac.getId(), flh, seq, "", bpac.getPa(), "bpac");
             if (!paExists) {
-                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "BPAC - NOT EXIST PA", bpac.getPa(), "FPO"));
+                errorPaDTO.setMsg("FPO ");
             }
 
             if(!occupationPaSet.contains(pa)) {
-                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "NOT EXIST PA", bpac.getPa(), "OCCUPATION"));
+                errorPaDTO.setMsg(errorPaDTO.getMsg() + "OCUPAÇÃO");
             }
 
             if(!procedurePaSet.contains(bpac.getPa())) {
-                errorsPa.add(new ErrorPaDTO(bpac.getId(), flh, seq, "NOT EXIST PA", bpac.getPa(), "PROCEDURE"));
+                errorPaDTO.setMsg(errorPaDTO.getMsg() + " PROCEDIMENTO");
             }
 
+            if(!errorPaDTO.getMsg().equals("")) {
+                errorsPa.add(errorPaDTO);
+            }
 
         });
 

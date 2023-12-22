@@ -27,6 +27,7 @@ public class EncryptionService {
 
         bpaiList.forEach(bpai -> {
             bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));
+            bpai.setCnspacHas(hashString(bpai.getCnspac()));
             bpai.setCid(encryptor.encrypt(bpai.getCid()));
             bpai.setNmpac(encryptor.encrypt(bpai.getNmpac()));
             bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
@@ -90,7 +91,7 @@ public class EncryptionService {
         });
     }
 
-    public static void decryptBpaiSex(List<Bpai> bpaiListDB) {
+    public static void decryptSex(List<Bpai> bpaiListDB) {
         Dotenv dotenv = Dotenv.load();
 
         StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
@@ -100,6 +101,19 @@ public class EncryptionService {
 
         bpaiListDB.forEach(bpai -> {
             bpai.setSexo(encryptor.decrypt(bpai.getSexo()));
+        });
+    }
+
+    public static void encryptSex(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
+        bpaiListDB.forEach(bpai -> {
+            bpai.setSexo(encryptor.encrypt(bpai.getSexo()));
         });
     }
 
@@ -113,6 +127,34 @@ public class EncryptionService {
 
         bpaiListDB.forEach(bpai -> {
             bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
+        });
+    }
+
+    public static void decryptBpaiIdadeAndDtnasc(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
+        bpaiListDB.forEach(bpai -> {
+            bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
+            bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
+        });
+    }
+
+    public static void encryptBpaiIdadeAndDtnasc(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
+        bpaiListDB.forEach(bpai -> {
+            bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
+            bpai.setDtnasc(encryptor.encrypt(bpai.getDtnasc()));
         });
     }
 
@@ -139,6 +181,19 @@ public class EncryptionService {
 
         bpaiListDB.forEach( bpai -> {
             bpai.setRaca(encryptor.decrypt(bpai.getRaca()));
+        });
+    }
+
+    public static void decryptCnsPac(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
+        bpaiListDB.forEach( bpai -> {
+            bpai.setCnspac(encryptor.decrypt(bpai.getCnspac()));
         });
     }
 

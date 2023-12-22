@@ -115,7 +115,7 @@ public class ProcedureService {
         }
     }
 
-    public List<ProcedurePaProjection> get(LinkProcedure linkProcedure) {
+    public List<Procedure> get(LinkProcedure linkProcedure) {
         return procedureRepository.findByLinkProcedure(linkProcedure);
     }
 
@@ -185,7 +185,18 @@ public class ProcedureService {
 
                 boolean ageMinB = age < ageMin;
                 if(ageMinB || age > ageMax) {
-                    errors.add(new ErrorAgeProcedureDTO(bpai.getId(), bpai.getFlh(), bpai.getSeq(), "AGE INVALID", name, age, ageMin, ageMax, ageMinB));
+                    errors.add(new ErrorAgeProcedureDTO(
+                            bpai.getId(),
+                            "AGE INVALID",
+                            bpai.getFlh(),
+                            bpai.getSeq(),
+                            name,
+                            age,
+                            ageMin,
+                            ageMax,
+                            ageMinB,
+                            EncryptionService.decrypt(bpai.getDtnasc())
+                    ));
                 }
             }
         }

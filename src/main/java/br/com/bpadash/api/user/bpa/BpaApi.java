@@ -69,6 +69,7 @@ public class BpaApi {
     @Autowired
     private DatesSigtapService datesSigtapService;
 
+    
     @GetMapping("/get/all")
     public ResponseEntity<List<BpaDTO>> getAll(Authentication authentication) {
         User user = userService.userInDb(1L);
@@ -126,7 +127,7 @@ public class BpaApi {
 
 
     /**
-     * Se idade em (bpaI) está no formato yyyymmdd, se é inferior a 1900 ou superior à data atual
+     * Se idade em (bpaI) é inferior a 1900 ou superior à data atual
      * @param paramInconsistency
      * @return
      */
@@ -446,7 +447,7 @@ public class BpaApi {
             List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
             List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
 
-            EncryptionService.decryptBpaiSex(bpaiListDB);
+            EncryptionService.decryptSex(bpaiListDB);
 
             List<ErrorPaDTO> errorsPaBpac = procedureService.verifyErrorsPaBpac(bpacListDB, linkProcedure.getProcedureList());
             List<ErrorProcedureDTO> errorsPaBpai = procedureService.verifyErrorsPaAndSexBpai(bpaiListDB, linkProcedure.getProcedureList());

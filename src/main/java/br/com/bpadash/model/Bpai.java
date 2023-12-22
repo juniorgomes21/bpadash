@@ -25,6 +25,7 @@ public class Bpai {
     private String seq;
     private String pa;
     private String cnspac;
+    private String cnspacHas;
     private String sexo;
     private String ibge;
     private String cid;
@@ -70,6 +71,7 @@ public class Bpai {
         this.seq = seq;
         this.pa = pa;
         this.cnspac = cnspac;
+        this.cnspacHas = cnspac;
         this.sexo = sexo;
         this.ibge = ibge;
         this.cid = cid;
@@ -198,6 +200,14 @@ public class Bpai {
 
     public void setCnspac(String cnspac) {
         this.cnspac = cnspac;
+    }
+
+    public String getCnspacHas() {
+        return cnspacHas;
+    }
+
+    public void setCnspacHas(String cnspacHas) {
+        this.cnspacHas = cnspacHas;
     }
 
     public String getSexo() {
