@@ -31,7 +31,7 @@ public class ParamUpdateErrorsBpa {
     private String cnsmed;
     @SexoValid(updateErrors = true)
     private String sexCurrent;
-    @Size(min = 15, max = 15, message = "Deve conter 13 caracteres")
+    @Size(min = 15, max = 15, message = "Deve conter 15 caracteres")
     private String cbo;
     @Min(0)
     @Max(130)

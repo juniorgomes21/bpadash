@@ -159,34 +159,49 @@ public class BpacService {
     }
 
     public String editAndSave(Bpac bpac, ParamUpdateErrorsBpa paramBpa, Bpa bpa) {
-        boolean hasChange = false;
 
-        if(paramBpa.getPa() != null) {
-            String newPa = paramBpa.getPa().split("-")[0];
-            String updateAll = paramBpa.getPa().split("-")[1];
-            String oldPa = paramBpa.getPa().split("-")[2];
-
-            if(updateAll.equals("1")) {
-                List<Bpac> bpacList = bpacRepository.findByPaAndBpa(oldPa, bpa);
-
-                bpacList.forEach( bpacx -> {
-                    bpacx.setPa(newPa);
-                });
-
-                this.save(bpacList);
-            } else {
-                bpac.setPa(newPa);
-                hasChange = true;
-            }
-
-        } else if (paramBpa.getCbo() != null) {
-            bpac.setCbo(paramBpa.getCbo());
-            hasChange = true;
+        switch (paramBpa.getKey()) {
+            case "pa" -> this.editPa(paramBpa.getPa(), bpac, bpa);
+            case "cbo" ->  this.editCbo(paramBpa.getCbo(), bpac, bpa);
         }
 
-        if(hasChange) this.save(bpac);
-
         return "OK";
+    }
+
+    private void editPa(String pa, Bpac bpac, Bpa bpa) {
+        String newPa = pa.split("-")[0];
+        String updateAll = pa.split("-")[1];
+
+        if(updateAll.equals("1")) {
+            List<Bpac> bpacList = bpacRepository.findByPaAndBpa(pa.split("-")[2], bpa);
+
+            bpacList.forEach( bpacx -> {
+                bpacx.setPa(newPa);
+            });
+
+            this.save(bpacList);
+        } else {
+            bpac.setPa(newPa);
+            this.save(bpac);
+        }
+    }
+
+    private void editCbo(String cboParam, Bpac bpac, Bpa bpa) {
+        String cbo = cboParam.split("-")[0];
+        String updateAll = cboParam.split("-")[1];
+
+        if(updateAll.equals("1")) {
+            List<Bpac> bpacList = bpacRepository.findByCboAndBpa(cboParam.split("-")[2], bpa);
+
+            bpacList.forEach( bpaix -> {
+                bpaix.setCbo(cbo);
+            });
+
+            this.save(bpacList);
+        } else {
+            bpac.setCbo(cbo);
+            this.save(bpac);
+        }
     }
 
     public Bpac save(Bpac bpac) {

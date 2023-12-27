@@ -48,6 +48,7 @@ public class ProfessionalApi {
     @Autowired
     private ScannerFile scannerFile;
 
+
     @PostMapping("/create")
     public ResponseEntity<ProfessionalErrorValidation> createProf(@RequestBody @Valid List<ParamNewProfessional> paramNewProfessionals, Authentication authentication) {
         try {

@@ -150,7 +150,7 @@ public class BpacApi {
         Optional<Bpa> bpaOptional = Optional.empty();
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
-        if(paramBpa.getDateBpa() != null) {
+        if(paramBpa.getKey().equals("cbo") || paramBpa.getKey().equals("pa")) {
             user  = userService.userInDb(1L);
             bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
 

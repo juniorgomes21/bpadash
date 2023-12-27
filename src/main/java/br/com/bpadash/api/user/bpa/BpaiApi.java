@@ -151,20 +151,20 @@ public class BpaiApi {
     }
 
     /**
-     * Atualiza o campo não nulo passado pela requisição inválidos
+     * Atualiza o campo não nulo da requisição.
      * @param id
      * @param paramBpa
      * @return
      */
     @PostMapping("/update/{id}")
     public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
-        User user = userService.userInDb(1L);//carregar do DB
+        User user = userService.userInDb(1L); //carregar do DB
 
         Optional<Bpa> bpaOptional = Optional.empty();
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
         switch (paramBpa.getKey()) {
-            case "cbo" , "cnsmedProfessional" , "birthDate" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+            case "cbo" , "cnsmedProfessional" , "birthDate", "pa" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
             case "dateBpaInvalid" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid()), user);
         }
 

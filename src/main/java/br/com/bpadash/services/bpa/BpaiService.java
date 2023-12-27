@@ -632,13 +632,11 @@ public class BpaiService {
     }
 
     private void editPa(String pa, Bpai bpai, Bpa bpa) {
-
         String newPa = pa.split("-")[0];
         String updateAll = pa.split("-")[1];
-        String oldPa = pa.split("-")[2];
 
         if(updateAll.equals("1")) {
-            List<Bpai> bpaiList = bpaiRepository.findByPaAndBpa(oldPa, bpa);
+            List<Bpai> bpaiList = bpaiRepository.findByPaAndBpa(pa.split("-")[2], bpa);
 
             bpaiList.forEach( bpaix -> {
                 bpaix.setPa(newPa);

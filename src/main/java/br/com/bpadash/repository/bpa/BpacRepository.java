@@ -27,4 +27,6 @@ public interface BpacRepository extends JpaRepository<Bpac, Long> {
     void deleteByBpa(Bpa bpa);
 
     List<Bpac> findByPaAndBpa(String oldPa , Bpa bpa);
+
+    List<Bpac> findByCboAndBpa(String cbo, Bpa bpa);
 }

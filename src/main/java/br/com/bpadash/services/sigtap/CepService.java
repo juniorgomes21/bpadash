@@ -79,8 +79,9 @@ public class CepService {
                 .stream()
                 .map(CepProjection::getCep).collect(Collectors.toSet());
 
-        bpaiListDB.forEach(bpai -> {
+        bpaiListDB.forEach( bpai -> {
             String cep = bpai.getCepPcnte();
+
             if (!cepsSet.contains(cep)) {
                 errorsCEPs.add(new ErrorCEPsDTO(bpai.getId(), bpai.getFlh(), bpai.getSeq(), "CEP INVÁLID" , cep));
             }

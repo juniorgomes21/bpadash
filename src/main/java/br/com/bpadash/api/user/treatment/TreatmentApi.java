@@ -1,13 +1,11 @@
 package br.com.bpadash.api.user.treatment;
 
+import br.com.bpadash.dto.sigtap.ErrorCEPsDTO;
 import br.com.bpadash.dto.treatment.RuleTreatmentPaDeleteDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaCboDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaDeleteDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.*;
 import br.com.bpadash.model.treatment.RuleTreatmentPa;
 import br.com.bpadash.model.treatment.RuleTreatmentPaCbo;
 import br.com.bpadash.model.treatment.RuleTreatmentPaDelete;
@@ -16,6 +14,7 @@ import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;
 import br.com.bpadash.params.treatment.ParamTreatmentPaDelete;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
@@ -316,5 +315,32 @@ public class TreatmentApi {
         if(treatmentFileService.removeAndSaveRulePaDelete(id, user)) ruleTreatmentPaDeleteService.delete(id);
 
         return ResponseEntity.ok().build();
+    }
+
+    // CEP
+
+    @GetMapping("/get/cep")
+    public ResponseEntity<TreatmentPaDeleteDTO> getCep(Authentication authentication) {
+        User user = userService.userInDb(1L);
+//        DatesSigtap datesSigtap = datesSigtapService.get(user);
+//        Optional<LinkCep> linkCepOptional;
+//        if(datesSigtap.isDateProcedureAuto()) {
+//            linkCepOptional = linkCepService.get(user);
+//        } else {
+//            linkCepOptional = linkCepService.get(datesSigtap.getDateCep(), user);
+//        }
+//        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+//
+//        if(bpaOptional.isPresent()) {
+//            Bpa bpa = bpaOptional.get();
+//
+//            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+//
+//            EncryptionService.decryptBpaiCep(bpaiListDB);
+//
+//            List<ErrorCEPsDTO> errorsCEPs = cepService.verifyErrors(bpaiListDB);
+//        }
+
+        return ResponseEntity.ok(new TreatmentPaDeleteDTO(user.getTreatmentFile()));
     }
 }
