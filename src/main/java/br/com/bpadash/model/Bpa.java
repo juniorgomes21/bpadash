@@ -7,6 +7,7 @@ import net.minidev.json.annotate.JsonIgnore;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 public class Bpa {
@@ -29,7 +30,6 @@ public class Bpa {
         this.identifier = identifier;
         this.name = paramNewBpa.getName();
         this.description = paramNewBpa.getDescription();
-        this.date = Utilities.formatDate(paramNewBpa.getDate());
         this.fileSizeInBytes = 0L;
         this.user = user;
     }
@@ -94,5 +94,18 @@ public class Bpa {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bpa bpa)) return false;
+        return Objects.equals(getId() , bpa.getId()) && Objects.equals(getIdentifier() , bpa.getIdentifier()) && Objects.equals(getDate() , bpa.getDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId() , getIdentifier() , getDate());
     }
 }

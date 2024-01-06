@@ -29,4 +29,6 @@ public interface BpacRepository extends JpaRepository<Bpac, Long> {
     List<Bpac> findByPaAndBpa(String oldPa , Bpa bpa);
 
     List<Bpac> findByCboAndBpa(String cbo, Bpa bpa);
+
+    Bpac findTopByBpaOrderByFlhDescSeqDesc(Bpa bpa);
 }

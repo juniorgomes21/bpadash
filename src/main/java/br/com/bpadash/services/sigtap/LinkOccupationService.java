@@ -21,14 +21,12 @@ public class LinkOccupationService {
     @Autowired
     private LinkOccupationRepository linkOccupationRepository;
 
-    public Optional<LinkOccupation> get(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-
-        return linkOccupationRepository.findFirstByUser(user, sort);
+    public Optional<LinkOccupation> get() {
+        return linkOccupationRepository.findFirstByOrderByDateDesc();
     }
 
-    public Optional<LinkOccupation> get(LocalDate date , User user) {
-        return linkOccupationRepository.findByDateAndUser(date, user);
+    public Optional<LinkOccupation> get(LocalDate date) {
+        return linkOccupationRepository.findByDate(date);
     }
 
     public LinkOccupation save(LinkOccupation linkOccupation) {
@@ -39,9 +37,8 @@ public class LinkOccupationService {
         return linkOccupationRepository.saveAll(linkOccupationList);
     }
 
-    public DatesSigtapDTO getDates(User user, DatesSigtap datesSigtap) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> bpaiList = linkOccupationRepository.findAllByUser(user, DateProjection.class, sort);
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
+        List<LinkOccupation> bpaiList = linkOccupationRepository.findAll();
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();

@@ -16,10 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/aux")
@@ -64,29 +61,28 @@ public class auxApi {
 
     @PostMapping("/ping")
     public ResponseEntity<Object> ping() {
-        Bpa bpa = bpaRepository.getById(5L);
+        Optional<User> user = userRepository.findById(1L);
+        List<Bpa> bpaList = bpaRepository.findByUser(user.get());
+        List<Bpai> bpaiList = bpaiRepository.findByBpa(bpaList.get(0));
 
-        List<String> dates = new ArrayList<>(Arrays.asList("17000922", "18130122", "15210822", "17160222"));
+        EncryptionService.decryptCnsPac(bpaiList);
 
-        List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
+        bpaiList.forEach( bpaix -> {
 
-        Random random = new Random();
+            String key = EncryptionService.hashString(bpaix.getCnspac());
 
-        bpaiList.forEach( bpai -> {
-            if(bpai.getIdade().length() == 3) {
-                int indexList = random.nextInt(0, 3);
-                bpai.setIdade(EncryptionService.encrypt(bpai.getIdade()));
-            }
+            Optional<Bpai> bpaiOptional = bpaiRepository.findFristByCnspacHas(key); //bpaList
+
+            bpaiOptional.ifPresent(value -> System.out.println(value.getId()));
+
+            bpaiOptional.ifPresent(value -> {
+                String newRace = EncryptionService.decrypt(value.getRaca());
+
+//                    if (racesValids.contains(newRace)) {
+//                        bpaix.setRaca(value.getRaca());
+//                    }
+            });
         });
-//        for (int i = 0; i <= 275; i++) {
-//            Random random = new Random();
-//            int index = random.nextInt(bpaiList.size());
-//            int indexList = random.nextInt(0, 3);
-//
-//            bpaiList.get(index).setRaca(EncryptionService.encrypt(dates.get(indexList)));
-//        }
-
-        bpaiRepository.saveAll(bpaiList);
 
         return ResponseEntity.ok("pong");
     }
@@ -118,13 +114,13 @@ public class auxApi {
     public ResponseEntity<Object> errosB() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(6L);
+        Bpa bpa = bpaRepository.getById(20L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("135", "256", "768", "999"));
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        for (int i = 0; i <= 325; i++) {
+        for (int i = 0; i <= 1850; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
@@ -177,7 +173,7 @@ public class auxApi {
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        for (int i = 0; i <= 225; i++) {
+        for (int i = 0; i <= 55; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 

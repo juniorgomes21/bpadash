@@ -14,9 +14,5 @@ import java.util.Optional;
 public interface LinkProfessionalsRepository extends JpaRepository<LinkProfessionals, Long> {
     Optional<LinkProfessionals> findByDate(LocalDate date);
 
-    Optional<LinkProfessionals> findByDateAndUser(LocalDate date , User user);
-
-    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
-
-    Optional<LinkProfessionals> findFirstByUser(User user , Sort sort);
+    Optional<LinkProfessionals> findFirstByOrderByDateDesc();
 }

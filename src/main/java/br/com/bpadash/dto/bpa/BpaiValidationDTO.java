@@ -3,14 +3,11 @@ package br.com.bpadash.dto.bpa;
 import br.com.bpadash.model.BpaiValidation;
 
 public class BpaiValidationDTO {
-    private boolean ident;
     private boolean cnes;
     private boolean cmp;
     private boolean cnsmed;
     private boolean cbo;
     private boolean dtaten;
-    private boolean flh;
-    private boolean seq;
     private boolean pa;
     private boolean cnspac;
     private boolean sexo;
@@ -45,14 +42,11 @@ public class BpaiValidationDTO {
     }
 
     public BpaiValidationDTO(BpaiValidation bpaiValidation) {
-        this.ident = bpaiValidation.isIdent();
         this.cnes = bpaiValidation.isCnes();
         this.cmp = bpaiValidation.isCmp();
         this.cnsmed = bpaiValidation.isCnsmed();
         this.cbo = bpaiValidation.isCbo();
         this.dtaten = bpaiValidation.isDtaten();
-        this.flh = bpaiValidation.isFlh();
-        this.seq = bpaiValidation.isSeq();
         this.pa = bpaiValidation.isPa();
         this.cnspac = bpaiValidation.isCnspac();
         this.sexo = bpaiValidation.isSexo();
@@ -85,14 +79,6 @@ public class BpaiValidationDTO {
 
 
 
-    }
-
-    public boolean isIdent() {
-        return ident;
-    }
-
-    public void setIdent(boolean ident) {
-        this.ident = ident;
     }
 
     public boolean isCnes() {
@@ -133,22 +119,6 @@ public class BpaiValidationDTO {
 
     public void setDtaten(boolean dtaten) {
         this.dtaten = dtaten;
-    }
-
-    public boolean isFlh() {
-        return flh;
-    }
-
-    public void setFlh(boolean flh) {
-        this.flh = flh;
-    }
-
-    public boolean isSeq() {
-        return seq;
-    }
-
-    public void setSeq(boolean seq) {
-        this.seq = seq;
     }
 
     public boolean isPa() {

@@ -68,14 +68,13 @@ public class SigtapApi {
     @PostMapping(value = "/create/cep", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createCep(@RequestPart("file") MultipartFile file, @RequestParam("paramNewCep") String paramNewCepJson, Authentication authentication) throws JsonProcessingException {
         StopWatch stopWatch = StopWatch.createStarted();
-        User user = userService.userInDb(1L);
 
         ObjectMapper objectMapper = new ObjectMapper();
         ParamNewCep paramNewCep = objectMapper.readValue(paramNewCepJson, ParamNewCep.class);
 
         List<ErrorsFile> errorsFiles = new ArrayList<>();
 
-        String response = scannerFile.createCep(file, user, paramNewCep, errorsFiles, stopWatch);
+        String response = scannerFile.createCep(file, paramNewCep, errorsFiles, stopWatch);
 
         if (!response.equals("CREATE"))  {
 
@@ -93,13 +92,12 @@ public class SigtapApi {
 
     @PostMapping(value = "/create/occupation", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createOccupation(@RequestPart("file") MultipartFile file, @RequestParam("paramNewOccupation") String paramNewOccupationJson, Authentication authentication) throws JsonProcessingException {
-        User user = userService.userInDb(1L);
         List<ErrorsFile> errorsFiles = new ArrayList<>();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ParamNewOccupation paramNewOccupation = objectMapper.readValue(paramNewOccupationJson, ParamNewOccupation.class);
 
-        String response = scannerFile.createOccupation(file, user, paramNewOccupation, errorsFiles);
+        String response = scannerFile.createOccupation(file, paramNewOccupation, errorsFiles);
 
         if (!response.equals("CREATE"))  {
 
@@ -123,7 +121,7 @@ public class SigtapApi {
         ObjectMapper objectMapper = new ObjectMapper();
         ParamNewProcedure paramNewProcedure = objectMapper.readValue(paramNewProcedureJson, ParamNewProcedure.class);
 
-        String response = scannerFile.createProcedure(file, user, errorsFiles, paramNewProcedure);
+        String response = scannerFile.createProcedure(file, errorsFiles, paramNewProcedure);
 
         if (!response.equals("CREATE"))  {
 
@@ -140,11 +138,10 @@ public class SigtapApi {
     }
 
     @GetMapping("/get/procedure")
-    public ResponseEntity<ProcedureDTO> getProcedure(Authentication authentication) {
-        User user = userService.userInDb(1L);
+    public ResponseEntity<ProcedureDTO> getProcedure() {
 
         LocalDate date = LocalDate.of(2023, 11, 1);
-        Optional<LinkProcedure> linkProcedureOptional = linkProcedureService.get(date, user);
+        Optional<LinkProcedure> linkProcedureOptional = linkProcedureService.get(date);
         if(linkProcedureOptional.isPresent()) {
             LinkProcedure linkProcedure = linkProcedureOptional.get();
             return ResponseEntity.ok(new ProcedureDTO(linkProcedure.getProcedureList().get(0)));
@@ -158,11 +155,11 @@ public class SigtapApi {
         User user = userService.userInDb(1L);
         DatesSigtap datesSigtap = datesSigtapService.get(user);
 
-        DatesSigtapDTO dateOccupation = linkOccupationService.getDates(user, datesSigtap);
-        DatesSigtapDTO dateFpo = linkFpoService.getDates(user, datesSigtap);
-        DatesSigtapDTO dateProf = linkProfessionalsService.getDates(user, datesSigtap);
-        DatesSigtapDTO dateCep = linkCepService.getDates(user, datesSigtap);
-        DatesSigtapDTO dateProc = linkProcedureService.getDates(user, datesSigtap);
+        DatesSigtapDTO dateOccupation = linkOccupationService.getDates(datesSigtap);
+        DatesSigtapDTO dateFpo = linkFpoService.getDates(datesSigtap);
+        DatesSigtapDTO dateProf = linkProfessionalsService.getDates(datesSigtap);
+        DatesSigtapDTO dateCep = linkCepService.getDates(datesSigtap);
+        DatesSigtapDTO dateProc = linkProcedureService.getDates(datesSigtap);
 
         return ResponseEntity.ok(new ArrayList<>(List.of(dateOccupation, dateFpo, dateProf, dateCep, dateProc)));
     }

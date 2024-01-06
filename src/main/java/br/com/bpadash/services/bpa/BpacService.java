@@ -314,4 +314,7 @@ public class BpacService {
         return errors;
     }
 
+    public Bpac getLast(Bpa bpa) {
+        return bpacRepository.findTopByBpaOrderByFlhDescSeqDesc(bpa);
+    }
 }

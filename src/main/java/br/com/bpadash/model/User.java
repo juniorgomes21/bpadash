@@ -15,10 +15,13 @@ import java.util.*;
 @Entity
 @Table(name = "usuarios")
 public class User implements UserDetails {
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @Column(unique = true)
     private String cpf;
+    @Column(unique = true)
     private String email;
     private String password;
     private String cell;
@@ -31,7 +34,7 @@ public class User implements UserDetails {
     private boolean valid = true;
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Bpa> bpas = new ArrayList<>();
     @OneToOne(cascade = CascadeType.ALL)
     private BpacValidation bpacValidation;
@@ -39,6 +42,9 @@ public class User implements UserDetails {
     private BpaiValidation bpaiValidation;
     @OneToOne(cascade = CascadeType.ALL)
     private TreatmentFile treatmentFile;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Address address;
+
 
     public User() {}
 
@@ -185,6 +191,14 @@ public class User implements UserDetails {
 
     public void setTreatmentFile(TreatmentFile treatmentFile) {
         this.treatmentFile = treatmentFile;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     @Override

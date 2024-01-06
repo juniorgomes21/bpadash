@@ -64,21 +64,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/aux/**").permitAll()
 
                 // ---- Padrão API ADM ----
-                .antMatchers("/api/ADM/auth").permitAll()
-                .antMatchers("/api/ADM/configurations/create").permitAll()
+                .antMatchers("/api/ADM/auth").hasAuthority(Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/ADM/configurations/create").hasAuthority(Role.ADMINISTRATOR.getName())
 
                 // ---- Padrão API USER ----
                 // <---------------------------------------------> rotas para atualizar permições.
 //                .antMatchers("/api/dash/bpa/**").hasAuthority(Role.USER.getName())
-                .antMatchers("/api/title/**").permitAll()
-                .antMatchers("/api/user/**").permitAll()
-                .antMatchers("/api/bpa/**").permitAll()
-                .antMatchers("/api/sigtap/**").permitAll()
-                .antMatchers("/api/treatment/**").permitAll()
-                .antMatchers("/api/bpai/**").permitAll()
-                .antMatchers("/api/bpac/**").permitAll()
-                .antMatchers("/api/fpo/**").permitAll()
-                .antMatchers("/api/prof/**").permitAll()
+                .antMatchers("/api/title/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/user/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/bpa/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/treatment/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/bpai/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/bpac/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/sigtap/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/fpo/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/prof/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
 
                 // <--------------------------------------------->
 

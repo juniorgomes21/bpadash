@@ -1,7 +1,6 @@
 package br.com.bpadash.api.user.treatment;
 
-import br.com.bpadash.dto.sigtap.ErrorCEPsDTO;
-import br.com.bpadash.dto.treatment.RuleTreatmentPaDeleteDTO;
+
 import br.com.bpadash.dto.treatment.TreatmentPaCboDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaDeleteDTO;
@@ -14,7 +13,6 @@ import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;
 import br.com.bpadash.params.treatment.ParamTreatmentPaDelete;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;

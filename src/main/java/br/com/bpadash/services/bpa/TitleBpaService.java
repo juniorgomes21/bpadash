@@ -4,12 +4,15 @@ import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.TitleBpa;
+import br.com.bpadash.model.User;
+import br.com.bpadash.params.bpa.ParamUpdateTitle;
 import br.com.bpadash.repository.bpa.TitleBpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TitleBpaService {
@@ -21,7 +24,7 @@ public class TitleBpaService {
 
         List<ErrorValidationDTO> errors = new ArrayList<>();
 
-        if (line.length() < 127) {
+        if (line.length() < 126) {
             //TODO perguntar a respeito do tamanho do titulo
             errors.add(errorValidation("LINHA", "O título do arquivo não contém 127 caracteres"));
             errorsFileList.add(new ErrorsFile(String.valueOf(lineNumber), errors));
@@ -67,7 +70,12 @@ public class TitleBpaService {
 
         String dstIn = line.substring(119, 120);
 
-        String versao = line.substring(120, 130);
+        String versao;
+        try {
+            versao = line.substring(120, 130);
+        } catch (StringIndexOutOfBoundsException e) {
+            versao = line.substring(120);
+        }
 
         String fim;
         try {
@@ -108,6 +116,11 @@ public class TitleBpaService {
         return titleBpaRepository.findByBpa(bpa);
     }
 
+    public Optional<TitleBpa> get(Long id) {
+
+        return titleBpaRepository.findById(id);
+    }
+
     public Long sizeByte(Long id) {
         return titleBpaRepository.calculateSizeById(id);
     }
@@ -118,5 +131,22 @@ public class TitleBpaService {
 
     public void delete(Bpa bpa) {
         titleBpaRepository.deleteByBpa(bpa);
+    }
+
+    public TitleBpa editAndSave(TitleBpa titleBpa , ParamUpdateTitle paramUpdateTitle) {
+        titleBpa.setHdr(paramUpdateTitle.getHdr());
+        titleBpa.setMvm(paramUpdateTitle.getMvm());
+        titleBpa.setLin(paramUpdateTitle.getLin());
+        titleBpa.setFlh(paramUpdateTitle.getFlh());
+        titleBpa.setSmtVrf(paramUpdateTitle.getSmtVrf());
+        titleBpa.setRsp(paramUpdateTitle.getRsp());
+        titleBpa.setSgl(paramUpdateTitle.getSgl());
+        titleBpa.setCgccpf(paramUpdateTitle.getCgccpf());
+        titleBpa.setDst(paramUpdateTitle.getDst());
+        titleBpa.setDstIn(paramUpdateTitle.getDstIn());
+        titleBpa.setVersao(paramUpdateTitle.getVersao());
+        titleBpa.setFim(paramUpdateTitle.getFim());
+
+        return this.save(titleBpa);
     }
 }

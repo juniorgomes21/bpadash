@@ -32,24 +32,18 @@ public class LinkFpoService {
         return linkFpoRepository.saveAll(linkFpoList);
     }
 
-    public Optional<LinkFpo> get(User user) {
+    public Optional<LinkFpo> get() {
+
+        return linkFpoRepository.findFirstByOrderByDateDesc();
+    }
+
+    public Optional<LinkFpo> get(LocalDate date) {
+        return linkFpoRepository.findByDate(date);
+    }
+
+    public DatesDTO getDates() {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
-
-        return linkFpoRepository.findFirstByUser(user, sort);
-    }
-
-    public Optional<LinkFpo> get(LocalDate date, User user) {
-        return linkFpoRepository.findByUserAndDate(user, date);
-    }
-
-    public void addFpos(LinkFpo linkFpo, List<Fpo> fpoList) {
-        linkFpo.getFpoList().addAll(fpoList);
-        this.save(linkFpo);
-    }
-
-    public DatesDTO getDates(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> linkFpoList = linkFpoRepository.findAllByUser(user, DateProjection.class, sort);
+        List<LinkFpo> linkFpoList = linkFpoRepository.findAll(sort);
 
         DatesDTO datesDTO = new DatesDTO();
         linkFpoList.forEach( linkFpoListf -> {
@@ -65,16 +59,16 @@ public class LinkFpoService {
         return datesDTO;
     }
 
-    public DatesSigtapDTO getDates(User user, DatesSigtap datesSigtap) {
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> bpaiList = linkFpoRepository.findAllByUser(user, DateProjection.class, sort);
+        List<LinkFpo> bpaiList = linkFpoRepository.findAll(sort);
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();
         List<List<List<Integer>>> datesFull = new ArrayList<>();
 
         if (!bpaiList.isEmpty()) {
-            bpaiList.forEach(linkFpoListf -> {
+            bpaiList.forEach( linkFpoListf -> {
                 LocalDate date = linkFpoListf.getDate();
 
                 int year = date.getYear();
@@ -131,7 +125,7 @@ public class LinkFpoService {
         );
     }
 
-    public boolean exists(LocalDate date , User user) {
-        return linkFpoRepository.existsByDateAndUser(date, user);
+    public boolean exists(LocalDate date) {
+        return linkFpoRepository.existsByDate(date);
     }
 }

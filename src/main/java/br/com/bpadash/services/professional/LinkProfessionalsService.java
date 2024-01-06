@@ -42,19 +42,17 @@ public class LinkProfessionalsService {
         return linkProfessionalsRepository.findByDate(date).isPresent();
     }
 
-    public Optional<LinkProfessionals> get(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        return linkProfessionalsRepository.findFirstByUser(user, sort);
+    public Optional<LinkProfessionals> get() {
+        return linkProfessionalsRepository.findFirstByOrderByDateDesc();
     }
 
-    public Optional<LinkProfessionals> get(LocalDate date , User user) {
+    public Optional<LinkProfessionals> get(LocalDate date) {
 
-        return linkProfessionalsRepository.findByDateAndUser(date, user);
+        return linkProfessionalsRepository.findByDate(date);
     }
 
-    public DatesSigtapDTO getDates(User user, DatesSigtap datesSigtap) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> bpaiList = linkProfessionalsRepository.findAllByUser(user, DateProjection.class, sort);
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
+        List<LinkProfessionals> bpaiList = linkProfessionalsRepository.findAll();
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();
@@ -118,9 +116,8 @@ public class LinkProfessionalsService {
         );
     }
 
-    public DatesDTO getDates(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> projectionList = linkProfessionalsRepository.findAllByUser(user, DateProjection.class, sort);
+    public DatesDTO getDates() {
+        List<LinkProfessionals> projectionList = linkProfessionalsRepository.findAll();
 
         DatesDTO datesDTO = new DatesDTO();
         projectionList.forEach( linkFpoListf -> {

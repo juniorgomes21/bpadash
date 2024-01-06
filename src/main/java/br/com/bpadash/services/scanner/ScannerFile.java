@@ -36,6 +36,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,15 +102,7 @@ public class ScannerFile {
 
         Bpa bpa = new Bpa(user, bpaService.generateIdentifier(user), paramNewBpa);
 
-        if(bpaService.get(bpa.getDate(), user).isPresent()) {
-            return "EXIST DATE";
-        }
-
-        System.out.println("Viu se a data existe " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
         try {
-            // Obtém o fluxo de entrada do arquivo
-            Long xxx = file.getSize();
             InputStream inputStream = file.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -118,7 +111,25 @@ public class ScannerFile {
             while ((line = br.readLine()) != null) {
                 if(line.startsWith("01")) {
                     titleBpa = titleBpaService.create(line, lineNumber, bpa, errorsFileList);
+                    if(titleBpa != null) {
+                        int year = Integer.parseInt(titleBpa.getMvm().substring(0, 4));
+                        int month = Integer.parseInt(titleBpa.getMvm().substring(4, 6));
 
+                        LocalDate date;
+                        try {
+                            date = LocalDate.of(year, month, 1);
+                        } catch (Exception e) {
+                            return "ERROR FORMAT DATE";
+                        }
+
+                        if(bpaService.get(date, user).isPresent()) {
+                            return "EXIST DATE";
+                        } else {
+                            bpa.setDate(date);
+                        }
+                    } else {
+                        return "ERROR FILE";
+                    }
                 } else if (line.startsWith("02")) {
                     Bpac bpac = bpacService.create(user, line, lineNumber, bpa, errorsFileList);
                     if(bpac != null) {
@@ -141,7 +152,7 @@ public class ScannerFile {
             }
             System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
-            EncryptionService.encryptBpai(bpaiList); // de 5 a 6 segundos para executar
+            EncryptionService.encryptBpai(bpaiList);
 
             System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
@@ -169,9 +180,7 @@ public class ScannerFile {
 
             System.out.println("Save all: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
-
             return "CREATE";
-
 
         } catch (IllegalArgumentException e) {
             throw e;
@@ -180,7 +189,7 @@ public class ScannerFile {
         }
     }
 
-    public String createBpac(User user, MultipartFile file , Bpa bpa, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
+    public String createBpac(User user, MultipartFile file, Bpa bpa, Bpac bpacS, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
         List<Bpac> bpacList = new ArrayList<>();
 
 
@@ -191,10 +200,41 @@ public class ScannerFile {
 
             String line;
             int lineNumber = 1;
+            String seq = bpacS.getSeq();
+            String flh = bpacS.getFlh();
+
+            if ("99".equals(seq) && "999".equals(flh)) {
+                return "FILE FULL";
+            }
+
+            int flhInt = Integer.parseInt(flh);
+            int seqInt = Integer.parseInt(seq);
+
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("02")) {
+
                     Bpac bpac = bpacService.create(user, line, lineNumber, bpa, errorsFiles);
-                    bpacList.add(bpac);
+                    if(bpac != null) {
+                        if (flhInt == 999 && seqInt == 99) {
+                            return "FILE FULL";
+                        }
+
+                        // Incrementa seq em cada iteração
+                        seqInt = (seqInt % 99) + 1;
+
+                        // Se flh for 1, incrementa seq
+                        if (seqInt == 1) {
+                            flhInt = (flhInt % 999) + 1;
+                        }
+
+                        // Formata os valores para o formato desejado
+                        String formattedFlh = String.format("%03d", flhInt);
+                        String formattedSeq = String.format("%02d", seqInt);
+
+                        bpac.setSeq(formattedSeq);
+                        bpac.setFlh(formattedFlh);
+                        bpacList.add(bpac);
+                    }
                 }
 
                 lineNumber++;
@@ -214,6 +254,7 @@ public class ScannerFile {
                 bpacService.save(bpacList);
             }
 
+            userService.updateStorageAndSave(user, totalBytes, "sub");
             bpaService.updatebyte(bpa, totalBytes, true);
 
             return "CREATE";
@@ -225,7 +266,7 @@ public class ScannerFile {
         }
     }
 
-    public String createBpai(MultipartFile file , Bpa bpa, User user, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
+    public String createBpai(MultipartFile file , Bpa bpa, Bpai bpaiS, User user, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
         List<Bpai> bpaiList = new ArrayList<>();
 
         try {
@@ -234,13 +275,46 @@ public class ScannerFile {
 
             String line;
             int lineNumber = 1;
+            String seq = bpaiS.getSeq();
+            String flh = bpaiS.getFlh();
+
+            if ("99".equals(seq) && "999".equals(flh)) {
+                return "FILE FULL";
+            }
+
+            int flhInt = Integer.parseInt(flh);
+            int seqInt = Integer.parseInt(seq);
+
             while ((line = br.readLine()) != null) {
-                 if (line.startsWith("03")) {
-                    Bpai bpai = bpaiService.create(line, lineNumber, bpa, user, errorsFiles);
+
+                if (line.startsWith("03")) {
+
+                     Bpai bpai = bpaiService.create(line, lineNumber, bpa, user, errorsFiles);
                      if(bpai != null) {
-                        bpaiList.add(bpai);
+                         // Verifica se ambos seq e flh atingiram seus valores máximos
+                         if (flhInt == 999 && seqInt == 99) {
+                             return "FILE FULL";
+                         }
+
+                         // Incrementa seq em cada iteração
+                         seqInt = (seqInt % 99) + 1;
+
+                         // Se flh for 1, incrementa seq
+                         if (seqInt == 1) {
+                             flhInt = (flhInt % 999) + 1;
+                         }
+
+                         // Formata os valores para o formato desejado
+                         String formattedFlh = String.format("%03d", flhInt);
+                         String formattedSeq = String.format("%02d", seqInt);
+
+                         // Define os valores na entidade
+                         bpai.setSeq(formattedSeq);
+                         bpai.setFlh(formattedFlh);
+                         bpaiList.add(bpai);
                      }
-                 }
+                }
+
 
                 lineNumber++;
             }
@@ -260,6 +334,7 @@ public class ScannerFile {
                 bpaiService.save(bpaiList);
             }
 
+            userService.updateStorageAndSave(user, totalBytes, "sub");
             bpaService.updatebyte(bpa, totalBytes, true);
 
             return "CREATE";
@@ -271,16 +346,12 @@ public class ScannerFile {
         }
     }
 
-    //TODO ok
-    public String createOccupation(MultipartFile file , User user, ParamNewOccupation paramNewOccupation, List<ErrorsFile> errorsFiles) {
+    public String createOccupation(MultipartFile file, ParamNewOccupation paramNewOccupation, List<ErrorsFile> errorsFiles) {
         try {
-            if(user.getStorageFree() < file.getSize()) {
-                return "NOT STORAGE";
-            }
 
-            LinkOccupation linkOccupation = new LinkOccupation(paramNewOccupation.getName(), file.getSize(), paramNewOccupation.getDate(), user);
+            LinkOccupation linkOccupation = new LinkOccupation(paramNewOccupation.getName(), file.getSize(), paramNewOccupation.getDate());
 
-            if(linkOccupationService.get(linkOccupation.getDate(), user).isPresent()) {
+            if(linkOccupationService.get(linkOccupation.getDate()).isPresent()) {
                 return "EXIST DATE";
             }
 
@@ -307,24 +378,19 @@ public class ScannerFile {
             linkOccupation.getOccupationList().addAll(occupationList);
             linkOccupationService.save(linkOccupation);
 
-            userService.updateStorageAndSave(user, file.getSize(), "sub");
-
             return "CREATE";
         } catch (IllegalArgumentException | IOException e) {
             return "FAILURE";
         }
     }
 
-    //TODO ok
-    public String createCep(MultipartFile file , User user , ParamNewCep paramNewCep, List<ErrorsFile> errorsFiles, StopWatch startTime) {
+
+    public String createCep(MultipartFile file, ParamNewCep paramNewCep, List<ErrorsFile> errorsFiles, StopWatch startTime) {
         try {
-            if(user.getStorageFree() < file.getSize()) {
-                return "NOT STORAGE";
-            }
 
-            LinkCep linkCep = new LinkCep(paramNewCep, file.getSize(), user);
+            LinkCep linkCep = new LinkCep(paramNewCep, file.getSize());
 
-            if(linkCepService.exists(linkCep.getDate(), user)) {
+            if(linkCepService.exists(linkCep.getDate())) {
                 return "EXIST DATE";
             }
 
@@ -359,24 +425,18 @@ public class ScannerFile {
 
             System.out.println("Salvo link e todos ceps " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
-            userService.updateStorageAndSave(user, file.getSize(), "sub");
-
             return "CREATE";
         } catch (IllegalArgumentException | IOException e) {
             return "FAILURE";
         }
     }
 
-    //TODO ok
-    public String createProcedure(MultipartFile file, User user, List<ErrorsFile> errorsFiles, ParamNewProcedure paramNewProcedure) {
+    public String createProcedure(MultipartFile file, List<ErrorsFile> errorsFiles, ParamNewProcedure paramNewProcedure) {
         try {
-            if(user.getStorageFree() < file.getSize()) {
-                return "NOT STORAGE";
-            }
 
-            LinkProcedure linkProcedure = new LinkProcedure(paramNewProcedure.getName(), file.getSize(), paramNewProcedure.getDate(), user);
+            LinkProcedure linkProcedure = new LinkProcedure(paramNewProcedure.getName(), file.getSize(), paramNewProcedure.getDate());
 
-            if(linkProcedureService.exists(linkProcedure.getDate(), user)) {
+            if(linkProcedureService.exists(linkProcedure.getDate())) {
                 return "EXIST DATE";
             }
 
@@ -404,23 +464,17 @@ public class ScannerFile {
             linkProcedure.getProcedureList().addAll(procedureList);
             linkProcedureService.save(linkProcedure);
 
-            userService.updateStorageAndSave(user, file.getSize(), "sub");
-
             return "CREATE";
         } catch (IOException e) {
             return "FAILURE";
         }
     }
 
-    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, User user, List<ErrorsFile> errorsFileList) throws IllegalArgumentException {
+    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, List<ErrorsFile> errorsFileList) throws IllegalArgumentException {
         try {
 
-            if(user.getStorageFree() < file.getSize()) {
-                return "NOT STORAGE";
-            }
-
-            LinkFpo linkFpo = new LinkFpo(paramNewFpo, file.getSize(), user);
-            if(linkFpoService.exists(linkFpo.getDate(), user)) {
+            LinkFpo linkFpo = new LinkFpo(paramNewFpo, file.getSize());
+            if(linkFpoService.exists(linkFpo.getDate())) {
                 return "EXIST DATE";
             }
 
@@ -440,8 +494,7 @@ public class ScannerFile {
                         Fpo fpo = fpoService.create(linkFpo, pa, line, lineNumber, errorsFileList);
                         fpoList.add(fpo);
                     }
-                } catch (StringIndexOutOfBoundsException e) {
-                    // Pula a linha sem informações
+                } catch (StringIndexOutOfBoundsException ignore) {
                 }
                 lineNumber++;
             }
@@ -453,15 +506,10 @@ public class ScannerFile {
             linkFpo.getFpoList().addAll(fpoList);
             linkFpoService.save(linkFpo);
 
-            userService.updateStorageAndSave(user, file.getSize(), "sub");
-
             return "CREATE";
 
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (IOException e) {
             throw new NullPointerException();
-
         }
     }
 
@@ -639,4 +687,5 @@ public class ScannerFile {
             return "ERROR";
         }
     }
+
 }

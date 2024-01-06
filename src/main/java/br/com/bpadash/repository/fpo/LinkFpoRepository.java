@@ -13,11 +13,10 @@ import java.util.Optional;
 
 @Repository
 public interface LinkFpoRepository extends JpaRepository<LinkFpo, Long> {
-    Optional<LinkFpo> findByUserAndDate(User user , LocalDate date);
 
-    List<DateProjection> findAllByUser(User user, Class<DateProjection> fpoDateProjectionClass, Sort sort);
+    boolean existsByDate(LocalDate date);
 
-    boolean existsByDateAndUser(LocalDate date , User user);
+    Optional<LinkFpo> findByDate(LocalDate date);
 
-    Optional<LinkFpo> findFirstByUser(User user , Sort sort);
+    Optional<LinkFpo> findFirstByOrderByDateDesc();
 }

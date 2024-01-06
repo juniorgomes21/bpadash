@@ -17,17 +17,14 @@ public class LinkOccupation {
     private Long fileSizeInBytes;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkOccupation")
     private List<Occupation> occupationList = new ArrayList<>();
-    @ManyToOne
-    private User user;
 
     public LinkOccupation() {
     }
 
-    public LinkOccupation(String name, Long fileSizeInBytes, String date, User user) {
+    public LinkOccupation(String name, Long fileSizeInBytes, String date) {
         this.name = name;
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(date);
-        this.user = user;
     }
 
     public Long getId() {
@@ -64,13 +61,5 @@ public class LinkOccupation {
 
     public void setOccupationList(List<Occupation> occupationList) {
         this.occupationList = occupationList;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }

@@ -21,8 +21,8 @@ public class LinkCepService {
     @Autowired
     private LinkCepRepository linkCepRepository;
 
-    public boolean exists(LocalDate date , User user) {
-        return linkCepRepository.existsByDateAndUser(date, user);
+    public boolean exists(LocalDate date) {
+        return linkCepRepository.existsByDate(date);
     }
 
 
@@ -34,18 +34,16 @@ public class LinkCepService {
         return linkCepRepository.saveAll(cepList);
     }
 
-    public Optional<LinkCep> get(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        return linkCepRepository.findFirstByUser(user, sort);
+    public Optional<LinkCep> get() {
+        return linkCepRepository.findFirstByOrderByDateDesc();
     }
 
-    public Optional<LinkCep> get(LocalDate dateLinkCep , User user) {
-        return linkCepRepository.findByDateAndUser(dateLinkCep, user);
+    public Optional<LinkCep> get(LocalDate date) {
+        return linkCepRepository.findByDate(date);
     }
 
-    public DatesSigtapDTO getDates(User user, DatesSigtap datesSigtap) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> bpaiList = linkCepRepository.findAllByUser(user, DateProjection.class, sort);
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
+        List<LinkCep> bpaiList = linkCepRepository.findAll();
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();

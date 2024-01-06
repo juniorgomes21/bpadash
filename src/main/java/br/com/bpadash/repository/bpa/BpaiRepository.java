@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BpaiRepository extends JpaRepository<Bpai, Long> {
@@ -45,4 +46,8 @@ public interface BpaiRepository extends JpaRepository<Bpai, Long> {
     List<Bpai> findByCnspacHasAndBpaIn(String key , List<Bpa> bpaList);
 
     List<Bpai> findByCboAndBpa(String s , Bpa bpa);
+
+    Bpai findTopByBpaOrderByFlhDescSeqDesc(Bpa bpa);
+
+    Optional<Bpai> findFristByCnspacHas(String key); // Optional<Bpai> findFristByCnspacHasAndBpaIn(String key , List<Bpa> bpaList);
 }

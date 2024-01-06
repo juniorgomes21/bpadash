@@ -95,8 +95,11 @@ public class BpacApi {
                 return ResponseEntity.badRequest().build();
             }
 
+            Bpa bpa = bpaOptional.get();
 
-            String response = scannerFile.createBpac(user, file, bpaOptional.get(), errorsFiles);
+            Bpac bpac = bpacService.getLast(bpa);
+
+            String response = scannerFile.createBpac(user, file, bpa, bpac, errorsFiles);
 
             switch (response) {
                 case "ERROR FILE" -> {

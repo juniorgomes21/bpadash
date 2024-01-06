@@ -1,10 +1,6 @@
-package br.com.bpadash.dto.bpa;
+package br.com.bpadash.params.bpa;
 
-import br.com.bpadash.model.TitleBpa;
-
-public class TitleBpaDTO {
-
-    private Long id;
+public class ParamUpdateTitle {
     private String iden;
     private String hdr;
     private String mvm;
@@ -19,33 +15,7 @@ public class TitleBpaDTO {
     private String versao;
     private String fim;
 
-    public TitleBpaDTO() {
-    }
-
-    public TitleBpaDTO(TitleBpa titleBpa) {
-        this.id = titleBpa.getId();
-        this.iden = titleBpa.getIden();
-        this.hdr = titleBpa.getHdr();
-        this.mvm = titleBpa.getMvm();
-        this.lin = titleBpa.getLin();
-        this.flh = titleBpa.getFlh();
-        this.smtVrf = titleBpa.getSmtVrf();
-        this.rsp = titleBpa.getRsp();
-        this.sgl = titleBpa.getSgl();
-        this.cgccpf = titleBpa.getCgccpf();
-        this.dst = titleBpa.getDst();
-        this.dstIn = titleBpa.getDstIn();
-        this.versao = titleBpa.getVersao();
-        this.fim = titleBpa.getFim();
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public ParamUpdateTitle() {
     }
 
     public String getIden() {

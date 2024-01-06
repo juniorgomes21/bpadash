@@ -13,9 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface LinkOccupationRepository extends JpaRepository<LinkOccupation, Long> {
-    Optional<LinkOccupation> findByDateAndUser(LocalDate date , User user);
 
-    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
+    Optional<LinkOccupation> findByDate(LocalDate date);
 
-    Optional<LinkOccupation> findFirstByUser(User user , Sort sort);
+    Optional<LinkOccupation> findFirstByOrderByDateDesc();
 }

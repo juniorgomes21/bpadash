@@ -38,14 +38,13 @@ public class FpoAPi {
     private LinkFpoService linkFpoService;
 
     @PostMapping("/create")
-    public ResponseEntity<List<ErrorsFile>> createFpo(@RequestPart("file") MultipartFile file, @RequestParam("paramNewFpo") String paramNewBpaJson, Authentication authentication) throws JsonProcessingException {
-        User user = userService.userInDb(1L);
+    public ResponseEntity<List<ErrorsFile>> createFpo(@RequestPart("file") MultipartFile file, @RequestParam("paramNewFpo") String paramNewBpaJson) throws JsonProcessingException {
         List<ErrorsFile> errorsFiles = new ArrayList<>();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ParamNewFpo paramNewFpo = objectMapper.readValue(paramNewBpaJson, ParamNewFpo.class);
 
-        String response = scannerFile.createFpo(file, paramNewFpo, user, errorsFiles);
+        String response = scannerFile.createFpo(file, paramNewFpo, errorsFiles);
 
         switch (response) {
             case "ERROR FILE" -> {
@@ -73,10 +72,9 @@ public class FpoAPi {
     }
 
     @GetMapping("/dates") //TODO concluido
-    public ResponseEntity<DatesDTO> dates(Authentication authentication) {
-        User user = userService.userInDb(1L);
+    public ResponseEntity<DatesDTO> dates() {
 
-        DatesDTO datesDTO = linkFpoService.getDates(user);
+        DatesDTO datesDTO = linkFpoService.getDates();
 
         return ResponseEntity.ok(datesDTO);
     }

@@ -14,6 +14,7 @@ import br.com.bpadash.repository.bpa.BpaiRepository;
 import br.com.bpadash.repository.bpa.BpaiValidationRepository;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.sigtap.*;
+import br.com.bpadash.services.user.UserService;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,14 +68,21 @@ public class BpaiService {
         String cmp = line.substring(9, 15);
         if(user.getBpaiValidation().isCmp()) {
             if(!cmp.matches("\\d+")) {
+                // TODO validar o formato AAAAMM.
                 errors.add(errorValidation("CMP", "O campo deverá ser preenchido apenas com números formato AAAAMM."));
             }
         }
 
-        String cnsmed = line.substring(15, 30);  // 4
+        String cnsmed = line.substring(15, 30);
+        if(user.getBpaiValidation().isCnsmed()) {
+            if(!cnsmed.matches("\\d+")) {
+                errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
+            }
+        }
+
         String cbo = line.substring(30, 36);
-        if(false) {
-            if(false) {
+        if(user.getBpaiValidation().isCbo()) {
+            if(!cbo.matches("\\d+")) {
                 errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
             }
         }
@@ -276,11 +285,19 @@ public class BpaiService {
     public Page<BpaiDTO> get(Bpa bpa , Pageable pageable) {
         Page<Bpai> page = bpaiRepository.findByBpa(bpa, pageable);
 
-        List<BpaiDTO> bpacDTOList = page.getContent().stream()
+        List<Bpai> bpaiList = page.getContent();
+
+        EncryptionService.decryptBpai(bpaiList);
+
+        List<BpaiDTO> bpaiDTOList = bpaiList.stream()
                 .map(bpai -> new BpaiDTO(bpai, bpa.getIdentifier()))
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
+        return new PageImpl<>(bpaiDTOList, pageable, page.getTotalElements());
+    }
+
+    public Bpai getLast(Bpa bpa) {
+        return bpaiRepository.findTopByBpaOrderByFlhDescSeqDesc(bpa);
     }
 
     public Bpai editAndSave(Bpai bpai, ParamUpdateBpai paramUpdateBpai) {
@@ -321,6 +338,8 @@ public class BpaiService {
         bpai.setEmailPcnte(paramUpdateBpai.getEmailPcnte());
         bpai.setIne(paramUpdateBpai.getIne());
 
+        EncryptionService.encryptBpai(new ArrayList<>(List.of(bpai)));
+
         return this.save(bpai);
     }
 
@@ -332,11 +351,12 @@ public class BpaiService {
             case "pa" -> this.editPa(paramBpa.getPa(), bpai, bpa);
             case "birthDate" -> this.editDtNasc(paramBpa.getDateBpa(), paramBpa.getIds(), bpai);
             case "cep" -> this.editCep(paramBpa.getCep(), paramBpa.getIds(), bpai, user);
+            case "cepBlank" -> this.editCepBlank(paramBpa.getIds(), user);
             case "qtService" -> this.editQtService(paramBpa.getQtService(), paramBpa.getIds(), bpai, user);
             case "dateBpaInvalid" -> this.editDateBpa(paramBpa.getDateBpaInvalid(), paramBpa.getIds(), bpai);
             case "race" -> this.editRace(paramBpa.getRace(), paramBpa.getIds(), bpai, user);
             case "cnsmedProfessional" -> this.editCnsmed(paramBpa.getCnsmed(), bpai, bpa);
-            case "sexProcedure" -> this.editSex(paramBpa.getIds(), bpai, user);
+            case "sexProcedure" -> this.editSex(paramBpa.getIds(), user);
             case "cbo" -> this.editCbo(paramBpa.getCbo(), bpai, bpa);
             case "ageMaxMin" -> this.editAge(paramBpa.getAge(), paramBpa.getIds(), bpai);
         }
@@ -396,15 +416,15 @@ public class BpaiService {
         }
     }
 
-    private void editSex(List<Long> ids, Bpai bpai, User user) {
+    private void editSex(List<Long> ids, User user) {
         DatesSigtap datesSigtap = datesSigtapService.get(user);
         List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
         Optional<LinkProcedure> linkProcedureOptinal;
         if(datesSigtap.isDateCepAuto()) {
-            linkProcedureOptinal = linkProcedureService.get(user);
+            linkProcedureOptinal = linkProcedureService.get();
         } else {
-            linkProcedureOptinal = linkProcedureService.get(datesSigtap.getDateCep(), user);
+            linkProcedureOptinal = linkProcedureService.get(datesSigtap.getDateCep());
         }
 
         if(linkProcedureOptinal.isPresent()) {
@@ -458,43 +478,41 @@ public class BpaiService {
     //TODO terminar esse método --- falta concluir
     private void editRace(String race, List<Long> ids, Bpai bpai, User user) {
         if(ids != null) {
-            List<Bpa> bpaList = user.getBpas();
+            List<String> racesValids = new ArrayList<>(Arrays.asList("01", "02", "03", "04", "05"));
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
-            EncryptionService.decryptCnsPac(bpaiList);
+            List<Bpa> bpaList = user.getBpas();
 
-            bpaiList.forEach( bpaix -> {
-                int count01 = 0;
-                int count02 = 0;
-                int count03 = 0;
-                int count04 = 0;
-                int count05 = 0;
+            Bpa bpa = this.get(bpaiList.get(0).getId()).get().getBpa();
+            bpaList.remove(bpa);
 
-                String key = EncryptionService.hashString(bpaix.getCnspac());
+            if(!bpaList.isEmpty()) {
+                System.out.println(LocalDateTime.now());
+                EncryptionService.decryptCnsPac(bpaiList);
 
-                List<Bpai> bpaiListDB = new ArrayList<>(); //bpaiRepository.findByCnspaHasAndBpaIn(key, bpaList);
-                if(!bpaiListDB.isEmpty()) {
-                    EncryptionService.decryptRace(bpaiListDB);
+                bpaiList.forEach( bpaix -> {
 
-                    for (Bpai bpaiC: bpaiListDB) {
-                        String racex = bpaiC.getRaca();
+                    String key = EncryptionService.hashString(bpaix.getCnspac());
 
-                        switch (racex) {
-                            case "01" -> count01++;
-                            case "02" -> count02++;
-                            case "03" -> count03++;
-                            case "04" -> count04++;
-                            case "05" -> count05++;
-                        }
-                    }
+//                    Optional<Bpai> bpaiOptional = bpaiRepository.findFristByCnspacHas(key); //bpaList
+//
+//                    bpaiOptional.ifPresent(value -> System.out.println(value.getId()));
 
+//                    bpaiOptional.ifPresent(value -> {
+//                        String newRace = EncryptionService.decrypt(value.getRaca());
+//
+//                        if (racesValids.contains(newRace)) {
+//                            bpaix.setRaca(value.getRaca());
+//                        }
+//                    });
+                });
+                System.out.println(LocalDateTime.now());
 
+                EncryptionService.encryptCnsPac(bpaiList);
+                System.out.println(LocalDateTime.now());
 
-                } else {
-
-                }
-            });
-
+//                this.save(bpaiList);
+            }
         } else {
             bpai.setRaca(EncryptionService.encrypt(race));
             this.save(bpai);
@@ -524,9 +542,9 @@ public class BpaiService {
 
             Optional<LinkProcedure> linkProcedure;
             if(datesSigtap.isDateCepAuto()) {
-                linkProcedure = linkProcedureService.get(user);
+                linkProcedure = linkProcedureService.get();
             } else {
-                linkProcedure = linkProcedureService.get(datesSigtap.getDateCep(), user);
+                linkProcedure = linkProcedureService.get(datesSigtap.getDateCep());
             }
 
             if(linkProcedure.isPresent()) {
@@ -560,9 +578,9 @@ public class BpaiService {
 
             Optional<LinkCep> linkCepOptional;
             if(datesSigtap.isDateCepAuto()) {
-                linkCepOptional = linkCepService.get(user);
+                linkCepOptional = linkCepService.get();
             } else {
-                linkCepOptional = linkCepService.get(datesSigtap.getDateCep(), user);
+                linkCepOptional = linkCepService.get(datesSigtap.getDateCep());
             }
 
             if(linkCepOptional.isPresent()) {
@@ -576,18 +594,20 @@ public class BpaiService {
                 for (Bpai cepBpai : bpaiList) {
                     String targetNumber = cepBpai.getCepPcnte();
 
-                    // Realiza a busca binária
-                    int index = Collections.binarySearch(cepList, targetNumber, Comparator.comparingInt(s -> Math.abs(Integer.parseInt(s) - Integer.parseInt(targetNumber))));
+                    if(!targetNumber.isBlank()) {
+                        // Realiza a busca binária
+                        int index = Collections.binarySearch(cepList, targetNumber, Comparator.comparingInt(s -> Math.abs(Integer.parseInt(s) - Integer.parseInt(targetNumber))));
 
-                    // Verifica se o índice encontrado é válido
-                    String closestNumber;
-                    if (index >= 0) {
-                        closestNumber = cepList.get(index);
-                    } else {
-                        closestNumber = cepList.get(0);
+                        // Verifica se o índice encontrado é válido
+                        String closestNumber;
+                        if (index >= 0) {
+                            closestNumber = cepList.get(index);
+                        } else {
+                            closestNumber = cepList.get(0);
+                        }
+
+                        cepBpai.setCepPcnte(EncryptionService.encrypt(closestNumber));
                     }
-
-                    cepBpai.setCepPcnte(EncryptionService.encrypt(closestNumber));
                 }
 
                 this.save(bpaiList);
@@ -599,6 +619,25 @@ public class BpaiService {
             this.save(bpai);
         }
     }
+
+    private void editCepBlank(List<Long> cepsIds, User user) {
+        if(cepsIds != null) {
+            List<Bpai> bpaiList = bpaiRepository.findByIdIn(cepsIds);
+            Address address = user.getAddress();
+
+            for (Bpai bpai : bpaiList) {
+                bpai.setIbge(address.getIbge());
+                bpai.setCepPcnte(address.getCep());
+                bpai.setLogradPcnte(address.getLogradouro());
+                bpai.setComplPcnte(address.getComplemento());
+//                bpai.setEndPcnte(a);
+                bpai.setBairroPcnte(address.getBairro());
+            }
+
+                this.save(bpaiList);
+            }
+    }
+
 
     private void editDtNasc(String dtNasc, List<Long> ids, Bpai bpai) {
         if(ids != null) {
@@ -773,6 +812,7 @@ public class BpaiService {
 
         return errors;
     }
+
 
 }
 

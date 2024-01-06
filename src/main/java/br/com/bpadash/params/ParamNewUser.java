@@ -12,6 +12,8 @@ public class ParamNewUser {
     @NotBlank
     private String cell;
     @NotBlank
+    private String cep;
+    @NotBlank
     private String password;
     @NotBlank
     private String password2;
@@ -49,6 +51,14 @@ public class ParamNewUser {
 
     public void setCell(String cell) {
         this.cell = cell;
+    }
+
+    public String getCep() {
+        return cep;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
     }
 
     public String getPassword() {

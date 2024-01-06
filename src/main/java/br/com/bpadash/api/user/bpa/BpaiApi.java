@@ -96,10 +96,19 @@ public class BpaiApi {
                 return ResponseEntity.badRequest().body(errorsFiles);
             }
 
-            String response = scannerFile.createBpai(file, bpaOptional.get(), user, errorsFiles);
+            Bpa bpa = bpaOptional.get();
+
+            Bpai bpai = bpaiService.getLast(bpa);
+
+            String response = scannerFile.createBpai(file, bpaOptional.get(), bpai, user, errorsFiles);
 
             switch (response) {
                 case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                case "FILE FULL" -> {
+                    errorsFiles.add(new ErrorsFile("FILE FULL"));
+
                     return ResponseEntity.badRequest().body(errorsFiles);
                 }
                 case "NOT STORAGE" -> {
@@ -179,8 +188,6 @@ public class BpaiApi {
 
             bpai = optionalBpai.get();
         }
-
-
 
         int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
 

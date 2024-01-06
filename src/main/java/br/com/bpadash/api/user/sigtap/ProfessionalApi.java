@@ -4,10 +4,7 @@ import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.professional.ProfessionalDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.errorValidation.ProfessionalErrorValidation;
-import br.com.bpadash.model.LinkProfessionals;
-import br.com.bpadash.model.Professional;
-import br.com.bpadash.model.ProfessionalComplete;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.*;
 import br.com.bpadash.params.fpo.ParamNewFpo;
 import br.com.bpadash.params.professional.ParamIdProfessional;
 import br.com.bpadash.params.professional.ParamNewProfessional;
@@ -18,6 +15,7 @@ import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.sigtap.DatesSigtapService;
 import br.com.bpadash.services.user.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +45,8 @@ public class ProfessionalApi {
     private LinkProfessionalsService linkProfessionalsService;
     @Autowired
     private ScannerFile scannerFile;
+    @Autowired
+    private DatesSigtapService datesSigtapService;
 
 
     @PostMapping("/create")
@@ -103,12 +103,17 @@ public class ProfessionalApi {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/get/{month}/{year}/{idProfessional}")
-    public ResponseEntity<Object> getProfessionals(@PathVariable int month, @PathVariable int year, @PathVariable String idProfessional, Authentication authentication) {
+    @GetMapping("/get/{idProfessional}")
+    public ResponseEntity<Object> getProfessionals(@PathVariable String idProfessional, Authentication authentication) {
         User user = userService.userInDb(1L);
-        LocalDate date = LocalDate.of(year, month, 1);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
 
-        Optional<LinkProfessionals> linkProfessionalsOptional = linkProfessionalsService.get(date, user);
+        Optional<LinkProfessionals> linkProfessionalsOptional;
+        if(datesSigtap.isDateProfessionalsAuto()) {
+            linkProfessionalsOptional = linkProfessionalsService.get();
+        } else {
+            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals());
+        }
 
         if(linkProfessionalsOptional.isPresent()) {
             LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
@@ -128,10 +133,8 @@ public class ProfessionalApi {
     }
 
     @GetMapping("/dates")
-    public ResponseEntity<DatesDTO> getDatesProfessionals(Authentication authentication) {
-        User user = userService.userInDb(1L);
-
-        return ResponseEntity.ok(linkProfessionalsService.getDates(user));
+    public ResponseEntity<DatesDTO> getDatesProfessionals() {
+        return ResponseEntity.ok(linkProfessionalsService.getDates());
     }
 
     @PostMapping("/update")

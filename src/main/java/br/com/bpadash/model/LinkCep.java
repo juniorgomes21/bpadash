@@ -18,17 +18,14 @@ public class LinkCep {
     private LocalDate date;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkCep")
     private List<Cep> cepList = new ArrayList<>();
-    @ManyToOne
-    private User user;
 
     public LinkCep() {
     }
 
-    public LinkCep(ParamNewCep paramNewCep, Long fileSizeInBytes, User user) {
+    public LinkCep(ParamNewCep paramNewCep, Long fileSizeInBytes) {
         this.name = paramNewCep.getName();
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(paramNewCep.getDate());
-        this.user = user;
     }
 
     public Long getId() {
@@ -65,13 +62,5 @@ public class LinkCep {
 
     public void setCepList(List<Cep> cepList) {
         this.cepList = cepList;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }

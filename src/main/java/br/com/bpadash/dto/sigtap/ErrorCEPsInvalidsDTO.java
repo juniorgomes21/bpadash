@@ -1,12 +1,12 @@
 package br.com.bpadash.dto.sigtap;
 
-public class ErrorCEPsDTO extends ErrorSigTapDTO{
+public class ErrorCEPsInvalidsDTO extends ErrorSigTapDTO{
     public String cepInvalid;
 
-    public ErrorCEPsDTO() {
+    public ErrorCEPsInvalidsDTO() {
     }
 
-    public ErrorCEPsDTO(Long id, String flh, String seq, String msg ,String cepInvalid) {
+    public ErrorCEPsInvalidsDTO(Long id, String flh, String seq, String msg , String cepInvalid) {
         super(id , msg , flh , seq);
         this.cepInvalid = cepInvalid;
     }

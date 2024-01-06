@@ -13,11 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface LinkProcedureRepository extends JpaRepository<LinkProcedure, Long> {
-    Optional<LinkProcedure> findByDateAndUser(LocalDate date , User user);
+    Optional<LinkProcedure> findByDate(LocalDate date);
 
-    boolean existsByDateAndUser(LocalDate date , User user);
+    boolean existsByDate(LocalDate date);
 
-    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
-
-    Optional<LinkProcedure> findFirstByUser(User user, Sort sort);
+    Optional<LinkProcedure> findFirstByOrderByDateDesc();
 }

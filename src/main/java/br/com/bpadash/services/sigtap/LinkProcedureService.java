@@ -4,7 +4,6 @@ import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
 import br.com.bpadash.model.DatesSigtap;
 import br.com.bpadash.model.LinkProcedure;
 import br.com.bpadash.model.User;
-import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.sigtap.LinkProcedureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -21,13 +20,12 @@ public class LinkProcedureService {
     @Autowired
     private LinkProcedureRepository linkProcedureRepository;
 
-    public Optional<LinkProcedure> get(User user) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        return linkProcedureRepository.findFirstByUser(user, sort);
+    public Optional<LinkProcedure> get() {
+        return linkProcedureRepository.findFirstByOrderByDateDesc();
     }
 
-    public Optional<LinkProcedure> get(LocalDate date , User user) {
-        return linkProcedureRepository.findByDateAndUser(date, user);
+    public Optional<LinkProcedure> get(LocalDate date) {
+        return linkProcedureRepository.findByDate(date);
     }
 
     public LinkProcedure save(LinkProcedure linkProcedure) {
@@ -38,13 +36,12 @@ public class LinkProcedureService {
         return linkProcedureRepository.saveAll(procedureList);
     }
 
-    public boolean exists(LocalDate date , User user) {
-        return linkProcedureRepository.existsByDateAndUser(date, user);
+    public boolean exists(LocalDate date) {
+        return linkProcedureRepository.existsByDate(date);
     }
 
-    public DatesSigtapDTO getDates(User user, DatesSigtap datesSigtap) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<DateProjection> bpaiList = linkProcedureRepository.findAllByUser(user, DateProjection.class, sort);
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
+        List<LinkProcedure> bpaiList = linkProcedureRepository.findAll();
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();

@@ -26,8 +26,10 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiList.forEach(bpai -> {
-            bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));
-            bpai.setCnspacHas(hashString(bpai.getCnspac()));
+            String cnspac = bpai.getCnspac();
+
+            bpai.setCnspac(encryptor.encrypt(cnspac));
+            bpai.setCnspacHas(cnspac.isBlank() ? "" : hashString(cnspac));
             bpai.setCid(encryptor.encrypt(bpai.getCid()));
             bpai.setNmpac(encryptor.encrypt(bpai.getNmpac()));
             bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
@@ -56,6 +58,7 @@ public class EncryptionService {
             bpai.setCid(encryptor.decrypt(bpai.getCid()));
             bpai.setNmpac(encryptor.decrypt(bpai.getNmpac()));
             bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
+            bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
             bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
             bpai.setLogradPcnte(encryptor.decrypt(bpai.getLogradPcnte()));
             bpai.setEndPcnte(encryptor.decrypt(bpai.getEndPcnte()));
@@ -75,8 +78,24 @@ public class EncryptionService {
         encryptor.setPassword(dotenv.get("ENCODE_KEY"));
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
+        bpaiListDB.forEach( bpai -> {
+            if(!bpai.getCepPcnte().isBlank()) bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
+        });
+    }
+
+    public static void decryptBpaiAddress(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
         bpaiListDB.forEach(bpai -> {
-            bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
+            if(!bpai.getCepPcnte().isBlank()) bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
+            if(!bpai.getLogradPcnte().isBlank()) bpai.setLogradPcnte(encryptor.decrypt(bpai.getLogradPcnte()));
+            if(!bpai.getComplPcnte().isBlank()) bpai.setComplPcnte(encryptor.decrypt(bpai.getComplPcnte()));
+            if(!bpai.getEndPcnte().isBlank()) bpai.setEndPcnte(encryptor.decrypt(bpai.getEndPcnte()));
+            if(!bpai.getBairroPcnte().isBlank()) bpai.setBairroPcnte(encryptor.decrypt(bpai.getBairroPcnte()));
+//            bpai.setIbge(encryptor.decrypt());
         });
     }
 
@@ -197,6 +216,19 @@ public class EncryptionService {
         });
     }
 
+    public static void encryptCnsPac(List<Bpai> bpaiListDB) {
+        Dotenv dotenv = Dotenv.load();
+
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
+        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+
+        bpaiListDB.forEach( bpai -> {
+            bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));
+        });
+    }
+
     public static void decryptProfessionalCns(List<ProfessionalComplete> professionalCompleteList) {
         Dotenv dotenv = Dotenv.load();
 
@@ -247,18 +279,26 @@ public class EncryptionService {
         encryptor.setPassword(dotenv.get("ENCODE_KEY"));
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
+
         list.forEach(professional -> {
             professional.setProfId(encryptor.decrypt(professional.getProfId()));
             professional.setName(encryptor.decrypt(professional.getName()));
             professional.setCpf(encryptor.decrypt(professional.getCpf()));
-            professional.setLogradouro(encryptor.decrypt(professional.getLogradouro()));
             professional.setNumber(encryptor.decrypt(professional.getNumber()));
+            professional.setLogradouro(encryptor.decrypt(professional.getLogradouro()));
+            professional.setNameMother(encryptor.decrypt(professional.getNameMother()));
+            professional.setBirthDate(encryptor.decrypt(professional.getBirthDate()));
+            professional.setSexo(encryptor.decrypt(professional.getSexo()));
             professional.setComplement(encryptor.decrypt(professional.getComplement()));
             professional.setBairrodist(encryptor.decrypt(professional.getBairrodist()));
             professional.setCodCep(encryptor.decrypt(professional.getCodCep()));
+            professional.setNumAgenc(encryptor.decrypt(professional.getNumAgenc()));
+            professional.setContaCc(encryptor.decrypt(professional.getContaCc()));
             professional.setCodCns(encryptor.decrypt(professional.getCodCns()));
-            professional.getDadosVinc().setCodCbo(encryptor.decrypt(professional.getDadosVinc().getCodCbo()));
-            professional.setTelephone(encryptor.decrypt(professional.getTelephone()));
+            professional.setUser(encryptor.decrypt(professional.getUser()));
+            professional.setCdRaca(encryptor.decrypt(professional.getCdRaca()));
+            professional.setNameFather(encryptor.decrypt(professional.getNameFather()));
+            professional.setTelephone(professional.getTelephone().isBlank() ? professional.getTelephone() : encryptor.decrypt(professional.getTelephone()));
         });
     }
 

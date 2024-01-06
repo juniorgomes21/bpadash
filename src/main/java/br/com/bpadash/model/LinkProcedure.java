@@ -17,17 +17,14 @@ public class LinkProcedure {
     private Long fileSizeInBytes;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkProcedure")
     private List<Procedure> procedureList = new ArrayList<>();
-    @ManyToOne
-    private User user;
 
     public LinkProcedure() {
     }
 
-    public LinkProcedure(String name, Long fileSizeInBytes, String date , User user) {
+    public LinkProcedure(String name, Long fileSizeInBytes, String date) {
         this.name = name;
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(date);
-        this.user = user;
     }
 
     public Long getId() {
@@ -66,11 +63,4 @@ public class LinkProcedure {
         this.procedureList = procedureList;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 }

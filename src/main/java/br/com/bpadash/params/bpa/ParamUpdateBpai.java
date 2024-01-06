@@ -6,7 +6,6 @@ import br.com.bpadash.validations.bpa.race.RaceValid;
 import br.com.bpadash.validations.bpa.sexo.SexoValid;
 
 public class ParamUpdateBpai {
-    //TODO fazer valida com arquivo errado no banco de dados
     //TODO alguns campos não podem ser brancos
     @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. O campo deverá ser preenchido apenas com números.")
     private String ident;

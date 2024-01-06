@@ -17,20 +17,19 @@ public class LinkFpo {
     private Long id;
     private String name;
     private Long fileSizeInBytes;
+    @Column(unique = true)
     private LocalDate date;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkFpo")
     private List<Fpo> fpoList = new ArrayList<>();
-    @ManyToOne
-    private User user;
+
 
     public LinkFpo() {
     }
 
-    public LinkFpo(ParamNewFpo paramNewFpo, Long fileSizeInBytes, User user) {
+    public LinkFpo(ParamNewFpo paramNewFpo, Long fileSizeInBytes) {
         this.name = paramNewFpo.getName();
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(paramNewFpo.getDate());
-        this.user = user;
     }
 
     public Long getId() {
@@ -59,14 +58,6 @@ public class LinkFpo {
 
     public void setDate(LocalDate date) {
         this.date = date;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public List<Fpo> getFpoList() {

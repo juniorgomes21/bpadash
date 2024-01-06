@@ -169,9 +169,9 @@ public class BpaApi {
 
         Optional<LinkProcedure> linkProcedureOptional;
         if(datesSigtap.isDateProcedureAuto()) {
-            linkProcedureOptional = linkProcedureService.get(user);
+            linkProcedureOptional = linkProcedureService.get();
         } else {
-            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
         }
 
         if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
@@ -193,7 +193,7 @@ public class BpaApi {
 
 
     /**
-     * Cep (bpaI) contigo em (banco de ceps válidos).
+     * Cep BPAI contido em (banco de ceps válidos).
      * @param paramInconsistency
      * @return
      */
@@ -206,9 +206,9 @@ public class BpaApi {
 
         Optional<LinkCep> linkCepOptional;
         if(datesSigtap.isDateProcedureAuto()) {
-            linkCepOptional = linkCepService.get(user);
+            linkCepOptional = linkCepService.get();
         } else {
-            linkCepOptional = linkCepService.get(datesSigtap.getDateCep(), user);
+            linkCepOptional = linkCepService.get(datesSigtap.getDateCep());
         }
 
         if(bpaOptional.isPresent() && linkCepOptional.isPresent()) {
@@ -219,7 +219,44 @@ public class BpaApi {
 
             EncryptionService.decryptBpaiCep(bpaiListDB);
 
-            List<ErrorCEPsDTO> errorsCEPs = cepService.verifyErrors(bpaiListDB, linkCep);
+            List<ErrorCEPsInvalidsDTO> errorsCEPs = cepService.verifyErrors(bpaiListDB, linkCep);
+
+            return ResponseEntity.ok(errorsCEPs);
+
+        }
+
+        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS CEP" : "NOT DATE EXISTS BPA");
+    }
+
+
+    /**
+     * Endereço em branco em BPAI.
+     * @param paramInconsistency
+     * @return
+     */
+    @PostMapping("/inconsistency/cep/blank")
+    public ResponseEntity<Object> inconsistencyCepBlank(@RequestBody ParamInconsistency paramInconsistency) {
+        User user = userService.userInDb(1L);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+
+        Optional<LinkCep> linkCepOptional;
+        if(datesSigtap.isDateProcedureAuto()) {
+            linkCepOptional = linkCepService.get();
+        } else {
+            linkCepOptional = linkCepService.get(datesSigtap.getDateCep());
+        }
+
+        if(bpaOptional.isPresent() && linkCepOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+            LinkCep linkCep = linkCepOptional.get();
+
+            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+
+            EncryptionService.decryptBpaiAddress(bpaiListDB);
+
+            List<ErrorCEPsInvalidsDTO> errorsCEPs = cepService.verifyErrorsBlank(bpaiListDB, linkCep);
 
             return ResponseEntity.ok(errorsCEPs);
 
@@ -244,9 +281,9 @@ public class BpaApi {
 
         Optional<LinkProcedure> linkProcedureOptional;
         if(datesSigtap.isDateProcedureAuto()) {
-            linkProcedureOptional = linkProcedureService.get(user);
+            linkProcedureOptional = linkProcedureService.get();
         } else {
-            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
         }
 
         if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
@@ -336,9 +373,9 @@ public class BpaApi {
 
         Optional<LinkProfessionals> linkProfessionalsOptional;
         if (datesSigtap.isDateProfessionalsAuto()) {
-            linkProfessionalsOptional = linkProfessionalsService.get(user);
+            linkProfessionalsOptional = linkProfessionalsService.get();
         } else {
-            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals(), user);
+            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals());
         }
 
         if(bpaOptional.isPresent() && linkProfessionalsOptional.isPresent()) {
@@ -367,7 +404,7 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/fpo")
-    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency) {
+    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency)  {
 
         User user = userService.userInDb(1L);
         DatesSigtap datesSigtap = datesSigtapService.get(user);
@@ -376,23 +413,23 @@ public class BpaApi {
 
         Optional<LinkFpo> linkFpoOptional;
         if(datesSigtap.isDateFpoAuto()) {
-            linkFpoOptional = linkFpoService.get(user);
+            linkFpoOptional = linkFpoService.get();
         } else {
-            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
+            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo());
         }
 
         Optional<LinkProcedure> linkProcedureOptional;
         if(datesSigtap.isDateProcedureAuto()) {
-            linkProcedureOptional = linkProcedureService.get(user);
+            linkProcedureOptional = linkProcedureService.get();
         } else {
-            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
         }
 
         Optional<LinkOccupation> linkOccupationOptional;
         if(datesSigtap.isDateOccupationAuto()) {
-            linkOccupationOptional = linkOccupationService.get(user);
+            linkOccupationOptional = linkOccupationService.get();
         } else {
-            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation(), user);
+            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation());
         }
 
         if(bpaOptional.isPresent() && linkFpoOptional.isPresent() && linkProcedureOptional.isPresent() && linkOccupationOptional.isPresent()) {
@@ -435,9 +472,9 @@ public class BpaApi {
 
         Optional<LinkProcedure> linkProcedureOptional;
         if(datesSigtap.isDateProcedureAuto()) {
-            linkProcedureOptional = linkProcedureService.get(user);
+            linkProcedureOptional = linkProcedureService.get();
         } else {
-            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure(), user);
+            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
         }
 
         if(bpaOptional.isPresent() && linkProcedureOptional.isPresent()) {
@@ -474,9 +511,9 @@ public class BpaApi {
 
         Optional<LinkOccupation> linkOccupationOptional;
         if(datesSigtap.isDateOccupationAuto()) {
-            linkOccupationOptional = linkOccupationService.get(user);
+            linkOccupationOptional = linkOccupationService.get();
         } else {
-            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation(), user);
+            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation());
         }
 
         if(bpaOptional.isPresent() && linkOccupationOptional.isPresent()) {
@@ -530,9 +567,16 @@ public class BpaApi {
             List<ErrorsFile> errorsFileList = new ArrayList<>();
             List<ErrorValidationDTO> errors = new ArrayList<>();
 
+
             String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch);
             switch (response) {
                 case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+                case "ERROR FORMAT DATE" -> {
+                    errors.add(new ErrorValidationDTO("ERROR FORMAT DATE" , "Erro na formação da data do arquivo BPA. Por favor verifique a data no título do arquivo."));
+                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
+
                     return ResponseEntity.badRequest().body(errorsFileList);
                 }
                 case "NOT STORAGE" -> {

@@ -13,11 +13,10 @@ import java.util.Optional;
 
 @Repository
 public interface LinkCepRepository extends JpaRepository<LinkCep, Long> {
-    boolean existsByDateAndUser(LocalDate date , User user);
 
-    Optional<LinkCep> findByDateAndUser(LocalDate dateLinkCep , User user);
+    boolean existsByDate(LocalDate date);
 
-    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
+    Optional<LinkCep> findByDate(LocalDate date);
 
-    Optional<LinkCep> findFirstByUser(User user , Sort sort);
+    Optional<LinkCep> findFirstByOrderByDateDesc();
 }

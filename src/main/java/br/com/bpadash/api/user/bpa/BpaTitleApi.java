@@ -1,21 +1,25 @@
 package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.bpa.TitleBpaDTO;
+import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.model.Bpa;
+import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.TitleBpa;
 import br.com.bpadash.model.User;
+import br.com.bpadash.params.bpa.ParamUpdateBpai;
+import br.com.bpadash.params.bpa.ParamUpdateTitle;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.TitleBpaService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/title")
@@ -51,4 +55,24 @@ public class BpaTitleApi {
 
         return ResponseEntity.ok(new TitleBpaDTO(titleBpa));
     }
+
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<Object> editBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateTitle paramUpdateTitle) {
+        try {
+            List<ErrorValidationDTO> erros = new ArrayList<>();
+
+            Optional<TitleBpa> optionalTitle = titleBpaService.get(id);
+            if(optionalTitle.isEmpty()) {
+                erros.add(new ErrorValidationDTO("id", "O id não existe."));
+                return ResponseEntity.badRequest().body(erros);
+            }
+
+            TitleBpaDTO titleBpaDTO = new TitleBpaDTO(titleBpaService.editAndSave(optionalTitle.get(), paramUpdateTitle));
+
+            return ResponseEntity.ok(titleBpaDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }
