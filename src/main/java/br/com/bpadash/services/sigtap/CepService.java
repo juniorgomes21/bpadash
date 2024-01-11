@@ -30,9 +30,6 @@ public class CepService {
     @Autowired
     private CepRepository cepRepository;
 
-    @Autowired
-    private AddressService addressService;
-
 
     public Cep create(String line, int numberLine, LinkCep linkCep, List<ErrorsFile> errorsFiles) {
         String cep = "";

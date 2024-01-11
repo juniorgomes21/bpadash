@@ -6,7 +6,6 @@ import br.com.bpadash.model.*;
 import br.com.bpadash.params.professional.ParamNewProfessional;
 import br.com.bpadash.params.professional.ParamUpdateProfessional;
 import br.com.bpadash.repository.professional.ProfessionalCompleteRepository;
-import br.com.bpadash.repository.professional.ProfessionalRepository;
 import br.com.bpadash.services.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,19 +18,8 @@ import java.util.Optional;
 public class ProfessionalService {
 
     @Autowired
-    private ProfessionalRepository professionalRepository;
-
-    @Autowired
     private ProfessionalCompleteRepository professionalCompleteRepository;
 
-    public List<Professional> create(List<ParamNewProfessional> paramNewProfessionals, User user) {
-        List<Professional> professionals = new ArrayList<>();
-        paramNewProfessionals.forEach(paramNewProfessional -> {
-            professionals.add(new Professional(paramNewProfessional, user));
-        });
-
-        return professionals;
-    }
 
     public ProfessionalComplete save(ProfessionalComplete professional) {
         return professionalCompleteRepository.save(professional);
@@ -39,19 +27,6 @@ public class ProfessionalService {
 
     public List<ProfessionalComplete> save(List<ProfessionalComplete> professionalList) {
         return professionalCompleteRepository.saveAll(professionalList);
-    }
-
-    public List<Integer> exist(List<ParamNewProfessional> paramNewProfessionals) {
-
-        List<Integer> integers = new ArrayList<>();
-        paramNewProfessionals.forEach( professional -> {
-            Optional<Professional> professionalOptional = professionalRepository.findByCns(professional.getCns());
-            if(professionalOptional.isPresent()) {
-                integers.add(professional.getId());
-            }
-        });
-
-        return integers;
     }
 
     public List<ErrorSigTapDTO> verifyErrors(List<Bpai> bpaiListDB , List<ProfessionalComplete> professionalCompleteList) {
@@ -85,7 +60,8 @@ public class ProfessionalService {
     }
 
     public ProfessionalComplete get(LinkProfessionals linkProfessionals , String idProfessional) {
-        Optional<ProfessionalComplete> professionalCompleteOptional = professionalCompleteRepository.findByKeyProfIdAndLinkProfessionals(EncryptionService.hashString(idProfessional), linkProfessionals);
+        String key = EncryptionService.hashString(idProfessional);
+        Optional<ProfessionalComplete> professionalCompleteOptional = professionalCompleteRepository.findByKeyProfIdAndLinkProfessionals(key, linkProfessionals);
 
         return professionalCompleteOptional.orElse(null);
     }

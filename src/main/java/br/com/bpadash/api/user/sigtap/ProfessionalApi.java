@@ -5,12 +5,9 @@ import br.com.bpadash.dto.professional.ProfessionalDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.errorValidation.ProfessionalErrorValidation;
 import br.com.bpadash.model.*;
-import br.com.bpadash.params.fpo.ParamNewFpo;
-import br.com.bpadash.params.professional.ParamIdProfessional;
 import br.com.bpadash.params.professional.ParamNewProfessional;
 import br.com.bpadash.params.professional.ParamNewProfessionals;
 import br.com.bpadash.params.professional.ParamUpdateProfessional;
-import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
@@ -28,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -38,75 +34,18 @@ public class ProfessionalApi {
 
     @Autowired
     private UserService userService;
-
     @Autowired
     private ProfessionalService professionalService;
     @Autowired
     private LinkProfessionalsService linkProfessionalsService;
     @Autowired
-    private ScannerFile scannerFile;
-    @Autowired
     private DatesSigtapService datesSigtapService;
 
 
-    @PostMapping("/create")
-    public ResponseEntity<ProfessionalErrorValidation> createProf(@RequestBody @Valid List<ParamNewProfessional> paramNewProfessionals, Authentication authentication) {
-        try {
-            User user = userService.userInDb(1L);
-
-            if(user.getProfissionalNumberFree() < paramNewProfessionals.size()) {
-                return ResponseEntity.badRequest().body(new ProfessionalErrorValidation("NOT STORAGE"));
-            }
-
-            List<Integer> professionalsInvalids = professionalService.exist(paramNewProfessionals);
-            if(professionalsInvalids.size() > 0) {
-                return ResponseEntity.badRequest().body(new ProfessionalErrorValidation("INVALID PROF", professionalsInvalids));
-            }
-
-            List<Professional> professionals = professionalService.create(paramNewProfessionals, user);
-
-//            professionalService.save(professionals);
-//            userService.addProfessionals(professionals, user);
-
-            return ResponseEntity.ok().build();
-
-        } catch (ConstraintViolationException e) {
-            System.out.println("Erro de validação em add profissional");
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/create/file") //TODO concluído
-    public ResponseEntity<List<ErrorsFile>> createProfFile(@RequestPart("file") MultipartFile file,  @RequestParam("paramNewProfessionals") String paramNewProfessionalsJson, Authentication authentication) throws JsonProcessingException {
-        User user = userService.userInDb(1L);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        ParamNewProfessionals paramNewProfessionals = objectMapper.readValue(paramNewProfessionalsJson, ParamNewProfessionals.class);
-
-        List<ErrorsFile> errorsFileList = new ArrayList<>();
-
-        String response = scannerFile.createProfessionals(file, user, paramNewProfessionals);
-
-        switch (response) {
-            case "NOT STORAGE" -> {
-                errorsFileList.add(new ErrorsFile("NOT STORAGE"));
-
-                return ResponseEntity.badRequest().body(errorsFileList);
-            }
-            case "EXIST DATE" -> {
-                errorsFileList.add(new ErrorsFile("EXIST DATE"));
-
-                return ResponseEntity.badRequest().body(errorsFileList);
-            }
-        }
-
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/get/{idProfessional}")
     public ResponseEntity<Object> getProfessionals(@PathVariable String idProfessional, Authentication authentication) {
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<LinkProfessionals> linkProfessionalsOptional;
         if(datesSigtap.isDateProfessionalsAuto()) {
@@ -132,21 +71,4 @@ public class ProfessionalApi {
         return ResponseEntity.badRequest().body("NOT EXIST DATE PROFESSIONALS");
     }
 
-    @GetMapping("/dates")
-    public ResponseEntity<DatesDTO> getDatesProfessionals() {
-        return ResponseEntity.ok(linkProfessionalsService.getDates());
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<Object> updateProfessional(@RequestBody @Valid ParamUpdateProfessional paramUpdateProfessional) {
-        ProfessionalComplete professionalComplete = professionalService.get(paramUpdateProfessional.getId());
-
-        if(professionalComplete != null) {
-            professionalService.updateAndSave(professionalComplete, paramUpdateProfessional);
-
-            return ResponseEntity.ok().body(new ProfessionalDTO(professionalComplete));
-        }
-
-        return ResponseEntity.badRequest().body("NOT FOUND ID");
-    }
 }

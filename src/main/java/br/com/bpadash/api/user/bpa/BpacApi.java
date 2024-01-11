@@ -6,7 +6,6 @@ import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpac;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
@@ -56,7 +55,7 @@ public class BpacApi {
             @PathVariable @Valid @NotBlank String identifier,
             Authentication authentication
     ) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.get(identifier, user);
         Page<BpacDTO> page = bpacService.get(bpa, pageable);
 
@@ -70,7 +69,7 @@ public class BpacApi {
             @PathVariable int year,
             Authentication authentication
     ) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.getForDate(month, year, user);
 
         if(bpa == null) {
@@ -85,7 +84,7 @@ public class BpacApi {
     @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
         try {
-            User user = userService.userInDb(1L);
+            User user = userService.get(authentication);
             List<ErrorsFile> errorsFiles = new ArrayList<>();
 
             LocalDate localDate = LocalDate.of(year, month, 1);
@@ -140,7 +139,7 @@ public class BpacApi {
     }
 
     @PostMapping("/update/{id}")
-    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa) {
+    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
 
         Optional<Bpac> optionalBpac = bpacService.get(id);
         if(optionalBpac.isEmpty()) {
@@ -154,7 +153,7 @@ public class BpacApi {
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
         if(paramBpa.getKey().equals("cbo") || paramBpa.getKey().equals("pa")) {
-            user  = userService.userInDb(1L);
+            user  = userService.get(authentication);
             bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
 
             if(bpaOptional.isEmpty()) {
@@ -170,7 +169,7 @@ public class BpacApi {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Object> deleteBpac(@RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
+    public ResponseEntity<Object> deleteBpac(@RequestBody @Valid ParamDeleteBpac paramDeleteBpac) {
         try {
             Bpac bpac = bpacService.bpacId(paramDeleteBpac.getList().get(0));
 

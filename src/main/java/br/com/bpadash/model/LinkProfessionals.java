@@ -19,17 +19,14 @@ public class LinkProfessionals {
     private Long fileSizeInBytes;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkProfessionals")
     private List<ProfessionalComplete> professionalCompleteList = new ArrayList<>();
-    @ManyToOne
-    private User user;
 
     public LinkProfessionals() {
     }
 
-    public LinkProfessionals(ParamNewProfessionals paramNewProfessionals, Long fileSizeInBytes, User user) {
+    public LinkProfessionals(ParamNewProfessionals paramNewProfessionals, Long fileSizeInByte) {
         this.name = paramNewProfessionals.getName();
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(paramNewProfessionals.getDate());
-        this.user = user;
     }
 
     public Long getId() {
@@ -66,13 +63,5 @@ public class LinkProfessionals {
 
     public void setProfessionalCompleteList(List<ProfessionalComplete> professionalCompleteList) {
         this.professionalCompleteList = professionalCompleteList;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 }

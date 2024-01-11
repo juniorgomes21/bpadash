@@ -1,23 +1,21 @@
 package br.com.bpadash.services.user;
 
+import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.TimeLineUserDTO;
 import br.com.bpadash.model.*;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.treatment.TreatmentFile;
-import br.com.bpadash.params.ParamNewUser;
+import br.com.bpadash.params.user.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
 import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
-import br.com.bpadash.services.sigtap.CepService;
-import br.com.bpadash.services.treatment.TreatmentFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -34,27 +32,25 @@ public class UserService {
     private BpaiService bpaiService;
 
 
-    public User logged(Authentication authentication) {
+    public User get(Authentication authentication) {
+        User user;
+        if(authentication.getPrincipal() instanceof User) {
+            user = (User) authentication.getPrincipal();
+            Optional<User> userDb = userRepository.findById(user.getId());
+
+            return userDb.orElse(null);
+        }
+
+        return null;
+    }
+
+    public User userLogado(Authentication authentication) {
         User user = null;
-        if (authentication.getPrincipal() instanceof User){
+        if(authentication.getPrincipal() instanceof User) {
             user = (User) authentication.getPrincipal();
         }
 
         return user;
-    }
-
-    public User userInDb(Long id) {
-        Optional<User> user = userRepository.findById(id);
-
-        return user.orElse(null);
-
-    }
-
-    public User userInDb(String cpf) {
-        Optional<User> player = userRepository.findByCpf(cpf);
-
-        return player.orElse(null);
-
     }
 
     @Transactional
@@ -62,10 +58,11 @@ public class UserService {
         User user = new User();
 
         user.setName(paramNewUser.getName());
-        user.setCpf(paramNewUser.getCpf());
+        user.setCnpj(paramNewUser.getCnpj());
         user.setEmail(paramNewUser.getEmail());
         user.setCell(paramNewUser.getCell());
         user.setAddress(address);
+        user.setDatesSigtap(new DatesSigtap());
         user.setProfile(Role.USER.name());
         user.setBpacValidation(new BpacValidation());
         user.setBpaiValidation(new BpaiValidation());
@@ -75,7 +72,6 @@ public class UserService {
 
         return this.save(user);
     }
-
 
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
         user.getBpas().add(bpa);
@@ -166,7 +162,6 @@ public class UserService {
         return timeLineUserDTOS;
     }
 
-
     public void updateStorageAndSave(User user, Long totalBytes, String action) {
         if(action.equals("sub")) {
             user.setStorageUsed(user.getStorageUsed() + totalBytes);
@@ -177,5 +172,21 @@ public class UserService {
         }
 
         this.saveAndFlush(user);
+    }
+
+    public boolean testPassword(User user, String password) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    public UserDTO updatePassword(User user, String currentPassword) {
+        BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
+        String newPassword = bc.encode(currentPassword);
+
+        user.setPassword(newPassword);
+        user.setChangePass(true);
+
+        return new UserDTO(userRepository.save(user));
     }
 }

@@ -1,8 +1,9 @@
 package br.com.bpadash.services.adm;
 
+import br.com.bpadash.model.Address;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.enumModel.Role;
-import br.com.bpadash.params.ParamNewAdm;
+import br.com.bpadash.params.adm.ParamNewAdm;
 import br.com.bpadash.repository.AdministratorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ public class AdmServices {
             adm = (Administrator) authentication.getPrincipal();
         }
 
+        assert adm != null;
         adm = administratorRepository.findByCpf(adm.getCpf()).get();
 
         return adm;
@@ -29,15 +31,15 @@ public class AdmServices {
     public boolean testPassword(String password, Authentication authentication) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         Administrator adm = this.admLogado(authentication);
-        boolean result = passwordEncoder.matches(password, adm.getPassword());
 
-        return result;
+        return passwordEncoder.matches(password, adm.getPassword());
     }
 
-    public void createAdministrador(ParamNewAdm paramNewAdm) {
+    public void createAdministrador(ParamNewAdm paramNewAdm, Address address) {
         Administrator administrator = new Administrator();
         administrator.setName(paramNewAdm.getName());
         administrator.setCpf(paramNewAdm.getCpf());
+        administrator.setAddress(address);
         administrator.setEmail(paramNewAdm.getEmail());
         administrator.setCell(paramNewAdm.getCell());
         administrator.setProfile(Role.ADMINISTRATOR.name());

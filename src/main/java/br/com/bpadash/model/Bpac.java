@@ -145,6 +145,17 @@ public class Bpac {
 
     @Override
     public String toString() {
-        return ident  + cnes + cmp + cbo + flh +  seq + pa + idade + qt + org + fim;
+        return
+                ident  +
+                (cnes.isBlank() ? "       " : cnes) +
+                (cmp.isBlank() ? "      " : cmp) +
+                (cbo.isBlank() ? "      " : cbo) +
+                flh +
+                seq +
+                (pa.isBlank() ? "          " : pa) +
+                (idade.isBlank() ? "000" : idade) +
+                (qt.isBlank() ? "      " : qt) +
+                org +
+                (fim.isBlank() ? "  " : fim);
     }
 }

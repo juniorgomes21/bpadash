@@ -30,6 +30,28 @@ public class BpacService {
     @Autowired
     private BpacValidationRepository bpacValidationRepository;
 
+
+    public Optional<Bpac> get(Long id) {
+
+        return bpacRepository.findById(id);
+    }
+
+    public List<Bpac> get(Bpa bpa) {
+
+        return bpacRepository.findByBpa(bpa);
+    }
+
+    public Page<BpacDTO> get(Bpa bpa , Pageable pageable) {
+        Page<Bpac> page = bpacRepository.findByBpa(bpa, pageable);
+
+        List<BpacDTO> bpacDTOList = page.getContent().stream()
+                .map(bpac -> new BpacDTO(bpac, bpa.getIdentifier()))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
+    }
+
+
     public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 
             List<ErrorValidationDTO> errors = new ArrayList<>();
@@ -154,6 +176,7 @@ public class BpacService {
         bpac.setIdade(paramUpdateBpac.getIdade());
         bpac.setQt(paramUpdateBpac.getQt());
         bpac.setOrg(paramUpdateBpac.getOrg());
+        bpac.setFim(paramUpdateBpac.getFim());
 
         return this.save(bpac);
     }
@@ -222,7 +245,6 @@ public class BpacService {
         bpacRepository.deleteAll(bpacList);
     }
 
-    @Transactional
     public void delete(Bpa bpa) {
         bpacRepository.deleteByBpa(bpa);
     }
@@ -235,21 +257,6 @@ public class BpacService {
     public List<Bpac> getBpacList(Bpa bpa) {
 
         return bpacRepository.findByBpa(bpa);
-    }
-
-    public Optional<Bpac> get(Long id) {
-
-        return bpacRepository.findById(id);
-    }
-
-    public Page<BpacDTO> get(Bpa bpa , Pageable pageable) {
-        Page<Bpac> page = bpacRepository.findByBpa(bpa, pageable);
-
-        List<BpacDTO> bpacDTOList = page.getContent().stream()
-                .map(bpac -> new BpacDTO(bpac, bpa.getIdentifier()))
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
     }
 
     private ErrorValidationDTO errorValidation(String field, String message) {

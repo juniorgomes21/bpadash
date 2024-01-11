@@ -1,12 +1,10 @@
-package br.com.bpadash.params;
+package br.com.bpadash.params.user;
 
 import javax.validation.constraints.NotBlank;
 
-public class ParamNewUser {
+public class ParamBase {
     @NotBlank
     private String name;
-    @NotBlank
-    private String cpf;
     @NotBlank
     private String email;
     @NotBlank
@@ -18,7 +16,7 @@ public class ParamNewUser {
     @NotBlank
     private String password2;
 
-    public ParamNewUser() {
+    public ParamBase() {
     }
 
     public String getName() {
@@ -27,14 +25,6 @@ public class ParamNewUser {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
     }
 
     public String getEmail() {

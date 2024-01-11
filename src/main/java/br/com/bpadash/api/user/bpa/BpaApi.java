@@ -22,6 +22,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +48,6 @@ public class BpaApi {
     private TitleBpaService titleBpaService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private FpoService fpoService;
     @Autowired
     private LinkFpoService linkFpoService;
     @Autowired
@@ -72,16 +74,42 @@ public class BpaApi {
     
     @GetMapping("/get/all")
     public ResponseEntity<List<BpaDTO>> getAll(Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         List<BpaDTO> bpaDTOList = bpaService.getAll(user);
 
         return ResponseEntity.ok(bpaDTOList);
     }
 
+    @GetMapping("/get/pa/cbo/{month}/{year}")
+    public ResponseEntity<Page<BpaiDTO>> getBpaPaCbo(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
+            @PathVariable int month,
+            @PathVariable int year,
+            Authentication authentication
+    ) {
+        User user = userService.get(authentication);
+        Bpa bpa = bpaService.getForDate(month, year, user);
+
+        if(bpa == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        List<Bpac> bpacList = bpacService.get(bpa);
+        List<Bpai> bpaiList = bpaiService.get(bpa);
+
+        List<String> paCbo = new ArrayList<>();
+
+//        bpacList.forEach( bpac -> {
+//            List<String> pa
+//        });
+
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/get/{month}/{year}")
     public ResponseEntity<BpaDTO> getBpa(@PathVariable int month, @PathVariable int year, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.getForDate(month, year, user);
 
         if(bpa == null) {
@@ -94,7 +122,7 @@ public class BpaApi {
     @GetMapping("/generateFile/{identifier}")
     public ResponseEntity<byte[]> generateTextFile(@PathVariable String identifier, Authentication authentication) {
         try {
-            User user = userService.userInDb(1L);
+            User user = userService.get(authentication);
             Bpa bpa = bpaService.get(identifier, user);
 
             StringBuilder fileContent = bpaService.createFile(bpa);
@@ -114,7 +142,7 @@ public class BpaApi {
 
     @PostMapping("/delete")
     public ResponseEntity<Object> deleteMany(@RequestBody List<String> identifiers, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         identifiers.forEach(identifier -> {
             Bpa bpa = bpaService.get(identifier, user);
@@ -132,16 +160,16 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/date/age")
-    public ResponseEntity<Object> inconsistencyDates(@RequestBody ParamInconsistency paramInconsistency) {
+    public ResponseEntity<Object> inconsistencyDates(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
 
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptBpaiDtNasc(bpaiListDB);
 
@@ -160,10 +188,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/date/procedure")
-    public ResponseEntity<Object> inconsistencyDatesProcedure(@RequestBody ParamInconsistency paramInconsistency) {
-
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyDatesProcedure(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -178,7 +205,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkProcedure linkProcedure = linkProcedureOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptBpaiIdade(bpaiListDB);
 
@@ -198,9 +225,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/cep")
-    public ResponseEntity<Object> inconsistencyCep(@RequestBody ParamInconsistency paramInconsistency) {
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyCep(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -215,7 +242,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkCep linkCep = linkCepOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptBpaiCep(bpaiListDB);
 
@@ -235,9 +262,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/cep/blank")
-    public ResponseEntity<Object> inconsistencyCepBlank(@RequestBody ParamInconsistency paramInconsistency) {
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyCepBlank(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -252,7 +279,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkCep linkCep = linkCepOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptBpaiAddress(bpaiListDB);
 
@@ -272,10 +299,10 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/qtServices")
-    public ResponseEntity<Object> inconsistencyQtServices(@RequestBody ParamInconsistency paramInconsistency) {
+    public ResponseEntity<Object> inconsistencyQtServices(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
 
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -290,7 +317,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkProcedure linkProcedure = linkProcedureOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             List<ErrorQtMaxDTODTO> errors = bpaiService.verifyErrorsQtServices(linkProcedure.getProcedureList(), bpaiListDB);
 
@@ -307,9 +334,8 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/service")
-    public ResponseEntity<Object> inconsistencyMonthBpa(@RequestBody ParamInconsistency paramInconsistency) {
-
-        User user = userService.userInDb(1L);
+    public ResponseEntity<Object> inconsistencyMonthBpa(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -317,7 +343,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
 
             TitleBpa titleBpa = titleBpaService.get(bpa);
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             List<ErrorDtAtendDTODTO> errors = bpaService.verifyErrorsDtAtend(bpaiListDB, titleBpa);
 
@@ -335,16 +361,15 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/race")
-    public ResponseEntity<Object> inconsistencyRace(@RequestBody ParamInconsistency paramInconsistency) {
-
-        User user = userService.userInDb(1L);
+    public ResponseEntity<Object> inconsistencyRace(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptRace(bpaiListDB);
 
@@ -364,10 +389,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/professionals")
-    public ResponseEntity<Object> inconsistencyProfessionals(@RequestBody ParamInconsistency paramInconsistency) {
-
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyProfessionals(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -382,7 +406,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
 
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             List<ProfessionalComplete> professionalCompleteList = linkProfessionals.getProfessionalCompleteList();
 
@@ -404,10 +428,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/fpo")
-    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency)  {
-
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication)  {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -440,7 +463,7 @@ public class BpaApi {
             LinkOccupation linkOccupation = linkOccupationOptional.get();
 
             List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             //Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
             Set<String> procedurePa = linkProcedure.getProcedureList().stream().map(Procedure::getCodProcedimento).collect(Collectors.toSet());
@@ -464,9 +487,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/procedure")
-    public ResponseEntity<Object> inconsistencyProdution(@RequestBody ParamInconsistency paramInconsistency) {
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyProdution(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -482,7 +505,7 @@ public class BpaApi {
             LinkProcedure linkProcedure = linkProcedureOptional.get();
 
             List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptSex(bpaiListDB);
 
@@ -502,10 +525,9 @@ public class BpaApi {
      * @return
      */
     @PostMapping("/inconsistency/occupation")
-    public ResponseEntity<Object> inconsistencyOccupation(@RequestBody ParamInconsistency paramInconsistency) {
-
-        User user = userService.userInDb(1L);
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+    public ResponseEntity<Object> inconsistencyOccupation(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication) {
+        User user = userService.get(authentication);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
@@ -521,7 +543,7 @@ public class BpaApi {
             LinkOccupation linkOccupation = linkOccupationOptional.get();
 
             List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
-            List<Bpai> bpaiListDB = bpaiService.getBpaiList(bpa);
+            List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             Set<String> occupationPa = linkOccupation.getOccupationList().stream()
                     .map(Occupation::getCodProcedimento)
@@ -546,7 +568,7 @@ public class BpaApi {
 
     @PostMapping("/delete/{identifier}")
     public ResponseEntity<Object> deleteBPA(@PathVariable String identifier, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.get(identifier, user);
 
         bpaService.delete(bpa, user);
@@ -559,7 +581,7 @@ public class BpaApi {
         try {
             StopWatch stopWatch = StopWatch.createStarted();
 
-            User user = userService.userInDb(1L);
+            User user = userService.get(authentication);
 
             ObjectMapper objectMapper = new ObjectMapper();
             ParamNewBpa paramNewBpa = objectMapper.readValue(paramNewBpaJson, ParamNewBpa.class);
@@ -606,7 +628,7 @@ public class BpaApi {
 
     @GetMapping("/dates")
     public ResponseEntity<DatesDTO> dates(Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         DatesDTO datesDTO = bpaService.getDates(user);
 

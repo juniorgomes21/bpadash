@@ -514,9 +514,9 @@ public class ScannerFile {
     }
 
     @Transactional
-    public String createProfessionals(MultipartFile file, User user, ParamNewProfessionals paramNewProfessionals) {
+    public String createProfessionals(MultipartFile file, ParamNewProfessionals paramNewProfessionals) {
         try {
-            LinkProfessionals linkProfessionals = new LinkProfessionals(paramNewProfessionals, file.getSize(), user);
+            LinkProfessionals linkProfessionals = new LinkProfessionals(paramNewProfessionals, file.getSize());
 
             if(linkProfessionalsService.exist(linkProfessionals.getDate())) {
                 return "EXIST DATE";
@@ -671,16 +671,8 @@ public class ScannerFile {
 
             EncryptionService.encrypt(professionalCompleteList);
 
-            long totalBytes = storageService.quantityBytes(professionalCompleteList);
-
-            if(user.getStorageFree() < totalBytes) {
-                return "NOT STORAGE";
-            }
-
             linkProfessionals.getProfessionalCompleteList().addAll(professionalCompleteList);
             linkProfessionalsService.save(linkProfessionals);
-
-            userService.updateStorageAndSave(user, totalBytes, "sub");
 
             return "CREATE";
         } catch (IllegalArgumentException | ParserConfigurationException | IOException | SAXException e) {

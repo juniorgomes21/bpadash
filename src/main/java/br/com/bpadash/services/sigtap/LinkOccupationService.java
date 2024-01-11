@@ -94,7 +94,7 @@ public class LinkOccupationService {
 
         return new DatesSigtapDTO(
                 datesSigtap.getId(),
-                "OCU",
+                "Ocupação",
                 datesSigtap.isDateOccupationAuto(),
                 dateCurrent,
                 years,

@@ -4,10 +4,13 @@ import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.ProfessionalComplete;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
+import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class EncryptionService {
 
@@ -30,20 +33,20 @@ public class EncryptionService {
 
             bpai.setCnspac(encryptor.encrypt(cnspac));
             bpai.setCnspacHas(cnspac.isBlank() ? "" : hashString(cnspac));
-            bpai.setCid(encryptor.encrypt(bpai.getCid()));
-            bpai.setNmpac(encryptor.encrypt(bpai.getNmpac()));
-            bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
-            bpai.setDtnasc(encryptor.encrypt(bpai.getDtnasc()));
-            bpai.setCepPcnte(encryptor.encrypt(bpai.getCepPcnte()));
-            bpai.setLogradPcnte(encryptor.encrypt(bpai.getLogradPcnte()));
-            bpai.setEndPcnte(encryptor.encrypt(bpai.getEndPcnte()));
-            bpai.setComplPcnte(encryptor.encrypt(bpai.getComplPcnte()));
-            bpai.setNumPcnte(encryptor.encrypt(bpai.getNumPcnte()));
-            bpai.setSexo(encryptor.encrypt(bpai.getSexo()));
-            bpai.setRaca(encryptor.encrypt(bpai.getRaca()));
-            bpai.setBairroPcnte(encryptor.encrypt(bpai.getBairroPcnte()));
-            bpai.setDdtelPcnte(encryptor.encrypt(bpai.getDdtelPcnte()));
-            bpai.setEmailPcnte(encryptor.encrypt(bpai.getEmailPcnte()));
+            bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.encrypt(bpai.getCid()));
+            bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.encrypt(bpai.getNmpac()));
+            bpai.setIdade(bpai.getIdade().isBlank() ? bpai.getIdade() : encryptor.encrypt(bpai.getIdade()));
+            bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.encrypt(bpai.getDtnasc()));
+            bpai.setCepPcnte(bpai.getCepPcnte().isBlank() ? bpai.getCepPcnte() : encryptor.encrypt(bpai.getCepPcnte()));
+            bpai.setLogradPcnte(bpai.getLogradPcnte().isBlank() ? bpai.getLogradPcnte() : encryptor.encrypt(bpai.getLogradPcnte()));
+            bpai.setEndPcnte(bpai.getEndPcnte().isBlank() ? bpai.getEndPcnte() : encryptor.encrypt(bpai.getEndPcnte()));
+            bpai.setComplPcnte(bpai.getComplPcnte().isBlank() ? bpai.getComplPcnte() : encryptor.encrypt(bpai.getComplPcnte()));
+            bpai.setNumPcnte(bpai.getNumPcnte().isBlank() ? bpai.getNumPcnte() : encryptor.encrypt(bpai.getNumPcnte()));
+            bpai.setSexo(bpai.getSexo().isBlank() ? bpai.getSexo() : encryptor.encrypt(bpai.getSexo()));
+            bpai.setRaca(bpai.getRaca().isBlank() ? bpai.getRaca() : encryptor.encrypt(bpai.getRaca()));
+            bpai.setBairroPcnte(bpai.getBairroPcnte().isBlank() ? bpai.getBairroPcnte() : encryptor.encrypt(bpai.getBairroPcnte()));
+            bpai.setDdtelPcnte(bpai.getDdtelPcnte().isBlank() ? bpai.getDdtelPcnte() : encryptor.encrypt(bpai.getDdtelPcnte()));
+            bpai.setEmailPcnte(bpai.getEmailPcnte().isBlank() ? bpai.getEmailPcnte() : encryptor.encrypt(bpai.getEmailPcnte()));
         });
     }
 
@@ -54,23 +57,24 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach(bpai -> {
-            bpai.setCnspac(encryptor.decrypt(bpai.getCnspac()));
-            bpai.setCid(encryptor.decrypt(bpai.getCid()));
-            bpai.setNmpac(encryptor.decrypt(bpai.getNmpac()));
-            bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
-            bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
-            bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
-            bpai.setLogradPcnte(encryptor.decrypt(bpai.getLogradPcnte()));
-            bpai.setEndPcnte(encryptor.decrypt(bpai.getEndPcnte()));
-            bpai.setComplPcnte(encryptor.decrypt(bpai.getComplPcnte()));
-            bpai.setNumPcnte(encryptor.decrypt(bpai.getNumPcnte()));
-            bpai.setSexo(encryptor.decrypt(bpai.getSexo()));
-            bpai.setRaca(encryptor.decrypt(bpai.getRaca()));
-            bpai.setBairroPcnte(encryptor.decrypt(bpai.getBairroPcnte()));
-            bpai.setDdtelPcnte(encryptor.decrypt(bpai.getDdtelPcnte()));
-            bpai.setEmailPcnte(encryptor.decrypt(bpai.getEmailPcnte()));
+            bpai.setCnspac(bpai.getCnspac().isBlank() ? bpai.getCnspac() : encryptor.decrypt(bpai.getCnspac()));
+            bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.decrypt(bpai.getCid()));
+            bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.decrypt(bpai.getNmpac()));
+            bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.decrypt(bpai.getDtnasc()));
+            bpai.setIdade(bpai.getIdade().isBlank() ? bpai.getIdade() : encryptor.decrypt(bpai.getIdade()));
+            bpai.setCepPcnte(bpai.getCepPcnte().isBlank() ? bpai.getCepPcnte() : encryptor.decrypt(bpai.getCepPcnte()));
+            bpai.setLogradPcnte(bpai.getLogradPcnte().isBlank() ? bpai.getLogradPcnte() : encryptor.decrypt(bpai.getLogradPcnte()));
+            bpai.setEndPcnte(bpai.getEndPcnte().isBlank() ? bpai.getEndPcnte() : encryptor.decrypt(bpai.getEndPcnte()));
+            bpai.setComplPcnte(bpai.getComplPcnte().isBlank() ? bpai.getComplPcnte() : encryptor.decrypt(bpai.getComplPcnte()));
+            bpai.setNumPcnte(bpai.getNumPcnte().isBlank() ? bpai.getNumPcnte() : encryptor.decrypt(bpai.getNumPcnte()));
+            bpai.setSexo(bpai.getSexo().isBlank() ? bpai.getSexo() : encryptor.decrypt(bpai.getSexo()));
+            bpai.setRaca(bpai.getRaca().isBlank() ? bpai.getRaca() : encryptor.decrypt(bpai.getRaca()));
+            bpai.setBairroPcnte(bpai.getBairroPcnte().isBlank() ? bpai.getBairroPcnte() : encryptor.decrypt(bpai.getBairroPcnte()));
+            bpai.setDdtelPcnte(bpai.getDdtelPcnte().isBlank() ? bpai.getDdtelPcnte() : encryptor.decrypt(bpai.getDdtelPcnte()));
+            bpai.setEmailPcnte(bpai.getEmailPcnte().isBlank() ? bpai.getEmailPcnte() : encryptor.decrypt(bpai.getEmailPcnte()));
         });
     }
+
 
     public static void decryptBpaiCep(List<Bpai> bpaiListDB) {
         Dotenv dotenv = Dotenv.load();
@@ -95,7 +99,6 @@ public class EncryptionService {
             if(!bpai.getComplPcnte().isBlank()) bpai.setComplPcnte(encryptor.decrypt(bpai.getComplPcnte()));
             if(!bpai.getEndPcnte().isBlank()) bpai.setEndPcnte(encryptor.decrypt(bpai.getEndPcnte()));
             if(!bpai.getBairroPcnte().isBlank()) bpai.setBairroPcnte(encryptor.decrypt(bpai.getBairroPcnte()));
-//            bpai.setIbge(encryptor.decrypt());
         });
     }
 
@@ -106,7 +109,11 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach(bpai -> {
-            bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
+            try {
+                if(!bpai.getDtnasc().isBlank()) bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
+            } catch (EncryptionOperationNotPossibleException e) {
+                System.out.println(bpai.getId());
+            }
         });
     }
 
@@ -145,7 +152,7 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach(bpai -> {
-            bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
+            if(!bpai.getIdade().isBlank()) bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
         });
     }
 
@@ -158,8 +165,8 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach(bpai -> {
-            bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
-            bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
+            if(!bpai.getIdade().isBlank()) bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
+            if(!bpai.getDtnasc().isBlank()) bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
         });
     }
 
@@ -177,18 +184,6 @@ public class EncryptionService {
         });
     }
 
-    public static void encryptRace(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
-        bpaiListDB.forEach( bpai -> {
-            bpai.setRaca(encryptor.encrypt(bpai.getRaca()));
-        });
-    }
 
     public static void decryptRace(List<Bpai> bpaiListDB) {
         Dotenv dotenv = Dotenv.load();
@@ -212,6 +207,7 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach( bpai -> {
+            bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
             bpai.setCnspac(encryptor.decrypt(bpai.getCnspac()));
         });
     }
@@ -225,7 +221,7 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiListDB.forEach( bpai -> {
-            bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));
+            if(!bpai.getCnspac().isBlank()) bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));;
         });
     }
 
@@ -249,9 +245,11 @@ public class EncryptionService {
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
 
-        list.forEach(professional -> {
-            professional.setProfId(encryptor.encrypt(professional.getProfId()));
-            professional.setKeyProfId(hashString(professional.getProfId()));
+        list.forEach( professional -> {
+            String profId = professional.getProfId();
+
+            professional.setProfId(encryptor.encrypt(profId));
+            professional.setKeyProfId(hashString(profId));
             professional.setCpf(encryptor.encrypt(professional.getCpf()));
             professional.setName(encryptor.encrypt(professional.getName()));
             professional.setNameMother(encryptor.encrypt(professional.getNameMother()));
@@ -269,7 +267,6 @@ public class EncryptionService {
             professional.setCdRaca(encryptor.encrypt(professional.getCdRaca()));
             professional.setNameFather(encryptor.encrypt(professional.getNameFather()));
             professional.setTelephone(professional.getTelephone().isBlank() ? professional.getTelephone() : encryptor.encrypt(professional.getTelephone()));
-//            professional.getDadosVinc().setCodCbo(encryptor.encrypt(professional.getDadosVinc().getCodCbo()));
         });
     }
 
@@ -308,7 +305,7 @@ public class EncryptionService {
         encryptor.setPassword(dotenv.get("ENCODE_KEY"));
         encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
-        return encryptor.decrypt(encryptedData);
+        return encryptedData.isBlank() ? encryptedData : encryptor.decrypt(encryptedData);
     }
 
     public static String hashString(String s) {

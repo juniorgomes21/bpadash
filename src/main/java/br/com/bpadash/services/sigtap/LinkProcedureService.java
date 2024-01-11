@@ -97,7 +97,7 @@ public class LinkProcedureService {
 
         return new DatesSigtapDTO(
                 datesSigtap.getId(),
-                "OCU",
+                "Procedimento",
                 datesSigtap.isDateProcedureAuto(),
                 dateCurrent,
                 years,

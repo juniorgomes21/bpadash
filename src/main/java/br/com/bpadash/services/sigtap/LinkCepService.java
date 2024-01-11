@@ -99,7 +99,7 @@ public class LinkCepService {
 
         return new DatesSigtapDTO(
                 datesSigtap.getId(),
-                "OCU",
+                "CEP",
                 datesSigtap.isDateCepAuto(),
                 dateCurrent,
                 years,

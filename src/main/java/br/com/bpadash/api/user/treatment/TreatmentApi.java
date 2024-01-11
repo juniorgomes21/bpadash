@@ -56,14 +56,14 @@ public class TreatmentApi {
 
     @GetMapping("/get/pa")
     public ResponseEntity<TreatmentPaDTO> getTreatmentPa(Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         return ResponseEntity.ok(new TreatmentPaDTO(user.getTreatmentFile()));
     }
 
     @PostMapping("/create/pa")
     public ResponseEntity<Object> createTreatmentPa(@RequestBody @Valid ParamTreatmentPa paramTreatmentPa, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPa, user, false);
 
@@ -80,7 +80,7 @@ public class TreatmentApi {
 
     @PostMapping("/edit/pa/{id}")
     public ResponseEntity<Object> editTreatmentPa(@PathVariable Long id, @RequestBody @Valid ParamTreatmentPa paramTreatmentPa, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPa, user, true);
 
@@ -95,7 +95,7 @@ public class TreatmentApi {
 
     @PostMapping("/play/pa/{id}")
     public ResponseEntity<Object> playTreatmentPa(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
@@ -107,7 +107,7 @@ public class TreatmentApi {
             if(ruleTreatmentPa.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
 
             List<Bpai> bpaiList = new ArrayList<>();
-            if(ruleTreatmentPa.isExecuteBpai()) bpaiList = bpaiService.getBpaiList(bpa);
+            if(ruleTreatmentPa.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
             int count = treatmentFileService.executeRulePa(bpacList, bpaiList, ruleTreatmentPa);
 
@@ -123,7 +123,7 @@ public class TreatmentApi {
 
     @PostMapping("/delete/pa/{id}")
     public ResponseEntity<Object> deleteRulePa(@PathVariable Long id, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         if(treatmentFileService.removeAndSaveRulePa(id, user) != null) ruleTreatmentPaService.delete(id);
 
@@ -131,7 +131,7 @@ public class TreatmentApi {
     }
 
     @PostMapping("/update/execute/file/{id}")
-    public ResponseEntity<Object> updateExecuteFile(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile, Authentication authentication) {
+    public ResponseEntity<Object> updateExecuteFile(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile) {
 
         RuleTreatmentPa ruleTreatmentPa = ruleTreatmentPaService.get(id);
         ruleTreatmentPaService.updateAndSave(ruleTreatmentPa, paramUpdateExecuteFile);
@@ -143,14 +143,14 @@ public class TreatmentApi {
 
     @GetMapping("/get/pa/cbo")
     public ResponseEntity<TreatmentPaCboDTO> getTreatmentPaCbo(Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         return ResponseEntity.ok(new TreatmentPaCboDTO(user.getTreatmentFile()));
     }
 
     @PostMapping("/play/pa/cbo/{id}")
     public ResponseEntity<Object> playTreatmentPaCbo(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
@@ -162,7 +162,7 @@ public class TreatmentApi {
             if(ruleTreatmentPaCbo.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
 
             List<Bpai> bpaiList = new ArrayList<>();
-            if(ruleTreatmentPaCbo.isExecuteBpai()) bpaiList = bpaiService.getBpaiList(bpa);
+            if(ruleTreatmentPaCbo.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
             int count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, ruleTreatmentPaCbo);
 
@@ -178,7 +178,7 @@ public class TreatmentApi {
 
     @PostMapping("/create/pa/cbo")
     public ResponseEntity<Object> createTreatmentPa(@RequestBody @Valid ParamTreatmentPaCbo paramTreatmentPaCbo, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPaCbo, user, false);
 
@@ -197,7 +197,7 @@ public class TreatmentApi {
 
     @PostMapping("/edit/pa/cbo/{id}")
     public ResponseEntity<Object> editTreatmentPa(@PathVariable Long id, @RequestBody @Valid ParamTreatmentPaCbo paramTreatmentPaCbo, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPaCbo, user, true);
 
@@ -212,7 +212,7 @@ public class TreatmentApi {
 
     @PostMapping("/delete/pa/cbo/{id}")
     public ResponseEntity<Object> deleteRulePaCbo(@PathVariable Long id, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         if(treatmentFileService.removeAndSaveRulePaCbo(id, user)) ruleTreatmentPaCboService.delete(id);
 
@@ -220,7 +220,7 @@ public class TreatmentApi {
     }
 
     @PostMapping("/update/execute/pa/cbo/file/{id}")
-    public ResponseEntity<Object> updateExecutePaCboFile(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile, Authentication authentication) {
+    public ResponseEntity<Object> updateExecutePaCboFile(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile) {
 
         RuleTreatmentPaCbo ruleTreatmentPaCbo = ruleTreatmentPaCboService.get(id);
         ruleTreatmentPaCboService.updateAndSave(ruleTreatmentPaCbo, paramUpdateExecuteFile);
@@ -232,14 +232,14 @@ public class TreatmentApi {
 
     @GetMapping("/get/pa/delete")
     public ResponseEntity<TreatmentPaDeleteDTO> getTreatmentPaDelete(Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         return ResponseEntity.ok(new TreatmentPaDeleteDTO(user.getTreatmentFile()));
     }
 
     @PostMapping("/create/pa/delete")
     public ResponseEntity<Object> createTreatmentPaDelete(@RequestBody @Valid ParamTreatmentPaDelete paramTreatmentPaDelete, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPaDelete, user, false);
 
@@ -256,7 +256,7 @@ public class TreatmentApi {
 
     @PostMapping("/play/pa/delete/{id}")
     public ResponseEntity<Object> playTreatmentPaDelete(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
@@ -268,7 +268,7 @@ public class TreatmentApi {
             if(ruleTreatmentPaDelete.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
 
             List<Bpai> bpaiList = new ArrayList<>();
-            if(ruleTreatmentPaDelete.isExecuteBpai()) bpaiList = bpaiService.getBpaiList(bpa);
+            if(ruleTreatmentPaDelete.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
             int count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, ruleTreatmentPaDelete, user);
 
@@ -284,7 +284,7 @@ public class TreatmentApi {
 
     @PostMapping("/edit/pa/delete/{id}")
     public ResponseEntity<Object> editTreatmentPaDelete(@PathVariable Long id, @RequestBody @Valid ParamTreatmentPaDelete paramTreatmentPaDelete, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         String response = treatmentFileService.isValidParans(paramTreatmentPaDelete, user, true);
 
@@ -298,7 +298,7 @@ public class TreatmentApi {
     }
 
     @PostMapping("/update/execute/pa/file/{id}")
-    public ResponseEntity<Object> updateExecuteFilePa(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile, Authentication authentication) {
+    public ResponseEntity<Object> updateExecuteFilePa(@PathVariable Long id, @RequestBody @Valid ParamUpdateExecuteFile paramUpdateExecuteFile) {
 
         RuleTreatmentPaDelete ruleTreatmentPaDelete = ruleTreatmentPaDeleteService.get(id);
         ruleTreatmentPaDeleteService.updateAndSave(ruleTreatmentPaDelete, paramUpdateExecuteFile);
@@ -308,7 +308,7 @@ public class TreatmentApi {
 
     @PostMapping("/pa/delete/{id}")
     public ResponseEntity<Object> deleteRulePaDelete(@PathVariable Long id, Authentication authentication) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
 
         if(treatmentFileService.removeAndSaveRulePaDelete(id, user)) ruleTreatmentPaDeleteService.delete(id);
 
@@ -319,8 +319,8 @@ public class TreatmentApi {
 
     @GetMapping("/get/cep")
     public ResponseEntity<TreatmentPaDeleteDTO> getCep(Authentication authentication) {
-        User user = userService.userInDb(1L);
-//        DatesSigtap datesSigtap = datesSigtapService.get(user);
+        User user = userService.get(authentication);
+//        DatesSigtap datesSigtap = user.getDatesSigtap();
 //        Optional<LinkCep> linkCepOptional;
 //        if(datesSigtap.isDateProcedureAuto()) {
 //            linkCepOptional = linkCepService.get(user);

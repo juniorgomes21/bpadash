@@ -18,6 +18,7 @@ public class BpaValidator implements ConstraintValidator<BpaValid, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+
         if (value == null || value.trim().isEmpty()) {
             return true;
         }

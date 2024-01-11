@@ -64,12 +64,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/aux/**").permitAll()
 
                 // ---- Padrão API ADM ----
-                .antMatchers("/api/ADM/auth").hasAuthority(Role.ADMINISTRATOR.getName())
-                .antMatchers("/api/ADM/configurations/create").hasAuthority(Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/adm/auth").permitAll()
+                .antMatchers("/api/adm/configurations/create").permitAll() //.hasAuthority(Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/adm/configurations/create/user").hasAuthority(Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/adm/sigtap/**").hasAuthority(Role.ADMINISTRATOR.getName())
 
-                // ---- Padrão API USER ----
-                // <---------------------------------------------> rotas para atualizar permições.
+
+                // ---- Padrão API USER -------------------------->
 //                .antMatchers("/api/dash/bpa/**").hasAuthority(Role.USER.getName())
+                .antMatchers("/api/auth").permitAll()
                 .antMatchers("/api/title/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/user/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/bpa/**").hasAuthority(Role.USER.getName())
@@ -77,15 +80,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/bpai/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/bpac/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/sigtap/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
+
                 .antMatchers("/api/fpo/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
                 .antMatchers("/api/prof/**").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
 
                 // <--------------------------------------------->
 
-                .antMatchers("/api/auth").permitAll()
-                .antMatchers("/api/configurations/create").permitAll()
-
-                .antMatchers("/test/token").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/test/token").hasAnyAuthority(Role.USER.getName(), Role.ADMINISTRATOR.getName())
 
                 .anyRequest().authenticated()
                 .and().csrf().disable()

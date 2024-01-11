@@ -49,13 +49,14 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
         String subject = tokenApp.getSubject(token);
 
         UsernamePasswordAuthenticationToken authentication;
-        if(subject.matches("\\d+")) {
-            Administrator adm = this.admRepository.findByCpf(subject).get();
-            authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
 
-        } else {
-            User user = this.userRepository.findByEmail(subject).get();
+        Optional<User> userOptional = this.userRepository.findByEmail(subject);
+        if(userOptional.isPresent()) {
+            User user = userOptional.get();
             authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        } else {
+            Administrator adm = this.admRepository.findByEmail(subject).get();
+            authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

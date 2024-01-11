@@ -14,7 +14,6 @@ import br.com.bpadash.repository.bpa.BpaiRepository;
 import br.com.bpadash.repository.bpa.BpaiValidationRepository;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.sigtap.*;
-import br.com.bpadash.services.user.UserService;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -337,6 +336,7 @@ public class BpaiService {
         bpai.setDdtelPcnte(paramUpdateBpai.getDdtelPcnte());
         bpai.setEmailPcnte(paramUpdateBpai.getEmailPcnte());
         bpai.setIne(paramUpdateBpai.getIne());
+        bpai.setFim(paramUpdateBpai.getFim());
 
         EncryptionService.encryptBpai(new ArrayList<>(List.of(bpai)));
 
@@ -417,7 +417,7 @@ public class BpaiService {
     }
 
     private void editSex(List<Long> ids, User user) {
-        DatesSigtap datesSigtap = datesSigtapService.get(user);
+        DatesSigtap datesSigtap = user.getDatesSigtap();
         List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
         Optional<LinkProcedure> linkProcedureOptinal;
@@ -538,7 +538,7 @@ public class BpaiService {
 
     private void editQtService(List<Integer> qtService, List<Long> ids, Bpai bpai, User user) {
         if(ids != null) {
-            DatesSigtap datesSigtap = datesSigtapService.get(user);
+            DatesSigtap datesSigtap = user.getDatesSigtap();
 
             Optional<LinkProcedure> linkProcedure;
             if(datesSigtap.isDateCepAuto()) {
@@ -574,7 +574,7 @@ public class BpaiService {
 
     private void editCep(String cep , List<Long> cepsIds, Bpai bpai, User user) {
         if(cepsIds != null) {
-            DatesSigtap datesSigtap = datesSigtapService.get(user);
+            DatesSigtap datesSigtap = user.getDatesSigtap();
 
             Optional<LinkCep> linkCepOptional;
             if(datesSigtap.isDateCepAuto()) {
@@ -724,7 +724,7 @@ public class BpaiService {
         return bpaiRepository.calculateSizeById(listIds);
     }
 
-    public List<Bpai> getBpaiList(Bpa bpa) {
+    public List<Bpai> get(Bpa bpa) {
         return bpaiRepository.findByBpa(bpa);
     }
 

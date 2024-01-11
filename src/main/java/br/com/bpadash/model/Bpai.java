@@ -449,86 +449,45 @@ public class Bpai {
         this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
     }
 
-    public String toStringEncrypt() {
-        return  ident +
-                cnes +
-                cmp +
-                cnsmed +
-                cbo +
-                dtaten +
-                flh +
-                seq +
-                pa +
-                EncryptionService.encrypt(cnspac) +
-                EncryptionService.encrypt(sexo) +
-                ibge +
-                EncryptionService.encrypt(cid) +
-                idade +
-                qt +
-                caten +
-                naut +
-                org +
-                EncryptionService.encrypt(nmpac) +
-                EncryptionService.encrypt(dtnasc) +
-                EncryptionService.encrypt(raca) +
-                etnia +
-                nac +
-                srv +
-                clf +
-                equipeSeq +
-                equipeArea +
-                cnpj +
-                EncryptionService.encrypt(cepPcnte) +
-                EncryptionService.encrypt(logradPcnte) +
-                EncryptionService.encrypt(endPcnte) +
-                EncryptionService.encrypt(complPcnte) +
-                EncryptionService.encrypt(numPcnte) +
-                EncryptionService.encrypt(bairroPcnte) +
-                EncryptionService.encrypt(ddtelPcnte) +
-                EncryptionService.encrypt(emailPcnte) +
-                ine +
-                fim;
-    }
-
     @Override
     public String toString() {
         return  ident +
-                cnes +
-                cmp +
-                cnsmed +
-                cbo +
-                dtaten +
+                (cnes.isBlank() ? "       " : cnes) +
+                (cmp.isBlank() ? "      " : cmp) +
+                (cnsmed.isBlank() ? "               " : cnsmed)  +
+                (cbo.isBlank() ? "      " : cbo) +
+                (dtaten.isBlank() ? "        " : dtaten) +
                 flh +
                 seq +
-                pa +
-                cnspac +
+                (pa.isBlank() ? "          " : pa) +
+                (cnspac.isBlank() ? "               " : cnspac) +
                 sexo +
-                ibge +
-                cid +
-                idade +
-                qt +
-                caten +
-                naut +
+                (ibge.isBlank() ? "      " : ibge) +
+                (cid.isBlank() ? "    " : cid) +
+                (idade.isBlank() ? "000" : idade) +
+                (qt.isBlank() ? "      " : qt) +
+                (caten.isBlank() ? "  " : caten) +
+                (naut.isBlank() ? "             " : naut) +
                 org +
-                nmpac +
-                dtnasc +
+                (nmpac.isBlank() ? "                              " : nmpac) +
+                (dtnasc.isBlank() ? "        " : dtaten) +
                 raca +
-                etnia +
-                nac +
-                srv +
-                clf +
-                equipeSeq +
-                equipeArea +
-                cnpj +
-                cepPcnte +
-                logradPcnte +
-                endPcnte +
-                complPcnte +
-                numPcnte +
-                bairroPcnte +
-                ddtelPcnte +
-                emailPcnte +
-                ine +
-                fim;
+                (etnia.isBlank() ? "    " : etnia) +
+                (nac.isBlank() ? "   " : nac) +
+                (srv.isBlank() ? "   " : srv) +
+                (clf.isBlank() ? "   " : clf) +
+                (equipeSeq.isBlank() ? "        " : equipeSeq) +
+                (equipeArea.isBlank() ? "    " : equipeArea) +
+                (cnpj.isBlank() ? "              " : cnpj) +
+                (cepPcnte.isBlank() ? "        " : cepPcnte) +
+                (logradPcnte.isBlank() ? "   " : logradPcnte) +
+                (endPcnte.isBlank() ? "                              " : endPcnte) +
+                (complPcnte.isBlank() ? "          " : complPcnte) +
+                (numPcnte.isBlank() ? "     " : numPcnte) +
+                (bairroPcnte.isBlank() ? "                              " : bairroPcnte) +
+                (ddtelPcnte.isBlank() ? "           " : ddtelPcnte)+
+                (emailPcnte.isBlank() ? "                                        " : emailPcnte) +
+                (ine.isBlank() ? "          " : ine) +
+                (fim.isBlank() ? "  " : fim);
     }
 }

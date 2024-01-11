@@ -117,7 +117,9 @@ public class BpaService {
 
         TitleBpa titleBpa = titleBpaService.get(bpa);
         List<Bpac> bpacList = bpacService.getBpacList(bpa);
-        List<Bpai> bpaiList = bpaiService.getBpaiList(bpa);
+        List<Bpai> bpaiList = bpaiService.get(bpa);
+
+        EncryptionService.decryptBpai(bpaiList);
 
         fileContent.append(titleBpa.toString() );
         fileContent.append("\n");
@@ -161,7 +163,7 @@ public class BpaService {
         bpaiService.delete(bpa);
         titleBpaService.delete(bpa);
 
-        userService.updateStorageAndSave(user, bpa.getFileSizeInBytesInt(), "subtract");
+        userService.updateStorageAndSave(user, bpa.getFileSizeInBytesInt(), "add");
         userService.save(user);
 
         bpaRepository.delete(bpa);
@@ -187,8 +189,8 @@ public class BpaService {
                 boolean beffore1900 = date.getYear() < 1900;
 
                 if(beffore1900 || comparison < 0) {
-                    String name = EncryptionService.decrypt(bpai.getNmpac());
-                    String age = EncryptionService.decrypt(bpai.getIdade());
+                    String name = bpai.getNmpac().isBlank() ? bpai.getNmpac() : EncryptionService.decrypt(bpai.getNmpac());
+                    String age = bpai.getIdade().isBlank() ? bpai.getIdade() : EncryptionService.decrypt(bpai.getIdade());
 
                     errors.add(new ErrorAgeDatesDTO(
                             bpai.getId(),
@@ -196,16 +198,16 @@ public class BpaService {
                             flh,
                             seq,
                             name,
-                            age, //String.valueOf(Integer.parseInt(age) / 12),
+                            age,
                             date.toString(),
                             beffore1900));
                 }
 
             } catch (Exception e) {
-                String name = EncryptionService.decrypt(bpai.getNmpac());
-                String age = EncryptionService.decrypt(bpai.getIdade());
-                System.out.println("bpia " + bpai.getId());
-                String date = bpai.getDtnasc().substring(0, 4) + "-" + bpai.getDtnasc().substring(4, 6) + "-" + bpai.getDtnasc().substring(6, 8);
+                String name = bpai.getNmpac().isBlank() ? bpai.getNmpac() : EncryptionService.decrypt(bpai.getNmpac());
+                String age = bpai.getIdade().isBlank() ? bpai.getIdade() : EncryptionService.decrypt(bpai.getIdade());
+                String date = bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : bpai.getDtnasc().substring(0, 4) + "-" + bpai.getDtnasc().substring(4, 6) + "-" + bpai.getDtnasc().substring(6, 8);
+
                 errors.add(new ErrorAgeDatesDTO(
                         bpai.getId(),
                         "ERROR FORMATION DATE",

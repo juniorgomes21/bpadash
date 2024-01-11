@@ -2,26 +2,18 @@ package br.com.bpadash.dto;
 
 import br.com.bpadash.dto.bpa.BpacValidationDTO;
 import br.com.bpadash.dto.bpa.BpaiValidationDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.BpacValidation;
-import br.com.bpadash.model.BpaiValidation;
 import br.com.bpadash.model.User;
-import br.com.bpadash.model.enumModel.ZoneTime;
 import br.com.bpadash.services.user.StorageService;
-
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserDTO {
     private String name;
     private String email;
+    private String cnpj;
     private String cell;
     private boolean valid;
+    private boolean changePass;
     private String storageTotal;
+    private AddressDTO address;
     private BpacValidationDTO bpacValidation;
     private BpaiValidationDTO bpaiValidation;
 
@@ -32,10 +24,13 @@ public class UserDTO {
         this.name = user.getName();
         this.email = user.getEmail();
         this.cell = user.getCell();
+        this.cnpj = user.getCnpj();
         this.valid = user.isValid();
+        this.changePass = user.isChangePass();
         this.storageTotal = StorageService.formatBytes(user.getStorageTotal());
         this.bpacValidation = new BpacValidationDTO(user.getBpacValidation());
         this.bpaiValidation = new BpaiValidationDTO(user.getBpaiValidation());
+        this.address = new AddressDTO(user.getAddress());
     }
 
     public String getName() {
@@ -52,6 +47,22 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
+    }
+
+    public boolean isChangePass() {
+        return changePass;
+    }
+
+    public void setChangePass(boolean changePass) {
+        this.changePass = changePass;
     }
 
     public String getCell() {
@@ -76,6 +87,14 @@ public class UserDTO {
 
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    public AddressDTO getAddress() {
+        return address;
+    }
+
+    public void setAddress(AddressDTO address) {
+        this.address = address;
     }
 
     public BpacValidationDTO getBpacValidation() {

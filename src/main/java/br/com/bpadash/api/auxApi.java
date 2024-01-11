@@ -11,12 +11,14 @@ import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/aux")
@@ -59,32 +61,10 @@ public class auxApi {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/ping")
-    public ResponseEntity<Object> ping() {
-        Optional<User> user = userRepository.findById(1L);
-        List<Bpa> bpaList = bpaRepository.findByUser(user.get());
-        List<Bpai> bpaiList = bpaiRepository.findByBpa(bpaList.get(0));
+    @PostMapping("/ping/{num}")
+    public ResponseEntity<Object> ping(@PathVariable String num) {
 
-        EncryptionService.decryptCnsPac(bpaiList);
-
-        bpaiList.forEach( bpaix -> {
-
-            String key = EncryptionService.hashString(bpaix.getCnspac());
-
-            Optional<Bpai> bpaiOptional = bpaiRepository.findFristByCnspacHas(key); //bpaList
-
-            bpaiOptional.ifPresent(value -> System.out.println(value.getId()));
-
-            bpaiOptional.ifPresent(value -> {
-                String newRace = EncryptionService.decrypt(value.getRaca());
-
-//                    if (racesValids.contains(newRace)) {
-//                        bpaix.setRaca(value.getRaca());
-//                    }
-            });
-        });
-
-        return ResponseEntity.ok("pong");
+        return ResponseEntity.ok(EncryptionService.hashString(num));
     }
 
     @PostMapping("/add/erros/pa")

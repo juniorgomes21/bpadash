@@ -108,7 +108,7 @@ public class LinkProfessionalsService {
 
         return new DatesSigtapDTO(
                 datesSigtap.getId(),
-                "OCU",
+                "Profissionais",
                 datesSigtap.isDateProfessionalsAuto(),
                 dateCurrent,
                 years,

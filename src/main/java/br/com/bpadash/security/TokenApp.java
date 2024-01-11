@@ -21,22 +21,22 @@ public class TokenApp {
     private String secret;
 
     public String gerarTokenAdm(Authentication authentication) {
-        Administrator administrador = (Administrator) authentication.getPrincipal();
+        Administrator administrator = (Administrator) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setIssuer("Adm App dpadash")
-                .setSubject(administrador.getCpf())
-                .signWith(SignatureAlgorithm.HS512, "amdLogged")
+                .setSubject(administrator.getEmail())
+                .signWith(SignatureAlgorithm.HS512, "userLogged")
                 .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 100000)) // 10000
                 .compact();
     }
 
     public String gerarToken(Authentication authentication) {
-        User userLogged = (User) authentication.getPrincipal();
+        User user = (User) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setIssuer("User App dpadash")
-                .setSubject(userLogged.getEmail())
+                .setSubject(user.getEmail())
                 .signWith(SignatureAlgorithm.HS512, "userLogged")
                 .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 100000)) // 10000
                 .compact();

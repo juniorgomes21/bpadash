@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/ADM")
+@RequestMapping("/api/test/token")
 public class IsValidToken {
 
-    @GetMapping("/test/token")
+    @GetMapping
     public ResponseEntity<Boolean> isValidToken() {
 
         return ResponseEntity.ok(true);

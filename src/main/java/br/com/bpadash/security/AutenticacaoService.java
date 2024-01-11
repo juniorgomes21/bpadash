@@ -43,7 +43,7 @@ public class AutenticacaoService implements UserDetailsService {
 
         }
 
-        Optional<Administrator> adm = admRepository.findByCpf(username);
+        Optional<Administrator> adm = admRepository.findByEmail(username);
 
         if (adm.isPresent()) {
             Administrator administrator = adm.get();

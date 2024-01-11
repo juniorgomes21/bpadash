@@ -9,10 +9,6 @@ public class CountProfessionalDTO {
     public CountProfessionalDTO() {
     }
 
-    public CountProfessionalDTO(User user) {
-        this.profissionalNumberFree = user.getProfissionalNumberFree();
-        this.totalProfissional = user.getTotalProfissional();
-    }
 
     public int getProfissionalNumberFree() {
         return profissionalNumberFree;

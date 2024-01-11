@@ -20,18 +20,17 @@ public class User implements UserDetails {
     private Long id;
     private String name;
     @Column(unique = true)
-    private String cpf;
+    private String cnpj;
     @Column(unique = true)
     private String email;
     private String password;
     private String cell;
     private String profile;
-    private int profissionalNumberFree = 500;
-    private int totalProfissional = 500;
     private Long storageUsed = 0L;
-    private Long storageFree = 1073741824L;
-    private Long storageTotal = 1073741824L; // 1GB
+    private Long storageFree = 524288000L;
+    private Long storageTotal = 524288000L; // 500MB
     private boolean valid = true;
+    private boolean changePass = false;
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     @OneToMany(fetch = FetchType.EAGER)
@@ -42,9 +41,10 @@ public class User implements UserDetails {
     private BpaiValidation bpaiValidation;
     @OneToOne(cascade = CascadeType.ALL)
     private TreatmentFile treatmentFile;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     private Address address;
-
+    @OneToOne(cascade = CascadeType.ALL)
+    private DatesSigtap datesSigtap;
 
     public User() {}
 
@@ -60,12 +60,12 @@ public class User implements UserDetails {
         this.name = name;
     }
 
-    public String getCpf() {
-        return cpf;
+    public String getCnpj() {
+        return cnpj;
     }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
     }
 
 
@@ -97,20 +97,12 @@ public class User implements UserDetails {
         this.profile = profile;
     }
 
-    public int getProfissionalNumberFree() {
-        return profissionalNumberFree;
+    public boolean isChangePass() {
+        return changePass;
     }
 
-    public void setProfissionalNumberFree(int profissionalNumberFree) {
-        this.profissionalNumberFree = profissionalNumberFree;
-    }
-
-    public int getTotalProfissional() {
-        return totalProfissional;
-    }
-
-    public void setTotalProfissional(int totalProfissional) {
-        this.totalProfissional = totalProfissional;
+    public void setChangePass(boolean changePass) {
+        this.changePass = changePass;
     }
 
     public Long getStorageUsed() {
@@ -199,6 +191,14 @@ public class User implements UserDetails {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    public DatesSigtap getDatesSigtap() {
+        return datesSigtap;
+    }
+
+    public void setDatesSigtap(DatesSigtap datesSigtap) {
+        this.datesSigtap = datesSigtap;
     }
 
     @Override

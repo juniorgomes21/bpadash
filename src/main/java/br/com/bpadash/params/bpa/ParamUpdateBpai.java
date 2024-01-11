@@ -5,56 +5,77 @@ import br.com.bpadash.validations.bpa.org.OrgValid;
 import br.com.bpadash.validations.bpa.race.RaceValid;
 import br.com.bpadash.validations.bpa.sexo.SexoValid;
 
+import javax.validation.constraints.NotBlank;
+
 public class ParamUpdateBpai {
     //TODO alguns campos não podem ser brancos
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. O campo deverá ser preenchido apenas com números.")
     private String ident;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 7, message = "O tamanho do campo deve ser 7. O campo deverá ser preenchido apenas com números adicionar zeros à esquerda.")
     private String cnes;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. O campo deverá ser preenchido apenas com números formato AAAAMM.")
     private String cmp;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 15, message = "O tamanho do campo deve ser 15. O campo deverá ser preenchido apenas com números.")
     private String cnsmed;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 6, alfa = true, message = "O tamanho do campo deve ser 6. Código conforme a Classificação Brasileira de ocupações (CBO).")
     private String cbo;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. O campo deverá ser preenchido apenas com números formato AAAAMMDD")
     private String dtaten;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Adicionar zeros à esquerda de um inteiro.")
     private String flh;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. Adicionar zeros à esquerda de um inteiro.")
     private String seq;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 10, message = "O tamanho do campo deve ser 10. Adicionar zeros à esquerda.")
     private String pa;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 15, message = "O tamanho do campo deve ser 15. Este campo é obrigatório quando o procedimento informado exigir e deverá ser preenchido apenas com números.")
     private String cnspac;
     @SexoValid
     private String sexo;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. Quando preenchido, deverá ser apenas com números.")
     private String ibge;
     @BpaValid(size = 4, message = "O tamanho do campo deve ser 4.")
     private String cid;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3.")
     private String idade;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 6, message = "O tamanho do campo deve ser 6. Adicionar zeros à esquerda de um inteiro.")
     private String qt;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 2, message = "O tamanho do campo deve ser 2. Quando preenchido, deverá ser apenas com números adicionar zeros à esquerda.")
     private String caten;
     @BpaValid(size = 13, message = "O tamanho do campo deve ser 13. Quando preenchido, deverá ser apenas com números.")
     private String naut;
     @OrgValid
     private String org;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
     private String nmpac;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Formato AAAAMMDD.")
     private String dtnasc;
     @RaceValid
     private String raca;
     @BpaValid(size = 4, message = "O tamanho do campo deve ser 4. Quando preenchido, deverá conter apenas números.")
     private String etnia;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String nac;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String srv;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String clf;
     @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Quando preenchido, deverá conter apenas números.")
@@ -63,8 +84,10 @@ public class ParamUpdateBpai {
     private String equipeArea;
     @BpaValid(size = 14, message = "O tamanho do campo deve ser 14. Quando preenchido, deverá conter apenas números.")
     private String cnpj;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 8, message = "O tamanho do campo deve ser 8. Quando preenchido, deverá conter apenas números.")
     private String cepPcnte;
+
     @BpaValid(size = 3, message = "O tamanho do campo deve ser 3. Quando preenchido, deverá conter apenas números.")
     private String logradPcnte;
     @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
@@ -75,12 +98,15 @@ public class ParamUpdateBpai {
     private String numPcnte;
     @BpaValid(size = 30, alfa = true, message = "O tamanho do campo deve ser 30. Adicionar espaço em branco a direita até completar total caracteres.")
     private String bairroPcnte;
+    @NotBlank(message = "O Campo não pode ser branco")
     @BpaValid(size = 11, message = "O tamanho do campo deve ser 11. Quando preenchido, deverá conter apenas números. Senão preencher com branco a direita até completar total caracteres.")
     private String ddtelPcnte;
     @BpaValid(size = 40, alfa = true, message = "O tamanho do campo deve ser 40. Adicionar espaço em branco a direita até completar total caracteres.")
     private String emailPcnte;
     @BpaValid(size = 10, message = "O tamanho do campo deve ser 10. Quando preenchido, deverá conter apenas números. Adicionar zeros à esquerda. Apartir da competência 08/2015")
     private String ine;
+    @BpaValid(size = 2, message = "O tamanho do campo deve ser 2.")
+    private String fim;
 
     public ParamUpdateBpai() {
     }
@@ -379,5 +405,13 @@ public class ParamUpdateBpai {
 
     public void setIne(String ine) {
         this.ine = ine;
+    }
+
+    public String getFim() {
+        return fim;
+    }
+
+    public void setFim(String fim) {
+        this.fim = fim;
     }
 }

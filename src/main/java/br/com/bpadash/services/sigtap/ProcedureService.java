@@ -170,10 +170,8 @@ public class ProcedureService {
         List<ErrorAgeProcedureDTO> errors = new ArrayList<>();
 
         for (Bpai bpai: bpaiListDB) {
-
             String pa = bpai.getPa();
-            int age = Integer.parseInt(bpai.getIdade());
-
+            int age = Integer.parseInt(bpai.getIdade().isBlank() ? "000" : bpai.getIdade());
             Optional<Procedure> procedureOptional = procedureList.stream().filter(procedure -> procedure.getCodProcedimento().equals(pa)).findFirst();
 
             if (procedureOptional.isPresent()) {

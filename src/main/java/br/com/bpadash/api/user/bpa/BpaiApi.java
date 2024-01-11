@@ -56,7 +56,7 @@ public class BpaiApi {
             @PathVariable int year,
             Authentication authentication
     ) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.getForDate(month, year, user);
 
         if(bpa == null) {
@@ -74,7 +74,7 @@ public class BpaiApi {
             @PathVariable @Valid @NotBlank String identifier,
             Authentication authentication
     ) {
-        User user = userService.userInDb(1L);
+        User user = userService.get(authentication);
         Bpa bpa = bpaService.get(identifier, user);
         Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
 
@@ -86,7 +86,7 @@ public class BpaiApi {
 
         List<ErrorsFile> errorsFiles = new ArrayList<>();
         try {
-            User user = userService.userInDb(1L);
+            User user = userService.get(authentication);
             LocalDate localDate = LocalDate.of(year, month, 1);
             Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
 
@@ -167,7 +167,7 @@ public class BpaiApi {
      */
     @PostMapping("/update/{id}")
     public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
-        User user = userService.userInDb(1L); //carregar do DB
+        User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = Optional.empty();
         List<ErrorValidationDTO> erros = new ArrayList<>();
@@ -195,7 +195,7 @@ public class BpaiApi {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<Object> editBpai(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
+    public ResponseEntity<Object> editBpai(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai) {
         try {
             Bpai bpai = bpaiService.get(paramDeleteBpai.getList().get(0)).get();
 
