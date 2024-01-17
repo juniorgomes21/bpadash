@@ -18,11 +18,12 @@ public class TitleBpaDTO {
     private String dstIn;
     private String versao;
     private String fim;
+    private int countRules;
 
     public TitleBpaDTO() {
     }
 
-    public TitleBpaDTO(TitleBpa titleBpa) {
+    public TitleBpaDTO(TitleBpa titleBpa, int countRules) {
         this.id = titleBpa.getId();
         this.iden = titleBpa.getIden();
         this.hdr = titleBpa.getHdr();
@@ -37,6 +38,7 @@ public class TitleBpaDTO {
         this.dstIn = titleBpa.getDstIn();
         this.versao = titleBpa.getVersao();
         this.fim = titleBpa.getFim();
+        this.countRules = countRules;
     }
 
 
@@ -150,5 +152,13 @@ public class TitleBpaDTO {
 
     public void setFim(String fim) {
         this.fim = fim;
+    }
+
+    public int getCountRules() {
+        return countRules;
+    }
+
+    public void setCountRules(int countRules) {
+        this.countRules = countRules;
     }
 }

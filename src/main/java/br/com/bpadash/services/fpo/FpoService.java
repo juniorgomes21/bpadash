@@ -104,11 +104,6 @@ public class FpoService {
         return null;
     }
 
-//    public List<PaProjection> get(LinkFpo linkFpo) {
-//
-//        return fpoRepository.findByLinkFpo(linkFpo);
-//    }
-
     public List<Fpo> get(LinkFpo linkFpo) {
 
         return fpoRepository.findByLinkFpo(linkFpo);

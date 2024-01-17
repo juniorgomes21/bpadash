@@ -95,6 +95,8 @@ public class SigtapAdmApi {
         return ResponseEntity.ok(response);
     }
 
+    //PROCEDURE
+
     @PostMapping(value = "/create/procedure", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createProcedure(@RequestPart("file") MultipartFile file, @RequestParam("paramNewProcedure") String paramNewProcedureJson, Authentication authentication) throws IOException {
         List<ErrorsFile> errorsFiles = new ArrayList<>();

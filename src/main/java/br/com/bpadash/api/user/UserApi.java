@@ -3,10 +3,12 @@ package br.com.bpadash.api.user;
 import br.com.bpadash.dto.StorageDTO;
 import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.TimeLineUserDTO;
+import br.com.bpadash.dto.bpa.ValidationsDTO;
 import br.com.bpadash.dto.professional.CountProfessionalDTO;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
+import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewPassword;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.user.UserService;
@@ -16,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.Validation;
 import java.util.List;
 
 @RestController
@@ -49,6 +52,23 @@ public class UserApi {
         User user = userService.get(authentication);
 
         return ResponseEntity.ok(new StorageDTO(user));
+    }
+
+
+    @GetMapping("/get/validations")
+    public ResponseEntity<Object> getValidations(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        return ResponseEntity.ok(new ValidationsDTO(user));
+    }
+
+    @PostMapping("/set/validations/title")
+    public ResponseEntity<Object> setValidationsTitle(@RequestBody ParamValidationTitle paramValidationTitle, Authentication authentication) {
+        User user = userService.get(authentication);
+
+        userService.setValidationTitle(user, paramValidationTitle);
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/set/validations/bpac")

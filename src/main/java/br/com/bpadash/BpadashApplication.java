@@ -22,21 +22,21 @@ public class BpadashApplication {
 	public static void main(String[] args) throws IOException {
 
 		SpringApplication app = new SpringApplication(BpadashApplication.class);
-
-		Properties properties = new Properties();
-		ClassPathResource resource = new ClassPathResource("application.properties");
-		properties.load(new FileInputStream(resource.getFile()));
-
-		Dotenv dotenv = Dotenv.load();
-		String dbUrl = dotenv.get("DB_URL");
-		String dbUsername = dotenv.get("DB_USERNAME");
-		String dbPassword = dotenv.get("DB_PASSWORD");
-
-		properties.setProperty("spring.datasource.url", "jdbc:" + dbUrl);
-		properties.setProperty("spring.datasource.username", dbUsername);
-		properties.setProperty("spring.datasource.password", dbPassword);
-
-		app.setDefaultProperties(properties);
 		app.run(args);
+
+//		Properties properties = new Properties();
+//		ClassPathResource resource = new ClassPathResource("application.properties");
+//		properties.load(new FileInputStream(resource.getFile()));
+//
+//		Dotenv dotenv = Dotenv.load();
+//		String dbUrl = dotenv.get("DB_URL");
+//		String dbUsername = dotenv.get("DB_USERNAME");
+//		String dbPassword = dotenv.get("DB_PASSWORD");
+//
+//		properties.setProperty("spring.datasource.url", "jdbc:" + dbUrl);
+//		properties.setProperty("spring.datasource.username", dbUsername);
+//		properties.setProperty("spring.datasource.password", dbPassword);
+//
+//		app.setDefaultProperties(properties);
 	}
 }

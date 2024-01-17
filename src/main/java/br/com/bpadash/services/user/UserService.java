@@ -5,6 +5,7 @@ import br.com.bpadash.dto.bpa.TimeLineUserDTO;
 import br.com.bpadash.model.*;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.treatment.TreatmentFile;
+import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
@@ -57,18 +58,12 @@ public class UserService {
     public User createUser(ParamNewUser paramNewUser, Address address) {
         User user = new User();
 
+        user.setAddress(address);
         user.setName(paramNewUser.getName());
         user.setCnpj(paramNewUser.getCnpj());
-        user.setEmail(paramNewUser.getEmail());
         user.setCell(paramNewUser.getCell());
-        user.setAddress(address);
-        user.setDatesSigtap(new DatesSigtap());
-        user.setProfile(Role.USER.name());
-        user.setBpacValidation(new BpacValidation());
-        user.setBpaiValidation(new BpaiValidation());
-        user.setTreatmentFile(new TreatmentFile());
+        user.setEmail(paramNewUser.getEmail());
         user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
-
 
         return this.save(user);
     }
@@ -90,6 +85,14 @@ public class UserService {
         return userRepository.saveAll(users);
     }
 
+    public int countRules(User user) {
+        int a = user.getTreatmentFile().getRuleTreatmentPaList().size();
+        int b = user.getTreatmentFile().getRuleTreatmentPaCboList().size();
+        int c = user.getTreatmentFile().getRuleTreatmentPaDeleteList().size();
+
+        return a + b + c;
+    }
+
     public void setValidationBpac(User user , ParamValidationBpac paramValidationBpac) {
         user.getBpacValidation().setIdent(paramValidationBpac.isIdent());
         user.getBpacValidation().setCnes(paramValidationBpac.isCnes());
@@ -101,6 +104,15 @@ public class UserService {
         user.getBpacValidation().setIdade(paramValidationBpac.isIdade());
         user.getBpacValidation().setQt(paramValidationBpac.isQt());
         user.getBpacValidation().setOrg(paramValidationBpac.isOrg());
+
+        this.save(user);
+    }
+
+    public void setValidationTitle(User user , ParamValidationTitle paramValidationTitle) {
+        user.getTitleValidation().setLin(paramValidationTitle.isLin());
+        user.getTitleValidation().setFlh(paramValidationTitle.isFlh());
+        user.getTitleValidation().setSmtVrf(paramValidationTitle.isSmtVrf());
+        user.getTitleValidation().setCgccpf(paramValidationTitle.isCgccpf());
 
         this.save(user);
     }
@@ -189,4 +201,6 @@ public class UserService {
 
         return new UserDTO(userRepository.save(user));
     }
+
+
 }

@@ -9,8 +9,6 @@ import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpacRepository;
-import br.com.bpadash.repository.bpa.BpacValidationRepository;
-import br.com.bpadash.utilities.PaChecked;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -26,9 +24,6 @@ public class BpacService {
 
     @Autowired
     private BpacRepository bpacRepository;
-
-    @Autowired
-    private BpacValidationRepository bpacValidationRepository;
 
 
     public Optional<Bpac> get(Long id) {
@@ -324,4 +319,6 @@ public class BpacService {
     public Bpac getLast(Bpa bpa) {
         return bpacRepository.findTopByBpaOrderByFlhDescSeqDesc(bpa);
     }
+
+
 }

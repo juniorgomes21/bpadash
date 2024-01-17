@@ -25,7 +25,7 @@ public class User implements UserDetails {
     private String email;
     private String password;
     private String cell;
-    private String profile;
+    private String profile = Role.USER.name();
     private Long storageUsed = 0L;
     private Long storageFree = 524288000L;
     private Long storageTotal = 524288000L; // 500MB
@@ -36,15 +36,17 @@ public class User implements UserDetails {
     @OneToMany(fetch = FetchType.EAGER)
     private List<Bpa> bpas = new ArrayList<>();
     @OneToOne(cascade = CascadeType.ALL)
-    private BpacValidation bpacValidation;
+    private TitleValidation titleValidation = new TitleValidation();
     @OneToOne(cascade = CascadeType.ALL)
-    private BpaiValidation bpaiValidation;
+    private BpacValidation bpacValidation = new BpacValidation();
     @OneToOne(cascade = CascadeType.ALL)
-    private TreatmentFile treatmentFile;
+    private BpaiValidation bpaiValidation = new BpaiValidation();
+    @OneToOne(cascade = CascadeType.ALL)
+    private TreatmentFile treatmentFile = new TreatmentFile();
     @OneToOne
     private Address address;
     @OneToOne(cascade = CascadeType.ALL)
-    private DatesSigtap datesSigtap;
+    private DatesSigtap datesSigtap = new DatesSigtap();
 
     public User() {}
 
@@ -159,6 +161,14 @@ public class User implements UserDetails {
 
     public void setBpas(List<Bpa> bpas) {
         this.bpas = bpas;
+    }
+
+    public TitleValidation getTitleValidation() {
+        return titleValidation;
+    }
+
+    public void setTitleValidation(TitleValidation titleValidation) {
+        this.titleValidation = titleValidation;
     }
 
     public BpacValidation getBpacValidation() {

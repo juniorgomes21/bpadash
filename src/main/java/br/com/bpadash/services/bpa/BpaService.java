@@ -17,7 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -137,6 +141,22 @@ public class BpaService {
         return fileContent;
     }
 
+    public boolean isValidFile(MultipartFile file) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
+            String key = "BPA";
+            try {
+                String keyGet = br.readLine().substring(3, 6);
+                return keyGet.equals(key);
+            } catch (Exception e) {
+                return false;
+            }
+
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public DatesDTO getDates(User user) {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
         List<DateProjection> bpaiList = bpaRepository.findAllByUser(user, DateProjection.class, sort);
@@ -252,4 +272,5 @@ public class BpaService {
 
         return errors;
     }
+
 }

@@ -137,45 +137,59 @@ public class TreatmentFileService {
         return false;
     }
 
-    public int executeRulePa(List<Bpac> bpacList, List<Bpai> bpaiList, RuleTreatmentPa ruleTreatmentPa) {
+    public int executeRulePa(List<Bpac> bpacList, List<Bpai> bpaiList, List<RuleTreatmentPa> ruleTreatmentPaList) {
         int count = 0;
 
-        for(Bpac bpac: bpacList) {
-            if(bpac.getPa().equals(ruleTreatmentPa.getPaCurrent())) {
-                bpac.setPa(ruleTreatmentPa.getPaNew());
-                count++;
+        for(RuleTreatmentPa rule: ruleTreatmentPaList) {
+            if(rule.isExecuteBpac()) {
+                for(Bpac bpac: bpacList) {
+                    if(bpac.getPa().equals(rule.getPaCurrent())) {
+                        bpac.setPa(rule.getPaNew());
+                        count++;
+                    }
+                }
             }
-        }
 
-        for(Bpai bpai: bpaiList) {
-            if(bpai.getPa().equals(ruleTreatmentPa.getPaCurrent())) {
-                bpai.setPa(ruleTreatmentPa.getPaNew());
-                count++;
+            if(rule.isExecuteBpai()) {
+                for(Bpai bpai: bpaiList) {
+                    if(bpai.getPa().equals(rule.getPaCurrent())) {
+                        bpai.setPa(rule.getPaNew());
+                        count++;
+                    }
+                }
             }
         }
 
         return count;
     }
 
-    public int executeRulePaDelete(List<Bpac> bpacList, List<Bpai> bpaiList, RuleTreatmentPaDelete ruleTreatmentPaDelete, User user) {
+    public int executeRulePaDelete(List<Bpac> bpacList, List<Bpai> bpaiList, List<RuleTreatmentPaDelete> ruleTreatmentPaDeletes,User user) {
         int count = 0;
 
         List<Bpac> bpacProcessedList = new ArrayList<>();
-        for(Bpac bpac: bpacList) {
-            if(bpac.getPa().equals(ruleTreatmentPaDelete.getPa())) {
-                bpacProcessedList.add(bpac);
-                count++;
-            }
-        }
-        bpacList.removeAll(bpacProcessedList);
-
         List<Bpai> bpaiProcessedList = new ArrayList<>();
-        for(Bpai bpai: bpaiList) {
-            if(bpai.getPa().equals(ruleTreatmentPaDelete.getPa())) {
-                bpaiProcessedList.add(bpai);
-                count++;
+
+        for (RuleTreatmentPaDelete rule: ruleTreatmentPaDeletes) {
+            if(rule.isExecuteBpac()) {
+                for(Bpac bpac: bpacList) {
+                    if(bpac.getPa().equals(rule.getPa())) {
+                        bpacProcessedList.add(bpac);
+                        count++;
+                    }
+                }
+            }
+
+            if(rule.isExecuteBpai()) {
+                for(Bpai bpai: bpaiList) {
+                    if(bpai.getPa().equals(rule.getPa())) {
+                        bpaiProcessedList.add(bpai);
+                        count++;
+                    }
+                }
             }
         }
+
+        bpacList.removeAll(bpacProcessedList);
         bpaiList.removeAll(bpaiProcessedList);
 
         Long quantityBytes = storageService.quantityBytes(new TitleBpa(), bpacProcessedList, bpaiProcessedList);
@@ -188,22 +202,29 @@ public class TreatmentFileService {
         return count;
     }
 
-    public int executeRulePaCbo(List<Bpac> bpacList , List<Bpai> bpaiList , RuleTreatmentPaCbo ruleTreatmentPaCbo) {
+    public int executeRulePaCbo(List<Bpac> bpacList , List<Bpai> bpaiList , List<RuleTreatmentPaCbo> ruleTreatmentPaCbos) {
         int count = 0;
 
-        for(Bpac bpac: bpacList) {
-            if(bpac.getPa().equals(ruleTreatmentPaCbo.getPa()) && bpac.getCbo().equals(ruleTreatmentPaCbo.getCboCurrent())) {
-                bpac.setCbo(ruleTreatmentPaCbo.getCboNew());
-                count++;
+        for (RuleTreatmentPaCbo rule: ruleTreatmentPaCbos) {
+            if(rule.isExecuteBpac()) {
+                for(Bpac bpac: bpacList) {
+                    if(bpac.getPa().equals(rule.getPa()) && bpac.getCbo().equals(rule.getCboCurrent())) {
+                        bpac.setCbo(rule.getCboNew());
+                        count++;
+                    }
+                }
+            }
+
+            if(rule.isExecuteBpai()) {
+                for(Bpai bpai: bpaiList) {
+                    if(bpai.getPa().equals(rule.getPa()) && bpai.getCbo().equals(rule.getCboCurrent())) {
+                        bpai.setCbo(rule.getCboNew());
+                        count++;
+                    }
+                }
             }
         }
 
-        for(Bpai bpai: bpaiList) {
-            if(bpai.getPa().equals(ruleTreatmentPaCbo.getPa()) && bpai.getCbo().equals(ruleTreatmentPaCbo.getCboCurrent())) {
-                bpai.setCbo(ruleTreatmentPaCbo.getCboNew());
-                count++;
-            }
-        }
 
         return count;
     }

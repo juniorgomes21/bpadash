@@ -14,8 +14,6 @@ public class UserDTO {
     private boolean changePass;
     private String storageTotal;
     private AddressDTO address;
-    private BpacValidationDTO bpacValidation;
-    private BpaiValidationDTO bpaiValidation;
 
     public UserDTO() {
     }
@@ -28,8 +26,6 @@ public class UserDTO {
         this.valid = user.isValid();
         this.changePass = user.isChangePass();
         this.storageTotal = StorageService.formatBytes(user.getStorageTotal());
-        this.bpacValidation = new BpacValidationDTO(user.getBpacValidation());
-        this.bpaiValidation = new BpaiValidationDTO(user.getBpaiValidation());
         this.address = new AddressDTO(user.getAddress());
     }
 
@@ -95,21 +91,5 @@ public class UserDTO {
 
     public void setAddress(AddressDTO address) {
         this.address = address;
-    }
-
-    public BpacValidationDTO getBpacValidation() {
-        return bpacValidation;
-    }
-
-    public void setBpacValidation(BpacValidationDTO bpacValidation) {
-        this.bpacValidation = bpacValidation;
-    }
-
-    public BpaiValidationDTO getBpaiValidation() {
-        return bpaiValidation;
-    }
-
-    public void setBpaiValidation(BpaiValidationDTO bpaiValidation) {
-        this.bpaiValidation = bpaiValidation;
     }
 }

@@ -5,7 +5,7 @@ import javax.validation.constraints.Size;
 
 public class ParamDateBpa {
     @NotBlank
-    @Size(min = 10, max = 10, message = "Tamanho da data inválida")
+    @Size(min = 10, max = 10, message = "Data inválida")
     private String dateBpa;
 
     public ParamDateBpa() {

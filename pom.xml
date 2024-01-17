@@ -15,6 +15,7 @@
 	<description>Um projeto Ontech</description>
 	<properties>
 		<java.version>17</java.version>
+		<spring-security.version>5.6.0</spring-security.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -84,12 +85,51 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>spring-milestone</id>
+			<name>Spring Maven MILESTONE Repository</name>
+			<url>https://maven.springframework.org/milestone</url>
+		</repository>
 
+		<repository>
+			<id>spring-snnapshot</id>
+			<name>Spring Maven SNAPSHOT Repository</name>
+			<url>https://maven.springframework.org/snapshot</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.6.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>copy-env-file</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}</directory>
+									<includes>
+										<include>.env</include>
+									</includes>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -36,6 +36,7 @@ public class BpaTitleApi {
     @GetMapping("/get/{identifier}")
     public ResponseEntity<TitleBpaDTO> titleBpaDTO(@PathVariable @Valid @NotBlank String identifier, Authentication authentication) {
         User user = userService.get(authentication);
+
         Bpa bpa = bpaService.get(identifier, user);
         TitleBpa titleBpa = titleBpaService.get(bpa);
 
@@ -43,7 +44,9 @@ public class BpaTitleApi {
             return ResponseEntity.badRequest().body(null);
         }
 
-        return ResponseEntity.ok(new TitleBpaDTO(titleBpa));
+        int countRules = userService.countRules(user);
+
+        return ResponseEntity.ok(new TitleBpaDTO(titleBpa, countRules));
     }
 
     @GetMapping("/get/{month}/{year}")
@@ -57,7 +60,7 @@ public class BpaTitleApi {
 
         TitleBpa titleBpa = titleBpaService.get(bpa);
 
-        return ResponseEntity.ok(new TitleBpaDTO(titleBpa));
+        return ResponseEntity.ok(new TitleBpaDTO(titleBpa, 0));
     }
 
     @PostMapping("/edit/{id}")
@@ -71,12 +74,14 @@ public class BpaTitleApi {
                 return ResponseEntity.badRequest().body(erros);
             }
 
-            TitleBpaDTO titleBpaDTO = new TitleBpaDTO(titleBpaService.editAndSave(optionalTitle.get(), paramUpdateTitle));
+            TitleBpaDTO titleBpaDTO = new TitleBpaDTO(titleBpaService.editAndSave(optionalTitle.get(), paramUpdateTitle), 0);
 
             return ResponseEntity.ok(titleBpaDTO);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
 
 }

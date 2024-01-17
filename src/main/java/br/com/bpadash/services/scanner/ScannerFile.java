@@ -96,96 +96,100 @@ public class ScannerFile {
 
     @Transactional
     public String createBpa(MultipartFile file, User user, ParamNewBpa paramNewBpa, List<ErrorsFile> errorsFileList, StopWatch startTime) throws IllegalArgumentException {
-        TitleBpa titleBpa = new TitleBpa();
-        List<Bpac> bpacList = new ArrayList<>();
-        List<Bpai> bpaiList = new ArrayList<>();
+        if(bpaService.isValidFile(file)) {
+            TitleBpa titleBpa = new TitleBpa();
+            List<Bpac> bpacList = new ArrayList<>();
+            List<Bpai> bpaiList = new ArrayList<>();
 
-        Bpa bpa = new Bpa(user, bpaService.generateIdentifier(user), paramNewBpa);
+            Bpa bpa = new Bpa(user, bpaService.generateIdentifier(user), paramNewBpa);
 
-        try {
-            InputStream inputStream = file.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            try {
+                InputStream inputStream = file.getInputStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-            String line;
-            int lineNumber = 1;
-            while ((line = br.readLine()) != null) {
-                if(line.startsWith("01")) {
-                    titleBpa = titleBpaService.create(line, lineNumber, bpa, errorsFileList);
-                    if(titleBpa != null) {
-                        int year = Integer.parseInt(titleBpa.getMvm().substring(0, 4));
-                        int month = Integer.parseInt(titleBpa.getMvm().substring(4, 6));
+                String line;
+                int lineNumber = 1;
+                while ((line = br.readLine()) != null) {
+                    if(line.startsWith("01")) {
+                        titleBpa = titleBpaService.create(user, line, lineNumber, bpa, errorsFileList);
+                        if(titleBpa != null) {
+                            int year = Integer.parseInt(titleBpa.getMvm().substring(0, 4));
+                            int month = Integer.parseInt(titleBpa.getMvm().substring(4, 6));
 
-                        LocalDate date;
-                        try {
-                            date = LocalDate.of(year, month, 1);
-                        } catch (Exception e) {
-                            return "ERROR FORMAT DATE";
-                        }
+                            LocalDate date;
+                            try {
+                                date = LocalDate.of(year, month, 1);
+                            } catch (Exception e) {
+                                return "ERROR FORMAT DATE";
+                            }
 
-                        if(bpaService.get(date, user).isPresent()) {
-                            return "EXIST DATE";
+                            if(bpaService.get(date, user).isPresent()) {
+                                return "EXIST DATE";
+                            } else {
+                                bpa.setDate(date);
+                            }
                         } else {
-                            bpa.setDate(date);
+                            return "ERROR FILE";
                         }
-                    } else {
-                        return "ERROR FILE";
-                    }
-                } else if (line.startsWith("02")) {
-                    Bpac bpac = bpacService.create(user, line, lineNumber, bpa, errorsFileList);
-                    if(bpac != null) {
-                        bpacList.add(bpac);
+                    } else if (line.startsWith("02")) {
+                        Bpac bpac = bpacService.create(user, line, lineNumber, bpa, errorsFileList);
+                        if(bpac != null) {
+                            bpacList.add(bpac);
+                        }
+
+                    } else if (line.startsWith("03")) {
+                        Bpai bpai = bpaiService.create(line, lineNumber, bpa, user, errorsFileList);
+                        if(bpai != null) {
+                            bpaiList.add(bpai);
+                        }
                     }
 
-                } else if (line.startsWith("03")) {
-                    Bpai bpai = bpaiService.create(line, lineNumber, bpa, user, errorsFileList);
-                    if(bpai != null) {
-                        bpaiList.add(bpai);
-                    }
+                    lineNumber++;
+                }
+                System.out.println("criou todas as linhas do BPA: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+
+                if(!errorsFileList.isEmpty()) {
+                    return "ERROR FILE";
+                }
+                System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+
+                EncryptionService.encryptBpai(bpaiList);
+
+                System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+
+                Long totalBytes = storageService.quantityBytes(titleBpa, bpacList, bpaiList);
+
+                System.out.println("Calculou o tamanho do arquivo: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+
+                if(user.getStorageFree() < totalBytes) {
+                    return "NOT STORAGE";
                 }
 
-                lineNumber++;
+                bpaService.updatebyte(bpa, totalBytes, true);
+
+                titleBpaService.save(titleBpa);
+
+                if(!bpacList.isEmpty()) {
+                    bpacService.save(bpacList);
+                }
+
+                if(!bpaiList.isEmpty()) {
+                    bpaiService.save(bpaiList, startTime);
+                }
+
+                userService.addBpa(user, bpa, totalBytes);
+
+                System.out.println("Save all: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+
+                return "CREATE";
+
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (IOException e) {
+                throw new NullPointerException();
             }
-            System.out.println("criou todas as linhas do BPA: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
-            if(!errorsFileList.isEmpty()) {
-                return "ERROR FILE";
-            }
-            System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
-            EncryptionService.encryptBpai(bpaiList);
-
-            System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
-            Long totalBytes = storageService.quantityBytes(titleBpa, bpacList, bpaiList);
-
-            System.out.println("Calculou o tamanho do arquivo: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
-            if(user.getStorageFree() < totalBytes) {
-                return "NOT STORAGE";
-            }
-
-            bpaService.updatebyte(bpa, totalBytes, true);
-
-            titleBpaService.save(titleBpa);
-
-            if(!bpacList.isEmpty()) {
-                bpacService.save(bpacList);
-            }
-
-            if(!bpaiList.isEmpty()) {
-                bpaiService.save(bpaiList, startTime);
-            }
-
-            userService.addBpa(user, bpa, totalBytes);
-
-            System.out.println("Save all: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-
-            return "CREATE";
-
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new NullPointerException();
+        } else {
+            return "FILE INVALID";
         }
     }
 

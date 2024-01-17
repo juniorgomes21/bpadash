@@ -595,6 +595,12 @@ public class BpaApi {
                 case "ERROR FILE" -> {
                     return ResponseEntity.badRequest().body(errorsFileList);
                 }
+                case "FILE INVALID" -> {
+                    errors.add(new ErrorValidationDTO("FILE INVALID" , "Este aquivo não é um arquivo BPA"));
+                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
+
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
                 case "ERROR FORMAT DATE" -> {
                     errors.add(new ErrorValidationDTO("ERROR FORMAT DATE" , "Erro na formação da data do arquivo BPA. Por favor verifique a data no título do arquivo."));
                     errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));

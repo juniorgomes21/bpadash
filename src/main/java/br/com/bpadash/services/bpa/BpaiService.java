@@ -11,7 +11,6 @@ import br.com.bpadash.model.enumModel.ZoneTime;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpaiRepository;
-import br.com.bpadash.repository.bpa.BpaiValidationRepository;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.sigtap.*;
 import org.apache.commons.lang3.time.StopWatch;
@@ -32,8 +31,6 @@ import java.util.stream.Collectors;
 public class BpaiService {
 
     @Autowired
-    private DatesSigtapService datesSigtapService;
-    @Autowired
     private CepService cepService;
     @Autowired
     private LinkCepService linkCepService;
@@ -41,12 +38,8 @@ public class BpaiService {
     private ProcedureService procedureService;
     @Autowired
     private LinkProcedureService linkProcedureService;
-
     @Autowired
     private BpaiRepository bpaiRepository;
-
-    @Autowired
-    private BpaiValidationRepository bpaiValidationRepository;
 
 
     public Bpai create(String line, int lineNumber, Bpa bpa, User user, List<ErrorsFile> errorsFiles) {

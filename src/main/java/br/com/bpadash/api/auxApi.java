@@ -2,10 +2,7 @@ package br.com.bpadash.api;
 
 import br.com.bpadash.model.*;
 import br.com.bpadash.repository.UserRepository;
-import br.com.bpadash.repository.bpa.BpaRepository;
-import br.com.bpadash.repository.bpa.BpacRepository;
-import br.com.bpadash.repository.bpa.BpaiRepository;
-import br.com.bpadash.repository.bpa.TitleBpaRepository;
+import br.com.bpadash.repository.bpa.*;
 import br.com.bpadash.repository.professional.ProfessionalCompleteRepository;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.utilities.Utilities;
@@ -40,7 +37,7 @@ public class auxApi {
     private BpacRepository bpacRepository;
 
     @Autowired
-    private ProfessionalCompleteRepository professionalCompleteRepository;
+    private TitleValidationRepository titleValidationRepository;
 
     @PostMapping("/delete/bpai")
     public ResponseEntity<Object> deleteBpai() {
@@ -63,6 +60,13 @@ public class auxApi {
 
     @PostMapping("/ping/{num}")
     public ResponseEntity<Object> ping(@PathVariable String num) {
+        User user = userRepository.getById(1L);
+
+        TitleValidation titleValidation = new TitleValidation();
+        titleValidation = titleValidationRepository.save(titleValidation);
+
+        user.setTitleValidation(titleValidation);
+        userRepository.save(user);
 
         return ResponseEntity.ok(EncryptionService.hashString(num));
     }
