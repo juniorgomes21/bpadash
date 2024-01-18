@@ -19,5 +19,5 @@ public interface BpaRepository extends JpaRepository<Bpa, Long> {
 
     Bpa findByIdentifierAndUser(String identifier , User user);
 
-    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
+    List<DateProjection> findAllByUser(User user, Class<DateProjection> dateProjectionClass, Sort sort);
 }

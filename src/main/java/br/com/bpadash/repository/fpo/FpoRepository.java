@@ -2,7 +2,6 @@ package br.com.bpadash.repository.fpo;
 
 import br.com.bpadash.model.Fpo;
 import br.com.bpadash.model.LinkFpo;
-import br.com.bpadash.projections.PaProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -4,6 +4,7 @@ import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
 import br.com.bpadash.model.DatesSigtap;
 import br.com.bpadash.model.LinkOccupation;
 import br.com.bpadash.model.User;
+import br.com.bpadash.projections.CodProcedureProjection;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.sigtap.LinkOccupationRepository;
 import org.springframework.beans.factory.annotation.Autowired;

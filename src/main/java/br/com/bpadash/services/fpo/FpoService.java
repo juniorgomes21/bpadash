@@ -5,7 +5,6 @@ import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Fpo;
 import br.com.bpadash.model.LinkFpo;
 import br.com.bpadash.model.User;
-import br.com.bpadash.projections.PaProjection;
 import br.com.bpadash.repository.fpo.FpoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -7,7 +7,6 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamIdProfessi
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\DatesSigtapService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\BpaDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorProcedureDTO.java
-G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\TreatmentApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\LinkCep.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamValidationBpai.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\UserApi.java
@@ -173,6 +172,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\PaCboTreatment.j
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\PaTreatment.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\Administrator.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamUpdateErrorsBpa.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\projections\CodProcedureProjection.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\DatesSigtapDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\InconsistencyProcedureDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamValidationBpac.java

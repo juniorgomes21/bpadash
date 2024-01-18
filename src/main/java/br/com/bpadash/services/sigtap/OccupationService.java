@@ -8,6 +8,7 @@ import br.com.bpadash.model.LinkOccupation;
 import br.com.bpadash.model.Occupation;
 import br.com.bpadash.model.User;
 import br.com.bpadash.params.sigtap.ParamNewOccupation;
+import br.com.bpadash.projections.CodProcedureProjection;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.sigtap.OccupationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,4 +86,7 @@ public class OccupationService {
         }
     }
 
+    public List<CodProcedureProjection> get(LinkOccupation linkOccupation) {
+        return occupationRepository.findByLinkOccupation(linkOccupation, CodProcedureProjection.class);
+    }
 }

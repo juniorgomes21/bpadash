@@ -9,7 +9,6 @@ br\com\bpadash\dto\bpa\InconsistencyPaDTO.class
 br\com\bpadash\repository\bpa\BpaiValidationRepository.class
 br\com\bpadash\model\BpaiValidation.class
 br\com\bpadash\dto\treatment\TreatmentPaDTO.class
-br\com\bpadash\api\user\treatment\TreatmentApi.class
 br\com\bpadash\model\LinkProfessionals.class
 br\com\bpadash\repository\bpa\BpaRepository.class
 br\com\bpadash\repository\sigtap\LinkProcedureRepository.class
@@ -75,6 +74,7 @@ br\com\bpadash\repository\sigtap\LinkCepRepository.class
 br\com\bpadash\projections\ProcedurePaProjection.class
 br\com\bpadash\params\professional\ParamIdProfessional.class
 br\com\bpadash\services\bpa\BpaiService.class
+br\com\bpadash\projections\CodProcedureProjection.class
 br\com\bpadash\services\treatment\RuleTreatmentPaService.class
 br\com\bpadash\repository\bpa\BpacValidationRepository.class
 br\com\bpadash\params\treatment\ParamTreatmentPaCbo.class

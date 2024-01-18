@@ -8,6 +8,7 @@ import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.sigtap.ParamInconsistency;
+import br.com.bpadash.projections.CodProcedureProjection;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.*;
 import br.com.bpadash.services.fpo.FpoService;
@@ -70,7 +71,8 @@ public class BpaApi {
     private ProcedureService procedureService;
     @Autowired
     private DatesSigtapService datesSigtapService;
-
+    @Autowired
+    private OccupationService occupationService;
     
     @GetMapping("/get/all")
     public ResponseEntity<List<BpaDTO>> getAll(Authentication authentication) {
@@ -469,6 +471,8 @@ public class BpaApi {
             Set<String> procedurePa = linkProcedure.getProcedureList().stream().map(Procedure::getCodProcedimento).collect(Collectors.toSet());
             //Se PA e CBO de (bpaC e bpaI) estão em tb_procedimento_ocupação
             Set<String> occupationPa = linkOccupation.getOccupationList().stream().map(Occupation::getCodProcedimento).collect(Collectors.toSet());
+            linkProcedure = null;
+            linkOccupation = null;
 
             List<ErrorPaDTO> errorsPaBpacDTOS = bpacService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpacListDB);
             List<ErrorPaDTO> errorsPaBpaiDTOS = bpaiService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpaiListDB);
@@ -552,6 +556,8 @@ public class BpaApi {
             Set<String> occupationCBO = linkOccupation.getOccupationList().stream()
                     .map(Occupation::getCodOcupacao)
                     .collect(Collectors.toSet());
+
+            linkOccupation = null; // liberar memória
 
             //Verifica se PA de BPAC e BPAI existe no arquivo FPO.
             List<ErrorOccupationDTO> errorsOccupationBpacDTOS = bpacService.verifyErrorsOccupation(occupationPa, occupationCBO, bpacListDB);
@@ -640,4 +646,59 @@ public class BpaApi {
 
         return ResponseEntity.ok(datesDTO);
     }
+
+
+//    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication)  {
+//        User user = userService.get(authentication);
+//        DatesSigtap datesSigtap = user.getDatesSigtap();
+//
+//        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
+//
+//        Optional<LinkFpo> linkFpoOptional;
+//        if(datesSigtap.isDateFpoAuto()) {
+//            linkFpoOptional = linkFpoService.get();
+//        } else {
+//            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo());
+//        }
+//
+//        Optional<LinkProcedure> linkProcedureOptional;
+//        if(datesSigtap.isDateProcedureAuto()) {
+//            linkProcedureOptional = linkProcedureService.get();
+//        } else {
+//            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
+//        }
+//
+//        Optional<LinkOccupation> linkOccupationOptional;
+//        if(datesSigtap.isDateOccupationAuto()) {
+//            linkOccupationOptional = linkOccupationService.get();
+//        } else {
+//            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation());
+//        }
+//
+//        if(bpaOptional.isPresent() && linkFpoOptional.isPresent() && linkProcedureOptional.isPresent() && linkOccupationOptional.isPresent()) {
+//            Bpa bpa = bpaOptional.get();
+//
+//            LinkFpo linkFpo = linkFpoOptional.get();
+//            LinkProcedure linkProcedure = linkProcedureOptional.get();
+//            List<CodProcedureProjection> paOccupation = occupationService.get(linkOccupationOptional.get());
+//
+//            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+//            List<Bpai> bpaiListDB = bpaiService.get(bpa);
+//
+//            //Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
+//            Set<String> procedurePa = linkProcedure.getProcedureList().stream().map(Procedure::getCodProcedimento).collect(Collectors.toSet());
+//            //Se PA e CBO de (bpaC e bpaI) estão em tb_procedimento_ocupação
+//            Set<String> occupationPa = paOccupation.stream().map(CodProcedureProjection::getCodProcedimento).collect(Collectors.toSet());
+//            paOccupation = null;
+//
+//            List<ErrorPaDTO> errorsPaBpacDTOS = bpacService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpacListDB);
+//            List<ErrorPaDTO> errorsPaBpaiDTOS = bpaiService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpaiListDB);
+//
+//            return ResponseEntity.ok(new InconsistencyPaDTO(errorsPaBpacDTOS, errorsPaBpaiDTOS));
+//
+//        }
+//
+//        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS FPO" : "NOT DATE EXISTS BPA");
+//    }
+
 }
