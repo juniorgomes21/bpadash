@@ -1,15 +1,12 @@
 package br.com.bpadash.api.user.treatment;
 
-import br.com.bpadash.dto.treatment.TreatmentPaDTO;
 import br.com.bpadash.dto.treatment.TreatmentPaDeleteDTO;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
 import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.User;
-import br.com.bpadash.model.treatment.RuleTreatmentPa;
 import br.com.bpadash.model.treatment.RuleTreatmentPaDelete;
 import br.com.bpadash.params.bpa.ParamDateBpa;
-import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaDelete;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.services.bpa.BpaService;
@@ -111,7 +108,7 @@ public class DeletePerPaTreatment {
 
             if(id == 0L) {
                 List<RuleTreatmentPaDelete> ruleTreatmentPaDeletes = user.getTreatmentFile().getRuleTreatmentPaDeleteList();
-                List<Bpac> bpacList = bpacService.getBpacList(bpa);
+                List<Bpac> bpacList = bpacService.get(bpa);
                 List<Bpai> bpaiList = bpaiService.get(bpa);
 
                 count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, ruleTreatmentPaDeletes, user);
@@ -122,7 +119,7 @@ public class DeletePerPaTreatment {
                 RuleTreatmentPaDelete ruleTreatmentPaDelete = ruleTreatmentPaDeleteService.get(id);
 
                 List<Bpac> bpacList = new ArrayList<>();
-                if(ruleTreatmentPaDelete.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
+                if(ruleTreatmentPaDelete.isExecuteBpac()) bpacList = bpacService.get(bpa);
 
                 List<Bpai> bpaiList = new ArrayList<>();
                 if(ruleTreatmentPaDelete.isExecuteBpai()) bpaiList = bpaiService.get(bpa);

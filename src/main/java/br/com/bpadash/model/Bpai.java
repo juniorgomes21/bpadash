@@ -434,21 +434,6 @@ public class Bpai {
         this.fim = fim;
     }
 
-    private void updateData() {
-        this.cnspac = EncryptionService.encrypt(this.cnspac);
-        this.cid = EncryptionService.encrypt(this.cid);
-        this.nmpac = EncryptionService.encrypt(this.nmpac);
-        this.dtnasc = EncryptionService.encrypt(this.dtnasc);
-        this.cepPcnte = EncryptionService.encrypt(this.cepPcnte);
-        this.logradPcnte = EncryptionService.encrypt(this.logradPcnte);
-        this.endPcnte = EncryptionService.encrypt(this.endPcnte);
-        this.complPcnte = EncryptionService.encrypt(this.complPcnte);
-        this.numPcnte = EncryptionService.encrypt(this.numPcnte);
-        this.bairroPcnte = EncryptionService.encrypt(this.bairroPcnte);
-        this.ddtelPcnte = EncryptionService.encrypt(this.ddtelPcnte);
-        this.emailPcnte = EncryptionService.encrypt(this.emailPcnte);
-    }
-
     @Override
     public String toString() {
         return  ident +

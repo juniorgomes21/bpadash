@@ -27,13 +27,16 @@ public class BpacService {
 
 
     public Optional<Bpac> get(Long id) {
-
         return bpacRepository.findById(id);
     }
 
     public List<Bpac> get(Bpa bpa) {
 
         return bpacRepository.findByBpa(bpa);
+    }
+
+    public Bpac getLast(Bpa bpa) {
+        return bpacRepository.findTopByBpaOrderByFlhDescSeqDesc(bpa);
     }
 
     public Page<BpacDTO> get(Bpa bpa , Pageable pageable) {
@@ -45,7 +48,6 @@ public class BpacService {
 
         return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
     }
-
 
     public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 
@@ -249,11 +251,6 @@ public class BpacService {
         bpacRepository.deleteAllById(listIds);
     }
 
-    public List<Bpac> getBpacList(Bpa bpa) {
-
-        return bpacRepository.findByBpa(bpa);
-    }
-
     private ErrorValidationDTO errorValidation(String field, String message) {
         return new ErrorValidationDTO(field, message);
     }
@@ -316,9 +313,6 @@ public class BpacService {
         return errors;
     }
 
-    public Bpac getLast(Bpa bpa) {
-        return bpacRepository.findTopByBpaOrderByFlhDescSeqDesc(bpa);
-    }
 
 
 }

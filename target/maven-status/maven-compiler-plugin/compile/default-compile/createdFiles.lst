@@ -49,6 +49,7 @@ br\com\bpadash\validations\bpa\org\OrgValidator.class
 br\com\bpadash\dto\sigtap\ErrorSigTapDTO.class
 br\com\bpadash\validations\bpa\qtService\ValidQtService.class
 br\com\bpadash\services\treatment\RuleTreatmentPaDeleteService.class
+br\com\bpadash\dto\treatment\TreatmentReplaceCustomDTO.class
 br\com\bpadash\api\user\bpa\BpaApi.class
 br\com\bpadash\params\bpa\ParamDeleteBpac.class
 br\com\bpadash\repository\professional\ProfessionalCompleteRepository.class
@@ -64,6 +65,7 @@ br\com\bpadash\dto\treatment\RuleTreatmentPaDTO.class
 br\com\bpadash\services\EncryptionService.class
 br\com\bpadash\repository\professional\DadosVincRepository.class
 br\com\bpadash\validations\bpa\BpaValidator.class
+br\com\bpadash\services\treatment\RuleTreatmentReplaceCustomService.class
 br\com\bpadash\params\professional\ParamUpdateProfessional.class
 br\com\bpadash\dto\bpa\InconsistencyCepDTO.class
 br\com\bpadash\services\professional\DadosVincService.class
@@ -85,14 +87,17 @@ br\com\bpadash\api\user\UserApi.class
 br\com\bpadash\model\Occupation.class
 br\com\bpadash\security\AuthenticacaoViaTokenFilter.class
 br\com\bpadash\params\fpo\ParamNewLineFpo.class
+br\com\bpadash\repository\treatment\RuleReplacementCustomRepository.class
 br\com\bpadash\model\treatment\RuleTreatmentPaDelete.class
 br\com\bpadash\services\treatment\RuleTreatmentPaCboService.class
 br\com\bpadash\repository\treatment\RuleTreatmentPaDeleteRepository.class
 br\com\bpadash\repository\bpa\TitleValidationRepository.class
 br\com\bpadash\model\TitleBpa.class
 br\com\bpadash\dto\UserDTO.class
+br\com\bpadash\model\treatment\RuleReplacementCustom.class
 br\com\bpadash\params\user\ParamNewUser.class
 br\com\bpadash\model\LinkOccupation.class
+br\com\bpadash\api\user\treatment\ReplacementCustom.class
 br\com\bpadash\services\adm\AdmServices.class
 br\com\bpadash\services\sigtap\ProcedureService.class
 br\com\bpadash\repository\sigtap\CepRepository.class
@@ -139,6 +144,7 @@ br\com\bpadash\services\sigtap\CepService$1.class
 br\com\bpadash\dto\DatesDTO.class
 br\com\bpadash\params\sigtap\ParamUpdateDateSigtap.class
 br\com\bpadash\dto\sigtap\ErrorAgeProcedureDTO.class
+br\com\bpadash\params\treatment\ParamTreatmentReplaceCustom.class
 br\com\bpadash\dto\professional\CountProfessionalDTO.class
 br\com\bpadash\services\sigtap\LinkOccupationService.class
 br\com\bpadash\api\user\treatment\PaCboTreatment.class
@@ -172,9 +178,11 @@ br\com\bpadash\errorValidation\ErrorInLine.class
 br\com\bpadash\api\adm\login\LoginForm.class
 br\com\bpadash\dto\professional\ProfessionalDTO.class
 br\com\bpadash\model\DatesSigtap.class
+br\com\bpadash\dto\treatment\RuleReplaceCustomDTO.class
 br\com\bpadash\params\bpa\ParamValidationBpac.class
 br\com\bpadash\utilities\Utilities.class
 br\com\bpadash\utilities\ErrorResponse.class
+br\com\bpadash\validations\bpa\replaceCustom\ReplaceCustomValidation.class
 br\com\bpadash\dto\sigtap\ErrorRaceDTO.class
 br\com\bpadash\dto\bpa\BpacValidationDTO.class
 br\com\bpadash\dto\sigtap\ErrorQtMaxDTODTO.class

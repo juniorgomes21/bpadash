@@ -1,15 +1,12 @@
 package br.com.bpadash.api.user.treatment;
 
 import br.com.bpadash.dto.treatment.TreatmentPaCboDTO;
-import br.com.bpadash.dto.treatment.TreatmentPaDTO;
 import br.com.bpadash.model.Bpa;
 import br.com.bpadash.model.Bpac;
 import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.User;
-import br.com.bpadash.model.treatment.RuleTreatmentPa;
 import br.com.bpadash.model.treatment.RuleTreatmentPaCbo;
 import br.com.bpadash.params.bpa.ParamDateBpa;
-import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.services.bpa.BpaService;
@@ -74,8 +71,6 @@ public class PaCboTreatment {
 
         treatmentFileService.addRulePaCbo(ruleTreatmentPaCbo, user);
 
-        userService.save(user);
-
         return ResponseEntity.ok().build();
     }
 
@@ -115,7 +110,7 @@ public class PaCboTreatment {
 
             if(id == 0L) {
                 List<RuleTreatmentPaCbo> ruleTreatmentPaCbos = user.getTreatmentFile().getRuleTreatmentPaCboList();
-                List<Bpac> bpacList = bpacService.getBpacList(bpa);
+                List<Bpac> bpacList = bpacService.get(bpa);
                 List<Bpai> bpaiList = bpaiService.get(bpa);
 
                 count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, ruleTreatmentPaCbos);
@@ -126,7 +121,7 @@ public class PaCboTreatment {
                 RuleTreatmentPaCbo ruleTreatmentPaCbo = ruleTreatmentPaCboService.get(id);
 
                 List<Bpac> bpacList = new ArrayList<>();
-                if(ruleTreatmentPaCbo.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
+                if(ruleTreatmentPaCbo.isExecuteBpac()) bpacList = bpacService.get(bpa);
 
                 List<Bpai> bpaiList = new ArrayList<>();
                 if(ruleTreatmentPaCbo.isExecuteBpai()) bpaiList = bpaiService.get(bpa);

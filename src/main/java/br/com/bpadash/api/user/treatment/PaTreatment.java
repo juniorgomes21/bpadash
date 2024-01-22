@@ -12,7 +12,6 @@ import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
-import br.com.bpadash.services.treatment.RuleTreatmentPaDeleteService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaService;
 import br.com.bpadash.services.treatment.TreatmentFileService;
 import br.com.bpadash.services.user.UserService;
@@ -95,7 +94,7 @@ public class PaTreatment {
             int count;
             if(id == 0L) {
                 List<RuleTreatmentPa> ruleTreatmentPas = user.getTreatmentFile().getRuleTreatmentPaList();
-                List<Bpac> bpacList = bpacService.getBpacList(bpa);
+                List<Bpac> bpacList = bpacService.get(bpa);
                 List<Bpai> bpaiList = bpaiService.get(bpa);
 
                 count = treatmentFileService.executeRulePa(bpacList, bpaiList, ruleTreatmentPas);
@@ -107,7 +106,7 @@ public class PaTreatment {
                 RuleTreatmentPa ruleTreatmentPa = ruleTreatmentPaService.get(id);
 
                 List<Bpac> bpacList = new ArrayList<>();
-                if(ruleTreatmentPa.isExecuteBpac()) bpacList = bpacService.getBpacList(bpa);
+                if(ruleTreatmentPa.isExecuteBpac()) bpacList = bpacService.get(bpa);
 
                 List<Bpai> bpaiList = new ArrayList<>();
                 if(ruleTreatmentPa.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
@@ -129,7 +128,7 @@ public class PaTreatment {
     public ResponseEntity<Object> deleteRulePa(@PathVariable Long id, Authentication authentication) {
         User user = userService.get(authentication);
 
-        if(treatmentFileService.removeAndSaveRulePa(id, user) != null) ruleTreatmentPaService.delete(id);
+        if(treatmentFileService.removeAndSaveRulePa(id, user)) ruleTreatmentPaService.delete(id);
 
         return ResponseEntity.ok().build();
     }

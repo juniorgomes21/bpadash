@@ -1,6 +1,7 @@
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamUpdateBpac.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\sexo\SexoValid.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\professional\ProfessionalService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\model\treatment\RuleReplacementCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\LinkCepService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\IncosistencyErrorCEPsDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamIdProfessional.java
@@ -48,6 +49,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\services\bpa\TitleBpaService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\ValidationsDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\LinkFpo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamNewProfessionals.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\ReplacementCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamTreatmentPaDelete.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\OccupationRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\RuleTreatmentPaDeleteService.java
@@ -81,12 +83,14 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\enumModel\ZoneTime.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\TitleBpa.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\AddressService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\adm\AdmServices.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\replaceCustom\ReplaceCustomValidation.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\InconsistencyCepDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorCEPsInvalidsDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\EncryptionService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamDateBpa.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\fpo\ParamNewLineFpo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\CepRepository.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamTreatmentReplaceCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\BpaiDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\utilities\Utilities.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\LinkProcedure.java
@@ -95,6 +99,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\TokenDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\fpo\LinkFpoRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\RuleTreatmentPaCboService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorQtMaxDTODTO.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\TreatmentReplaceCustomDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\exceptions\FileUploadExceptionAdvice.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\Bpai.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\LinkOccupation.java
@@ -128,6 +133,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\BpacValidation.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\professional\CountProfessionalDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamUpdateProfessional.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\bpa\BpaiValidationRepository.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleReplacementCustomRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\security\WebSecurityConfig.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorDtAtendDTODTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\login\LoginFormUser.java
@@ -203,5 +209,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\Cep.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\ProcedureRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\Bpa.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\fpo\FpoService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\RuleTreatmentReplaceCustomService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\RuleReplaceCustomDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamValidationTitle.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\Bpac.java

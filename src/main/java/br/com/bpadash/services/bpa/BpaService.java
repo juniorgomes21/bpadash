@@ -120,7 +120,7 @@ public class BpaService {
         StringBuilder fileContent = new StringBuilder();
 
         TitleBpa titleBpa = titleBpaService.get(bpa);
-        List<Bpac> bpacList = bpacService.getBpacList(bpa);
+        List<Bpac> bpacList = bpacService.get(bpa);
         List<Bpai> bpaiList = bpaiService.get(bpa);
 
         EncryptionService.decryptBpai(bpaiList);

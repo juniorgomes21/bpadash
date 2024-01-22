@@ -8,10 +8,8 @@ import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.*;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.sigtap.ParamInconsistency;
-import br.com.bpadash.projections.CodProcedureProjection;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.*;
-import br.com.bpadash.services.fpo.FpoService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
@@ -464,7 +462,7 @@ public class BpaApi {
             LinkProcedure linkProcedure = linkProcedureOptional.get();
             LinkOccupation linkOccupation = linkOccupationOptional.get();
 
-            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpac> bpacListDB = bpacService.get(bpa);
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             //Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
@@ -508,7 +506,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkProcedure linkProcedure = linkProcedureOptional.get();
 
-            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpac> bpacListDB = bpacService.get(bpa);
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             EncryptionService.decryptSex(bpaiListDB);
@@ -546,7 +544,7 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
             LinkOccupation linkOccupation = linkOccupationOptional.get();
 
-            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
+            List<Bpac> bpacListDB = bpacService.get(bpa);
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
             Set<String> occupationPa = linkOccupation.getOccupationList().stream()

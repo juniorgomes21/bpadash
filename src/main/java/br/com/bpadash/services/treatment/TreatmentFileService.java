@@ -4,13 +4,11 @@ import br.com.bpadash.model.Bpac;
 import br.com.bpadash.model.Bpai;
 import br.com.bpadash.model.TitleBpa;
 import br.com.bpadash.model.User;
-import br.com.bpadash.model.treatment.RuleTreatmentPa;
-import br.com.bpadash.model.treatment.RuleTreatmentPaCbo;
-import br.com.bpadash.model.treatment.RuleTreatmentPaDelete;
-import br.com.bpadash.model.treatment.TreatmentFile;
+import br.com.bpadash.model.treatment.*;
 import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;
 import br.com.bpadash.params.treatment.ParamTreatmentPaDelete;
+import br.com.bpadash.params.treatment.ParamTreatmentReplaceCustom;
 import br.com.bpadash.repository.treatment.TreatmentFileRepository;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
@@ -42,6 +40,8 @@ public class TreatmentFileService {
     private BpaiService bpaiService;
 
 
+    // ADD
+
     public void addAndSaveRulePa(RuleTreatmentPa ruleTreatmentPa , User user) {
         TreatmentFile treatmentFile = user.getTreatmentFile();
 
@@ -59,6 +59,26 @@ public class TreatmentFileService {
 
         this.save(treatmentFile);
     }
+
+    public void addRulePaCbo(RuleTreatmentPaCbo ruleTreatmentPaCbo , User user) {
+        TreatmentFile treatmentFile = user.getTreatmentFile();
+
+        treatmentFile.setCount(treatmentFile.getCount() - 1);
+        treatmentFile.getRuleTreatmentPaCboList().add(ruleTreatmentPaCbo);
+
+        this.save(treatmentFile);
+    }
+
+    public void addAndSaveRuleReplacementCustom(RuleReplacementCustom ruleReplacementCustom , User user) {
+        TreatmentFile treatmentFile = user.getTreatmentFile();
+
+        treatmentFile.setCount(treatmentFile.getCount() - 1);
+        treatmentFile.getRuleReplacementCustoms().add(ruleReplacementCustom);
+
+        this.save(treatmentFile);
+    }
+
+    // EDIT
 
     public void editAndSaveRulePa(ParamTreatmentPa paramTreatmentPa , Long id , User user) {
         TreatmentFile treatmentFile = user.getTreatmentFile();
@@ -105,7 +125,30 @@ public class TreatmentFileService {
         }
     }
 
-    public String removeAndSaveRulePa(Long id, User user) {
+    public void editAndSaveRuleReplacementCustom(ParamTreatmentReplaceCustom paramTreatmentReplaceCustom , Long id , User user) {
+        TreatmentFile treatmentFile = user.getTreatmentFile();
+
+        Optional<RuleReplacementCustom> ruleReplacementCustomOptional = treatmentFile.getRuleReplacementCustoms().stream().filter(rule -> rule.getId().equals(id)).findFirst();
+
+        if(ruleReplacementCustomOptional.isPresent()) {
+            RuleReplacementCustom ruleReplacementCustom = ruleReplacementCustomOptional.get();
+
+            ruleReplacementCustom.setField(paramTreatmentReplaceCustom.getField());
+            ruleReplacementCustom.setNewValueField(paramTreatmentReplaceCustom.getNewValueField());
+            ruleReplacementCustom.setCriterionOne(paramTreatmentReplaceCustom.getCriterionOne());
+            ruleReplacementCustom.setValueCriterionOne(paramTreatmentReplaceCustom.getValueCriterionOne());
+            ruleReplacementCustom.setCriterionTwo(paramTreatmentReplaceCustom.getCriterionTwo());
+            ruleReplacementCustom.setValueCriterionTwo(paramTreatmentReplaceCustom.getValueCriterionTwo());
+            ruleReplacementCustom.setCriterionThree(paramTreatmentReplaceCustom.getCriterionThree());
+            ruleReplacementCustom.setValueCriterionThree(paramTreatmentReplaceCustom.getValueCriterionThree());
+
+            this.save(treatmentFile);
+        }
+    }
+
+    // REMOVE
+
+    public boolean removeAndSaveRulePa(Long id, User user) {
         TreatmentFile treatmentFile = user.getTreatmentFile();
 
         Optional<RuleTreatmentPa> ruleTreatmentPaOptional = treatmentFile.getRuleTreatmentPaList().stream().filter(rule -> rule.getId().equals(id)).findFirst();
@@ -115,10 +158,26 @@ public class TreatmentFileService {
 
             this.save(treatmentFile);
 
-            return "OK";
+            return true;
         }
 
-        return null;
+        return false;
+    }
+
+    public boolean removeAndSaveRuleCustomService(Long id , User user) {
+        TreatmentFile treatmentFile = user.getTreatmentFile();
+
+        Optional<RuleReplacementCustom> ruleReplacementCustomOptional = treatmentFile.getRuleReplacementCustoms().stream().filter(rule -> rule.getId().equals(id)).findFirst();
+        if(ruleReplacementCustomOptional.isPresent()) {
+            treatmentFile.setCount(treatmentFile.getCount() + 1);
+            treatmentFile.getRuleReplacementCustoms().remove(ruleReplacementCustomOptional.get());
+
+            this.save(treatmentFile);
+
+            return true;
+        }
+
+        return false;
     }
 
     public boolean removeAndSaveRulePaDelete(Long id , User user) {
@@ -136,6 +195,24 @@ public class TreatmentFileService {
 
         return false;
     }
+
+    public boolean removeAndSaveRulePaCbo(Long id , User user) {
+        TreatmentFile treatmentFile = user.getTreatmentFile();
+
+        Optional<RuleTreatmentPaCbo> ruleTreatmentPaCboOptional = treatmentFile.getRuleTreatmentPaCboList().stream().filter(rule -> rule.getId().equals(id)).findFirst();
+        if(ruleTreatmentPaCboOptional.isPresent()) {
+            treatmentFile.setCount(treatmentFile.getCount() + 1);
+            treatmentFile.getRuleTreatmentPaCboList().remove(ruleTreatmentPaCboOptional.get());
+
+            this.save(treatmentFile);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    //EXECUTE
 
     public int executeRulePa(List<Bpac> bpacList, List<Bpai> bpaiList, List<RuleTreatmentPa> ruleTreatmentPaList) {
         int count = 0;
@@ -229,16 +306,13 @@ public class TreatmentFileService {
         return count;
     }
 
-    public void addRulePaCbo(RuleTreatmentPaCbo ruleTreatmentPaCbo , User user) {
-        TreatmentFile treatmentFile = user.getTreatmentFile();
-
-        treatmentFile.setCount(treatmentFile.getCount() - 1);
-        treatmentFile.getRuleTreatmentPaCboList().add(ruleTreatmentPaCbo);
-    }
+    // SAVE
 
     public TreatmentFile save(TreatmentFile treatmentFile) {
         return treatmentFileRepository.save(treatmentFile);
     }
+
+    // VALIDATIONS
 
     public String isValidParans(ParamTreatmentPa paramTreatmentPa , User user, boolean edit) {
         boolean isEquals = paramTreatmentPa.getPaCurrent().equals(paramTreatmentPa.getNewPa());
@@ -276,7 +350,6 @@ public class TreatmentFileService {
         return "OK";
     }
 
-
     public String isValidParans(ParamTreatmentPaDelete paramTreatmentPaDelete , User user, boolean edit) {
 
         if(!edit && user.getTreatmentFile().getCount() == 0) {
@@ -290,20 +363,5 @@ public class TreatmentFileService {
         return "OK";
     }
 
-    public boolean removeAndSaveRulePaCbo(Long id , User user) {
-        TreatmentFile treatmentFile = user.getTreatmentFile();
-
-        Optional<RuleTreatmentPaCbo> ruleTreatmentPaCboOptional = treatmentFile.getRuleTreatmentPaCboList().stream().filter(rule -> rule.getId().equals(id)).findFirst();
-        if(ruleTreatmentPaCboOptional.isPresent()) {
-            treatmentFile.setCount(treatmentFile.getCount() + 1);
-            treatmentFile.getRuleTreatmentPaCboList().remove(ruleTreatmentPaCboOptional.get());
-
-            this.save(treatmentFile);
-
-            return true;
-        }
-
-        return false;
-    }
 
 }

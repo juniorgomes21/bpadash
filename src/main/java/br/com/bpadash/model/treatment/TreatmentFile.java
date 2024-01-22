@@ -16,6 +16,8 @@ public class TreatmentFile {
     private List<RuleTreatmentPaCbo> ruleTreatmentPaCboList = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL)
     private List<RuleTreatmentPaDelete> ruleTreatmentPaDeleteList = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<RuleReplacementCustom> ruleReplacementCustoms = new ArrayList<>();
 
     public TreatmentFile() {
     }
@@ -55,5 +57,13 @@ public class TreatmentFile {
 
     public void setRuleTreatmentPaDeleteList(List<RuleTreatmentPaDelete> ruleTreatmentPaDeleteList) {
         this.ruleTreatmentPaDeleteList = ruleTreatmentPaDeleteList;
+    }
+
+    public List<RuleReplacementCustom> getRuleReplacementCustoms() {
+        return ruleReplacementCustoms;
+    }
+
+    public void setRuleReplacementCustoms(List<RuleReplacementCustom> ruleReplacementCustoms) {
+        this.ruleReplacementCustoms = ruleReplacementCustoms;
     }
 }
