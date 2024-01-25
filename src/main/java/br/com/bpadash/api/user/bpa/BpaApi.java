@@ -5,7 +5,12 @@ import br.com.bpadash.dto.bpa.*;
 import br.com.bpadash.dto.sigtap.*;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.*;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.sigtap.ParamInconsistency;
 import br.com.bpadash.services.EncryptionService;
@@ -79,6 +84,13 @@ public class BpaApi {
         List<BpaDTO> bpaDTOList = bpaService.getAll(user);
 
         return ResponseEntity.ok(bpaDTOList);
+    }
+
+    @GetMapping("/timeline")
+    public ResponseEntity<List<TimeLineDTO>> timeLineUser(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        return ResponseEntity.ok(userService.timeLine(user));
     }
 
     @GetMapping("/get/pa/cbo/{month}/{year}")
@@ -397,9 +409,9 @@ public class BpaApi {
 
         Optional<LinkProfessionals> linkProfessionalsOptional;
         if (datesSigtap.isDateProfessionalsAuto()) {
-            linkProfessionalsOptional = linkProfessionalsService.get();
+            linkProfessionalsOptional = linkProfessionalsService.get(user);
         } else {
-            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals());
+            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals(), user);
         }
 
         if(bpaOptional.isPresent() && linkProfessionalsOptional.isPresent()) {
@@ -436,9 +448,9 @@ public class BpaApi {
 
         Optional<LinkFpo> linkFpoOptional;
         if(datesSigtap.isDateFpoAuto()) {
-            linkFpoOptional = linkFpoService.get();
+            linkFpoOptional = linkFpoService.get(user);
         } else {
-            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo());
+            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
         }
 
         Optional<LinkProcedure> linkProcedureOptional;

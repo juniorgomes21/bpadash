@@ -2,13 +2,17 @@ package br.com.bpadash.services.professional;
 
 import br.com.bpadash.dto.sigtap.ErrorCnsmedDTO;
 import br.com.bpadash.dto.sigtap.ErrorSigTapDTO;
-import br.com.bpadash.model.*;
-import br.com.bpadash.params.professional.ParamNewProfessional;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.sigtap.LinkProfessionals;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.professional.ParamUpdateProfessional;
 import br.com.bpadash.repository.professional.ProfessionalCompleteRepository;
 import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,9 +71,6 @@ public class ProfessionalService {
     }
 
     public void updateAndSave(ProfessionalComplete professionalComplete, ParamUpdateProfessional paramUpdateProfessional) {
-        professionalComplete.setProfId(EncryptionService.encrypt(paramUpdateProfessional.getProfId()));
-        professionalComplete.setCpf(EncryptionService.encrypt(paramUpdateProfessional.getCpf()));
-        professionalComplete.setName(EncryptionService.encrypt(paramUpdateProfessional.getName()));
         professionalComplete.setLogradouro(EncryptionService.encrypt(paramUpdateProfessional.getLogradouro()));
         professionalComplete.setNumber(EncryptionService.encrypt(paramUpdateProfessional.getNumber()));
         professionalComplete.setComplement(EncryptionService.encrypt(paramUpdateProfessional.getComplement()));
@@ -80,5 +81,9 @@ public class ProfessionalService {
         professionalComplete.getDadosVinc().setCodCbo(EncryptionService.encrypt(paramUpdateProfessional.getCodCbo()));
 
         this.save(professionalComplete);
+    }
+
+    public void delete(LinkProfessionals linkProfessionals) {
+        professionalCompleteRepository.deleteByLinkProfessionals(linkProfessionals);
     }
 }

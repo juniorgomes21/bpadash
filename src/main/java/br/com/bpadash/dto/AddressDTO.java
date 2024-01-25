@@ -1,6 +1,7 @@
 package br.com.bpadash.dto;
 
-import br.com.bpadash.model.Address;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.user.AddressUser;
 
 public class AddressDTO {
     private String cep;
@@ -18,7 +19,7 @@ public class AddressDTO {
     public AddressDTO() {
     }
 
-    public AddressDTO(Address address) {
+    public AddressDTO(AddressUser address) {
         this.cep = address.getCep();
         this.logradouro = address.getLogradouro();
         this.complemento = address.getComplemento();

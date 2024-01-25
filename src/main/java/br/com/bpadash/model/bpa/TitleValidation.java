@@ -1,4 +1,4 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.sigtap;
 
 import br.com.bpadash.utilities.Utilities;
 

@@ -1,38 +1,46 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.user;
 
+import br.com.bpadash.model.bpa.*;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.enumModel.ZoneTime;
+import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.treatment.TreatmentFile;
+import br.com.bpadash.services.EncryptionService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "users")
 public class User implements UserDetails {
-
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @Column(unique = true)
     private String cnpj;
     @Column(unique = true)
+    private String keyCnpj;
     private String email;
+    @Column(unique = true)
+    private String keyEmail;
     private String password;
     private String cell;
     private String profile = Role.USER.name();
     private Long storageUsed = 0L;
-    private Long storageFree = 524288000L;
-    private Long storageTotal = 524288000L; // 500MB
+    private Long storageFree = 0L;
+    private Long storageTotal = 0L;
+    @NotBlank
+    private String packageUser;
     private boolean valid = true;
     private boolean changePass = false;
-    private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
-    private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
+    private boolean termsAndUse = true;
+    private String dateCreateAccount = EncryptionService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
+    private String lastLogin = EncryptionService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
     @OneToMany(fetch = FetchType.EAGER)
     private List<Bpa> bpas = new ArrayList<>();
     @OneToOne(cascade = CascadeType.ALL)
@@ -42,13 +50,15 @@ public class User implements UserDetails {
     @OneToOne(cascade = CascadeType.ALL)
     private BpaiValidation bpaiValidation = new BpaiValidation();
     @OneToOne(cascade = CascadeType.ALL)
-    private TreatmentFile treatmentFile = new TreatmentFile();
-    @OneToOne
-    private Address address;
+    private TreatmentFile treatmentFile;
+    @OneToOne(cascade = CascadeType.ALL)
+    private AddressUser addressUser;
     @OneToOne(cascade = CascadeType.ALL)
     private DatesSigtap datesSigtap = new DatesSigtap();
 
+
     public User() {}
+
 
     public Long getId() {
         return id;
@@ -70,6 +80,13 @@ public class User implements UserDetails {
         this.cnpj = cnpj;
     }
 
+    public String getPackageUser() {
+        return packageUser;
+    }
+
+    public void setPackageUser(String packageUser) {
+        this.packageUser = packageUser;
+    }
 
     public String getEmail() {
         return email;
@@ -93,6 +110,30 @@ public class User implements UserDetails {
 
     public String getProfile() {
         return profile;
+    }
+
+    public String getKeyCnpj() {
+        return keyCnpj;
+    }
+
+    public void setKeyCnpj(String keyCnpj) {
+        this.keyCnpj = keyCnpj;
+    }
+
+    public String getKeyEmail() {
+        return keyEmail;
+    }
+
+    public void setKeyEmail(String keyEmail) {
+        this.keyEmail = keyEmail;
+    }
+
+    public boolean isTermsAndUse() {
+        return termsAndUse;
+    }
+
+    public void setTermsAndUse(boolean termsAndUse) {
+        this.termsAndUse = termsAndUse;
     }
 
     public void setProfile(String profile) {
@@ -139,19 +180,19 @@ public class User implements UserDetails {
         this.valid = valid;
     }
 
-    public LocalDateTime getDateCreateAccount() {
+    public String getDateCreateAccount() {
         return dateCreateAccount;
     }
 
-    public void setDateCreateAccount(LocalDateTime dateCreateAccount) {
+    public void setDateCreateAccount(String dateCreateAccount) {
         this.dateCreateAccount = dateCreateAccount;
     }
 
-    public LocalDateTime getLastLogin() {
+    public String getLastLogin() {
         return lastLogin;
     }
 
-    public void setLastLogin(LocalDateTime lastLogin) {
+    public void setLastLogin(String lastLogin) {
         this.lastLogin = lastLogin;
     }
 
@@ -195,12 +236,12 @@ public class User implements UserDetails {
         this.treatmentFile = treatmentFile;
     }
 
-    public Address getAddress() {
-        return address;
+    public AddressUser getAddressUser() {
+        return addressUser;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
+    public void setAddressUser(AddressUser addressUser) {
+        this.addressUser = addressUser;
     }
 
     public DatesSigtap getDatesSigtap() {
@@ -246,6 +287,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.valid;
     }
 }

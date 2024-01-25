@@ -1,4 +1,7 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
+
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.AddressUser;
 
 import javax.persistence.*;
 
@@ -9,16 +12,18 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(unique = true)
-    private String cep;
-    private String logradouro;
-    private String complemento;
-    private String bairro;
-    private String localidade;
-    private String uf;
-    private String ibge;
-    private String gia;
-    private String ddd;
-    private String siafi;
+    private String cep = "";
+    private String logradouro = "";
+    private String complemento = "";
+    private String bairro = "";
+    private String localidade = "";
+    private String uf = "";
+    private String ibge = "";
+    private String gia = "";
+    private String ddd = "";
+    private String siafi = "";
+    private String codLograud = "008";
+    private boolean isBpai;
 
     public Address() {
     }
@@ -27,18 +32,36 @@ public class Address {
         this.cep = cep;
     }
 
-    public Address(String cep , String logradouro , String complemento , String bairro , String localidade , String uf , String ibge , String gia , String ddd , String siafi) {
-        this.cep = cep;
-        this.logradouro = logradouro;
-        this.complemento = complemento;
-        this.bairro = bairro;
-        this.localidade = localidade;
-        this.uf = uf;
-        this.ibge = ibge;
-        this.gia = gia;
-        this.ddd = ddd;
-        this.siafi = siafi;
+    public Address(AddressUser addressUser) {
+        this.cep = addressUser.getCep();
+        this.codLograud = addressUser.getCodLograud();
+        this.logradouro = addressUser.getLogradouro();
+        this.complemento = addressUser.getComplemento();
+        this.bairro = addressUser.getBairro();
+        this.localidade = "Belém";
+        this.uf = "PA";
+        this.ibge = addressUser.getIbge();
+        this.gia = "";
+        this.ddd = "091";
+        this.siafi = "";
+        this.isBpai = true;
     }
+
+    public Address(Bpai bpai) {
+        this.cep = bpai.getCepPcnte();
+        this.codLograud = bpai.getLogradPcnte();
+        this.logradouro = bpai.getEndPcnte().trim();
+        this.complemento = bpai.getComplPcnte().trim();
+        this.bairro = bpai.getBairroPcnte().trim();
+        this.localidade = "Belém";
+        this.uf = "PA";
+        this.ibge = bpai.getIbge();
+        this.gia = "";
+        this.ddd = "091";
+        this.siafi = "";
+        this.isBpai = true;
+    }
+
 
     public Long getId() {
         return id;
@@ -126,5 +149,21 @@ public class Address {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCodLograud() {
+        return codLograud;
+    }
+
+    public void setCodLograud(String codLograud) {
+        this.codLograud = codLograud;
+    }
+
+    public boolean isBpai() {
+        return isBpai;
+    }
+
+    public void setBpai(boolean bpai) {
+        isBpai = bpai;
     }
 }

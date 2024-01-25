@@ -2,31 +2,22 @@ package br.com.bpadash.api.user.sigtap;
 
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
 import br.com.bpadash.dto.sigtap.ProcedureDTO;
-import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.*;
-import br.com.bpadash.params.sigtap.ParamNewCep;
-import br.com.bpadash.params.sigtap.ParamNewOccupation;
-import br.com.bpadash.params.sigtap.ParamNewProcedure;
+import br.com.bpadash.model.sigtap.DatesSigtap;
+import br.com.bpadash.model.sigtap.LinkFpo;
+import br.com.bpadash.model.sigtap.LinkProcedure;
+import br.com.bpadash.model.sigtap.LinkProfessionals;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.sigtap.ParamUpdateDateSigtap;
-import br.com.bpadash.services.fpo.FpoService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
-import br.com.bpadash.services.professional.ProfessionalService;
-import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.sigtap.*;
 import br.com.bpadash.services.user.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -69,8 +60,8 @@ public class SigtapApi {
         DatesSigtap datesSigtap = user.getDatesSigtap();
 
         DatesSigtapDTO dateOccupation = linkOccupationService.getDates(datesSigtap);
-        DatesSigtapDTO dateFpo = linkFpoService.getDates(datesSigtap);
-        DatesSigtapDTO dateProf = linkProfessionalsService.getDates(datesSigtap);
+        DatesSigtapDTO dateFpo = linkFpoService.getDates(datesSigtap, user);
+        DatesSigtapDTO dateProf = linkProfessionalsService.getDates(datesSigtap, user);
         DatesSigtapDTO dateCep = linkCepService.getDates(datesSigtap);
         DatesSigtapDTO dateProc = linkProcedureService.getDates(datesSigtap);
 
@@ -85,5 +76,15 @@ public class SigtapApi {
         datesSigtapService.update(datesSigtap, paramUpdateDateSigtap);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/have/files")
+    public ResponseEntity<Boolean> getProcedure(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        boolean isPresentfpo = linkFpoService.haveFile(user);
+        boolean isPresent = linkProfessionalsService.haveFile(user);
+
+        return ResponseEntity.ok(isPresentfpo && isPresent);
     }
 }

@@ -1,8 +1,7 @@
 package br.com.bpadash.dto;
 
-import br.com.bpadash.dto.bpa.BpacValidationDTO;
-import br.com.bpadash.dto.bpa.BpaiValidationDTO;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.user.StorageService;
 
 public class UserDTO {
@@ -19,14 +18,14 @@ public class UserDTO {
     }
 
     public UserDTO(User user) {
-        this.name = user.getName();
-        this.email = user.getEmail();
-        this.cell = user.getCell();
-        this.cnpj = user.getCnpj();
+        this.name = EncryptionService.decrypt(user.getName());
+        this.email = EncryptionService.decrypt(user.getEmail());
+        this.cell = EncryptionService.decrypt(user.getCell());
+        this.cnpj = EncryptionService.decrypt(user.getCnpj());
         this.valid = user.isValid();
         this.changePass = user.isChangePass();
         this.storageTotal = StorageService.formatBytes(user.getStorageTotal());
-        this.address = new AddressDTO(user.getAddress());
+        this.address = new AddressDTO(EncryptionService.decryptAddressUser(user.getAddressUser()));
     }
 
     public String getName() {

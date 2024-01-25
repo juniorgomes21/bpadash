@@ -1,8 +1,7 @@
 package br.com.bpadash.repository.bpa;
 
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

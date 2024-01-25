@@ -1,7 +1,5 @@
 package br.com.bpadash.dto.professional;
 
-import br.com.bpadash.model.User;
-
 public class CountProfessionalDTO {
     private int profissionalNumberFree;
     private int totalProfissional;

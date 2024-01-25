@@ -1,13 +1,11 @@
 package br.com.bpadash.services.sigtap;
 
-import br.com.bpadash.dto.bpa.IncosistencyErrorCEPsDTO;
-import br.com.bpadash.dto.sigtap.ErrorCEPsBlankDTO;
 import br.com.bpadash.dto.sigtap.ErrorCEPsInvalidsDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Address;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.Cep;
-import br.com.bpadash.model.LinkCep;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.sigtap.Cep;
+import br.com.bpadash.model.sigtap.LinkCep;
 import br.com.bpadash.projections.CepProjection;
 import br.com.bpadash.repository.sigtap.CepRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +75,7 @@ public class CepService {
 
     public Address consult(String cep) {
         try {
-            String url = "https://viacep.com.br/ws/" + cep + "/json/";
+            String url = "https://opencep.com/v1/" + cep;
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Address> response = restTemplate.exchange(url , HttpMethod.GET , null , new ParameterizedTypeReference<>() {});
 

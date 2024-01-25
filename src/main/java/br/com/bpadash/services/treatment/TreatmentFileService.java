@@ -1,9 +1,9 @@
 package br.com.bpadash.services.treatment;
 
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.TitleBpa;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.*;
 import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;

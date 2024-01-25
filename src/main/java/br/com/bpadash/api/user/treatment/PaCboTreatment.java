@@ -1,10 +1,10 @@
 package br.com.bpadash.api.user.treatment;
 
 import br.com.bpadash.dto.treatment.TreatmentPaCboDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.RuleTreatmentPaCbo;
 import br.com.bpadash.params.bpa.ParamDateBpa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaCbo;

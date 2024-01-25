@@ -4,9 +4,9 @@ import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpai;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
@@ -138,7 +138,7 @@ public class BpaiApi {
             List<ErrorValidationDTO> erros = new ArrayList<>();
 
             if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
-                if(!paramUpdateBpai.getRaca().equals("05")) { // TODO A partir da competência Out/2010.
+                if(!paramUpdateBpai.getRaca().equals("05")) {
                     erros.add(new ErrorValidationDTO("etnia", "Preencher somente se o campo raça/cor for 05 - Indígena."));
 
                     return ResponseEntity.badRequest().body(erros);

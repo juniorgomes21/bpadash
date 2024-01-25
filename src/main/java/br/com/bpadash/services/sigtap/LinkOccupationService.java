@@ -1,14 +1,10 @@
 package br.com.bpadash.services.sigtap;
 
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
-import br.com.bpadash.model.DatesSigtap;
-import br.com.bpadash.model.LinkOccupation;
-import br.com.bpadash.model.User;
-import br.com.bpadash.projections.CodProcedureProjection;
-import br.com.bpadash.projections.DateProjection;
+import br.com.bpadash.model.sigtap.DatesSigtap;
+import br.com.bpadash.model.sigtap.LinkOccupation;
 import br.com.bpadash.repository.sigtap.LinkOccupationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

@@ -1,4 +1,6 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.sigtap;
+
+import br.com.bpadash.model.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;

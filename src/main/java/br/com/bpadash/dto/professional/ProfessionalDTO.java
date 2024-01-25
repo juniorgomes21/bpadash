@@ -1,7 +1,6 @@
 package br.com.bpadash.dto.professional;
 
-import br.com.bpadash.model.DadosVinc;
-import br.com.bpadash.model.ProfessionalComplete;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
 
 public class ProfessionalDTO {
     private Long id;

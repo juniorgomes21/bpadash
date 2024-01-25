@@ -1,12 +1,10 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
 
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
-import br.com.bpadash.utilities.Utilities;
-import net.minidev.json.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -74,14 +72,8 @@ public class Bpa {
         return this.fileSizeInBytes;
     }
 
-    public String getFileSizeInBytes() {
-        double fileSizeKB = fileSizeInBytes / 1024.0; // Convertendo para KB
-        if (fileSizeKB < 1024) {
-            return String.format("%.2f KB", fileSizeKB);
-        } else {
-            double fileSizeMB = fileSizeKB / 1024.0; // Convertendo para MB
-            return String.format("%.2f MB", fileSizeMB);
-        }
+    public Long getFileSizeInBytes() {
+        return fileSizeInBytes;
     }
 
     public void setFileSizeInBytes(Long fileSizeInBytes) {

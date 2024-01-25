@@ -6,8 +6,13 @@ import br.com.bpadash.dto.sigtap.ErrorPaDTO;
 import br.com.bpadash.dto.sigtap.ErrorQtMaxDTODTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.*;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.enumModel.ZoneTime;
+import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpaiRepository;
@@ -279,7 +284,7 @@ public class BpaiService {
 
         List<Bpai> bpaiList = page.getContent();
 
-        EncryptionService.decryptBpai(bpaiList);
+        EncryptionService.decryptBpai(bpaiList, true);
 
         List<BpaiDTO> bpaiDTOList = bpaiList.stream()
                 .map(bpai -> new BpaiDTO(bpai, bpa.getIdentifier()))
@@ -616,19 +621,22 @@ public class BpaiService {
     private void editCepBlank(List<Long> cepsIds, User user) {
         if(cepsIds != null) {
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(cepsIds);
-            Address address = user.getAddress();
 
-            for (Bpai bpai : bpaiList) {
+            AddressUser address = user.getAddressUser();
+
+            EncryptionService.decryptAddressUser(address);
+
+            for (Bpai bpai: bpaiList) {
                 bpai.setIbge(address.getIbge());
                 bpai.setCepPcnte(address.getCep());
-                bpai.setLogradPcnte(address.getLogradouro());
+                bpai.setLogradPcnte(address.getCodLograud());
                 bpai.setComplPcnte(address.getComplemento());
-//                bpai.setEndPcnte(a);
+                bpai.setEndPcnte(address.getLogradouro());
                 bpai.setBairroPcnte(address.getBairro());
             }
 
-                this.save(bpaiList);
-            }
+            this.save(bpaiList);
+        }
     }
 
 

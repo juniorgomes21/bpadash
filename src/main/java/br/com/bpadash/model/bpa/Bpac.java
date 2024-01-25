@@ -1,6 +1,6 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
 
-import org.hibernate.annotations.BatchSize;
+import br.com.bpadash.model.bpa.Bpa;
 
 import javax.persistence.*;
 

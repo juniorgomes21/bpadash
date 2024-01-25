@@ -1,6 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.Bpac;
+import br.com.bpadash.model.bpa.Bpac;
 
 public class BpacDTO {
     private Long id;

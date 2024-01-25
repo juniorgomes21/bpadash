@@ -1,13 +1,10 @@
 package br.com.bpadash.dto.bpa;
 
 
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.TitleBpa;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.services.user.StorageService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class BpaDTO {
     private String identifier;
@@ -24,7 +21,7 @@ public class BpaDTO {
         this.date = bpa.getDate();
         this.identifier = bpa.getIdentifier();
         this.description = bpa.getDescription();
-        this.sizeFile = bpa.getFileSizeInBytes();
+        this.sizeFile = StorageService.formatBytes(bpa.getFileSizeInBytes());
     }
 
     public String getIdentifier() {

@@ -1,6 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.TitleBpa;
+import br.com.bpadash.model.bpa.TitleBpa;
 
 public class TitleBpaDTO {
 

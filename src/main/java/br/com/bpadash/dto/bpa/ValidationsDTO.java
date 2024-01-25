@@ -1,6 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
 
 public class ValidationsDTO {
     private TitleValidationDTO titleValidation;

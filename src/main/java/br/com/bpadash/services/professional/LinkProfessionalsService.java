@@ -2,10 +2,10 @@ package br.com.bpadash.services.professional;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
-import br.com.bpadash.model.DatesSigtap;
-import br.com.bpadash.model.LinkProfessionals;
-import br.com.bpadash.model.ProfessionalComplete;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.model.sigtap.DatesSigtap;
+import br.com.bpadash.model.sigtap.LinkProfessionals;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.professional.LinkProfessionalsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,35 +24,42 @@ public class LinkProfessionalsService {
     private LinkProfessionalsRepository linkProfessionalsRepository;
 
 
-    public LinkProfessionals save(LinkProfessionals linkProfessionals) {
-        return linkProfessionalsRepository.save(linkProfessionals);
+    public LinkProfessionals get(Long id) {
+        return linkProfessionalsRepository.getById(id);
     }
 
-    public List<LinkProfessionals> save(List<LinkProfessionals> linkProfessionals) {
-        return linkProfessionalsRepository.saveAll(linkProfessionals);
+    public Optional<LinkProfessionals> get(User user) {
+        return linkProfessionalsRepository.findFirstByUser(user , Sort.by(Sort.Direction.DESC , "date"));
     }
 
-    public void addAndSave(List<ProfessionalComplete> completeList , LinkProfessionals linkProfessionals) {
-        linkProfessionals.getProfessionalCompleteList().addAll(completeList);
-
-        this.save(linkProfessionals);
+    public List<LinkProfessionals> getAll(User user) {
+        return linkProfessionalsRepository.findByUser(user);
     }
 
-    public boolean exist(LocalDate date) {
-        return linkProfessionalsRepository.findByDate(date).isPresent();
+    public Optional<LinkProfessionals> get(LocalDate date, User user) {
+
+        return linkProfessionalsRepository.findByDateAndUser(date, user);
     }
 
-    public Optional<LinkProfessionals> get() {
-        return linkProfessionalsRepository.findFirstByOrderByDateDesc();
+    public DatesDTO getDates(User user) {
+        List<DateProjection> projectionList = linkProfessionalsRepository.findAllByUser(user, DateProjection.class, Sort.by(Sort.Direction.DESC, "date"));
+
+        DatesDTO datesDTO = new DatesDTO();
+        projectionList.forEach( linkFpoListf -> {
+            LocalDate date = linkFpoListf.getDate();
+
+            List<Integer> dateList = new ArrayList<>();
+            dateList.add(date.getMonthValue());
+            dateList.add(date.getYear());
+
+            datesDTO.getDates().add(dateList);
+        });
+
+        return datesDTO;
     }
 
-    public Optional<LinkProfessionals> get(LocalDate date) {
-
-        return linkProfessionalsRepository.findByDate(date);
-    }
-
-    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
-        List<LinkProfessionals> bpaiList = linkProfessionalsRepository.findAll();
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap, User user) {
+        List<DateProjection> bpaiList = linkProfessionalsRepository.findAllByUser(user, DateProjection.class, Sort.by(Sort.Direction.DESC, "date"));
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();
@@ -116,20 +123,30 @@ public class LinkProfessionalsService {
         );
     }
 
-    public DatesDTO getDates() {
-        List<LinkProfessionals> projectionList = linkProfessionalsRepository.findAll();
-
-        DatesDTO datesDTO = new DatesDTO();
-        projectionList.forEach( linkFpoListf -> {
-            LocalDate date = linkFpoListf.getDate();
-
-            List<Integer> dateList = new ArrayList<>();
-            dateList.add(date.getMonthValue());
-            dateList.add(date.getYear());
-
-            datesDTO.getDates().add(dateList);
-        });
-
-        return datesDTO;
+    public boolean haveFile(User user) {
+        return linkProfessionalsRepository.findFirstByUser(user).isPresent();
     }
+
+    public void addAndSave(List<ProfessionalComplete> completeList , LinkProfessionals linkProfessionals) {
+        linkProfessionals.getProfessionalCompleteList().addAll(completeList);
+
+        this.save(linkProfessionals);
+    }
+
+    public boolean exist(LocalDate date) {
+        return linkProfessionalsRepository.findByDate(date).isPresent();
+    }
+
+    public LinkProfessionals save(LinkProfessionals linkProfessionals) {
+        return linkProfessionalsRepository.save(linkProfessionals);
+    }
+
+    public List<LinkProfessionals> save(List<LinkProfessionals> linkProfessionals) {
+        return linkProfessionalsRepository.saveAll(linkProfessionals);
+    }
+
+    public void delete(LinkProfessionals linkProfessionals) {
+        linkProfessionalsRepository.delete(linkProfessionals);
+    }
+
 }

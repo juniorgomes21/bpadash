@@ -1,14 +1,12 @@
 package br.com.bpadash.api.user.treatment;
 
-import br.com.bpadash.dto.treatment.TreatmentPaDeleteDTO;
 import br.com.bpadash.dto.treatment.TreatmentReplaceCustomDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.RuleReplacementCustom;
 import br.com.bpadash.params.bpa.ParamDateBpa;
-import br.com.bpadash.params.treatment.ParamTreatmentPa;
 import br.com.bpadash.params.treatment.ParamTreatmentReplaceCustom;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.services.EncryptionService;
@@ -25,7 +23,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

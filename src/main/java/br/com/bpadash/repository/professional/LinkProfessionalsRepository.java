@@ -1,7 +1,7 @@
 package br.com.bpadash.repository.professional;
 
-import br.com.bpadash.model.LinkProfessionals;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.projections.DateProjection;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +15,12 @@ public interface LinkProfessionalsRepository extends JpaRepository<LinkProfessio
     Optional<LinkProfessionals> findByDate(LocalDate date);
 
     Optional<LinkProfessionals> findFirstByOrderByDateDesc();
+    List<LinkProfessionals> findByUser(User user);
+
+    List<DateProjection> findAllByUser(User user , Class<DateProjection> dateProjectionClass , Sort sort);
+
+    Optional<LinkProfessionals> findByDateAndUser(LocalDate date , User user);
+
+    Optional<LinkProfessionals> findFirstByUser(User user);
+    Optional<LinkProfessionals> findFirstByUser(User user, Sort sort);
 }

@@ -1,7 +1,6 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
 
-import br.com.bpadash.services.EncryptionService;
-import org.hibernate.annotations.BatchSize;
+import br.com.bpadash.model.bpa.Bpa;
 
 import javax.persistence.*;
 
@@ -455,7 +454,7 @@ public class Bpai {
                 (naut.isBlank() ? "             " : naut) +
                 org +
                 (nmpac.isBlank() ? "                              " : nmpac) +
-                (dtnasc.isBlank() ? "        " : dtaten) +
+                (dtnasc.isBlank() ? "        " : dtnasc) +
                 raca +
                 (etnia.isBlank() ? "    " : etnia) +
                 (nac.isBlank() ? "   " : nac) +

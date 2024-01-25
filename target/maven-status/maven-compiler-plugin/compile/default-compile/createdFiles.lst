@@ -8,6 +8,7 @@ br\com\bpadash\model\BpacValidation.class
 br\com\bpadash\dto\bpa\InconsistencyPaDTO.class
 br\com\bpadash\repository\bpa\BpaiValidationRepository.class
 br\com\bpadash\model\BpaiValidation.class
+br\com\bpadash\model\CodLograd.class
 br\com\bpadash\dto\treatment\TreatmentPaDTO.class
 br\com\bpadash\model\LinkProfessionals.class
 br\com\bpadash\repository\bpa\BpaRepository.class
@@ -100,9 +101,11 @@ br\com\bpadash\model\LinkOccupation.class
 br\com\bpadash\api\user\treatment\ReplacementCustom.class
 br\com\bpadash\services\adm\AdmServices.class
 br\com\bpadash\services\sigtap\ProcedureService.class
+br\com\bpadash\services\sigtap\CodLogradService.class
 br\com\bpadash\repository\sigtap\CepRepository.class
 br\com\bpadash\api\adm\configurations\ConfigurationsAdmApi.class
 br\com\bpadash\services\scanner\ScannerFile.class
+br\com\bpadash\repository\CodLogradRepository.class
 br\com\bpadash\params\sigtap\ParamNewCep.class
 br\com\bpadash\params\bpa\ParamDateBpa.class
 br\com\bpadash\api\adm\login\LoginAdm.class
@@ -151,6 +154,7 @@ br\com\bpadash\api\user\treatment\PaCboTreatment.class
 br\com\bpadash\dto\sigtap\DatesSigtapDTO.class
 br\com\bpadash\repository\sigtap\OccupationRepository.class
 br\com\bpadash\utilities\PaChecked.class
+br\com\bpadash\api\user\treatment\AddressTreatment.class
 br\com\bpadash\repository\bpa\BpaiRepository.class
 br\com\bpadash\repository\bpa\BpacRepository.class
 br\com\bpadash\dto\bpa\InconsistencyProcedureDTO.class

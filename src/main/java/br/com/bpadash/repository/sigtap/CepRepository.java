@@ -1,7 +1,7 @@
 package br.com.bpadash.repository.sigtap;
 
-import br.com.bpadash.model.Cep;
-import br.com.bpadash.model.LinkCep;
+import br.com.bpadash.model.sigtap.Cep;
+import br.com.bpadash.model.sigtap.LinkCep;
 import br.com.bpadash.projections.CepProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

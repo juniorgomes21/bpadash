@@ -1,7 +1,7 @@
 package br.com.bpadash.services.sigtap;
 
-import br.com.bpadash.model.DatesSigtap;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.sigtap.DatesSigtap;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.sigtap.ParamUpdateDateSigtap;
 import br.com.bpadash.repository.sigtap.DatesSigtapRepository;
 import org.springframework.beans.factory.annotation.Autowired;

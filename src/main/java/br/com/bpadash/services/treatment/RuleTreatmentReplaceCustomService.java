@@ -1,26 +1,21 @@
 package br.com.bpadash.services.treatment;
 
 import br.com.bpadash.dto.treatment.RuleReplaceCustomDTO;
-import br.com.bpadash.dto.treatment.RuleTreatmentPaDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.RuleReplacementCustom;
 import br.com.bpadash.model.treatment.TreatmentFile;
 import br.com.bpadash.params.treatment.ParamTreatmentReplaceCustom;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.repository.treatment.RuleReplacementCustomRepository;
 import br.com.bpadash.services.EncryptionService;
-import br.com.bpadash.services.bpa.BpacService;
-import br.com.bpadash.services.bpa.BpaiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Service
 public class RuleTreatmentReplaceCustomService {
@@ -85,6 +80,9 @@ public class RuleTreatmentReplaceCustomService {
                 boolean conditionOne;
                 boolean conditionTwo;
                 boolean conditionThree;
+                boolean howExecute;
+
+
 
                 condition = rule.getNewValueField().equals(fieldParam);
                 conditionOne = rule.getValueCriterionOne().equals(fielValuedOne);

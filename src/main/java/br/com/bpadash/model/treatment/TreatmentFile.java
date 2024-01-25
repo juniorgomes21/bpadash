@@ -1,6 +1,8 @@
 package br.com.bpadash.model.treatment;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,8 @@ public class TreatmentFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int count = 20;
+    @NotNull
+    private int count;
     @OneToMany(cascade = CascadeType.ALL)
     private List<RuleTreatmentPa> ruleTreatmentPaList = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL)
@@ -22,6 +25,9 @@ public class TreatmentFile {
     public TreatmentFile() {
     }
 
+    public TreatmentFile(int count) {
+        this.count = count;
+    }
 
     public Long getId() {
         return id;

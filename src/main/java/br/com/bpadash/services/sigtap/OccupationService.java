@@ -1,26 +1,17 @@
 package br.com.bpadash.services.sigtap;
 
-import br.com.bpadash.dto.DatesDTO;
-import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Cep;
-import br.com.bpadash.model.LinkOccupation;
-import br.com.bpadash.model.Occupation;
-import br.com.bpadash.model.User;
-import br.com.bpadash.params.sigtap.ParamNewOccupation;
+import br.com.bpadash.model.sigtap.LinkOccupation;
+import br.com.bpadash.model.sigtap.Occupation;
 import br.com.bpadash.projections.CodProcedureProjection;
-import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.sigtap.OccupationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

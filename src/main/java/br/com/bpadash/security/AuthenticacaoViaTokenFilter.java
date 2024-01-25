@@ -1,9 +1,10 @@
 package br.com.bpadash.security;
 
 import br.com.bpadash.model.Administrator;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.AdministratorRepository;
 import br.com.bpadash.repository.UserRepository;
+import br.com.bpadash.services.EncryptionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -50,12 +51,12 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
 
         UsernamePasswordAuthenticationToken authentication;
 
-        Optional<User> userOptional = this.userRepository.findByEmail(subject);
+        Optional<User> userOptional = this.userRepository.findByKeyEmail(EncryptionService.decrypt(subject));
         if(userOptional.isPresent()) {
             User user = userOptional.get();
             authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         } else {
-            Administrator adm = this.admRepository.findByEmail(subject).get();
+            Administrator adm = this.admRepository.findByKeyEmail(EncryptionService.decrypt(subject)).get();
             authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
         }
 

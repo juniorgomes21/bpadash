@@ -1,8 +1,9 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.sigtap;
+
+import br.com.bpadash.model.sigtap.LinkFpo;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Entity
 @Table(indexes = {

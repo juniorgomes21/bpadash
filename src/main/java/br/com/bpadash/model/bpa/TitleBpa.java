@@ -1,4 +1,6 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.bpa;
+
+import br.com.bpadash.model.bpa.Bpa;
 
 import javax.persistence.*;
 

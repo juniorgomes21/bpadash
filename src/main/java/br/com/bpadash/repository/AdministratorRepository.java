@@ -11,5 +11,5 @@ public interface AdministratorRepository extends JpaRepository<Administrator, Lo
 
     Optional<Administrator> findByCpf(String email);
 
-    Optional<Administrator> findByEmail(String subject);
+    Optional<Administrator> findByKeyEmail(String subject);
 }

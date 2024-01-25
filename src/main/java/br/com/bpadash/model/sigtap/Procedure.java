@@ -1,4 +1,6 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.sigtap;
+
+import br.com.bpadash.model.sigtap.LinkProcedure;
 
 import javax.persistence.*;
 

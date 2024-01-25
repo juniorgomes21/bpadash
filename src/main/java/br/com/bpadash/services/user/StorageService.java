@@ -1,6 +1,9 @@
 package br.com.bpadash.services.user;
 
-import br.com.bpadash.model.*;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;

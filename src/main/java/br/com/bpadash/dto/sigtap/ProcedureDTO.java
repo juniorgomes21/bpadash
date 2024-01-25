@@ -1,6 +1,6 @@
 package br.com.bpadash.dto.sigtap;
 
-import br.com.bpadash.model.Procedure;
+import br.com.bpadash.model.sigtap.Procedure;
 
 public class ProcedureDTO {
 

@@ -1,6 +1,6 @@
 package br.com.bpadash.services.professional;
 
-import br.com.bpadash.model.DadosVinc;
+import br.com.bpadash.model.sigtap.DadosVinc;
 import br.com.bpadash.repository.professional.DadosVincRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

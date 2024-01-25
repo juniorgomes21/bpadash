@@ -1,9 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.Bpai;
-
-import java.util.ArrayList;
-import java.util.List;
+import br.com.bpadash.model.bpa.Bpai;
 
 public class BpaiDTO {
     private Long id;
@@ -92,6 +89,9 @@ public class BpaiDTO {
         this.ine = bpai.getIne();
         this.fim = bpai.getFim();
     }
+
+
+
 
     public Long getId() {
         return id;

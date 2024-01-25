@@ -1,7 +1,12 @@
 package br.com.bpadash.services.scanner;
 
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.*;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.fpo.ParamNewFpo;
 import br.com.bpadash.params.professional.ParamNewProfessionals;
@@ -474,11 +479,15 @@ public class ScannerFile {
         }
     }
 
-    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, List<ErrorsFile> errorsFileList) throws IllegalArgumentException {
+    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, List<ErrorsFile> errorsFileList, User user) throws IllegalArgumentException {
         try {
 
-            LinkFpo linkFpo = new LinkFpo(paramNewFpo, file.getSize());
-            if(linkFpoService.exists(linkFpo.getDate())) {
+            if(user.getStorageFree() < file.getSize()) {
+                return "NOT STORAGE";
+            }
+
+            LinkFpo linkFpo = new LinkFpo(paramNewFpo, file.getSize(), user);
+            if(linkFpoService.exists(linkFpo.getDate(), user)) {
                 return "EXIST DATE";
             }
 
@@ -510,6 +519,8 @@ public class ScannerFile {
             linkFpo.getFpoList().addAll(fpoList);
             linkFpoService.save(linkFpo);
 
+            userService.updateStorageAndSave(user, file.getSize(), "sub");
+
             return "CREATE";
 
         } catch (IOException e) {
@@ -518,9 +529,9 @@ public class ScannerFile {
     }
 
     @Transactional
-    public String createProfessionals(MultipartFile file, ParamNewProfessionals paramNewProfessionals) {
+    public String createProfessionals(MultipartFile file, ParamNewProfessionals paramNewProfessionals, User user) {
         try {
-            LinkProfessionals linkProfessionals = new LinkProfessionals(paramNewProfessionals, file.getSize());
+            LinkProfessionals linkProfessionals = new LinkProfessionals(paramNewProfessionals, 0L, user);
 
             if(linkProfessionalsService.exist(linkProfessionals.getDate())) {
                 return "EXIST DATE";
@@ -534,6 +545,10 @@ public class ScannerFile {
             NodeList profissionalElements = root.getElementsByTagName("DADOS_PROFISSIONAIS");
 
             List<ProfessionalComplete> professionalCompleteList = new ArrayList<>();
+
+            if(profissionalElements.getLength() == 0) {
+                return "ERROR";
+            }
 
             for (int i = 0; i < profissionalElements.getLength(); i++) {
                 Element profissionalElem = (Element) profissionalElements.item(i);
@@ -675,11 +690,21 @@ public class ScannerFile {
 
             EncryptionService.encrypt(professionalCompleteList);
 
+            long totalBytes = storageService.quantityBytes(professionalCompleteList);
+
+            if(user.getStorageFree() < totalBytes) {
+                return "NOT STORAGE";
+            }
+
             linkProfessionals.getProfessionalCompleteList().addAll(professionalCompleteList);
+            linkProfessionals.setFileSizeInBytes(totalBytes);
+
             linkProfessionalsService.save(linkProfessionals);
 
+            userService.updateStorageAndSave(user, totalBytes, "sub");
+
             return "CREATE";
-        } catch (IllegalArgumentException | ParserConfigurationException | IOException | SAXException e) {
+        } catch (Exception e) {
             return "ERROR";
         }
     }

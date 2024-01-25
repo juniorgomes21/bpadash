@@ -1,6 +1,7 @@
 package br.com.bpadash.api.user.login;
 
 
+import br.com.bpadash.services.EncryptionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 public class LoginFormUser {
@@ -25,6 +26,6 @@ public class LoginFormUser {
     }
 
     public UsernamePasswordAuthenticationToken converter() {
-        return new UsernamePasswordAuthenticationToken(email, senha);
+        return new UsernamePasswordAuthenticationToken(EncryptionService.hashString(email), senha);
     }
 }

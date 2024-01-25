@@ -2,12 +2,12 @@ package br.com.bpadash.services.fpo;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
-import br.com.bpadash.model.DatesSigtap;
-import br.com.bpadash.model.Fpo;
-import br.com.bpadash.model.LinkFpo;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.model.sigtap.DatesSigtap;
+import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.fpo.LinkFpoRepository;
+import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,27 +23,25 @@ public class LinkFpoService {
     @Autowired
     private LinkFpoRepository linkFpoRepository;
 
-
-    public LinkFpo save(LinkFpo linkFpo) {
-       return linkFpoRepository.save(linkFpo);
+    public Optional<LinkFpo> get(User user) {
+        return linkFpoRepository.findFirstByUser(user, Sort.by(Sort.Direction.DESC, "date"));
     }
 
-    public List<LinkFpo> save(List<LinkFpo> linkFpoList) {
-        return linkFpoRepository.saveAll(linkFpoList);
+    public LinkFpo get(Long id) {
+        return linkFpoRepository.getById(id);
     }
 
-    public Optional<LinkFpo> get() {
-
-        return linkFpoRepository.findFirstByOrderByDateDesc();
+    public List<LinkFpo> getAll(User user) {
+        return linkFpoRepository.findByUser(user);
     }
 
-    public Optional<LinkFpo> get(LocalDate date) {
-        return linkFpoRepository.findByDate(date);
+    public Optional<LinkFpo> get(LocalDate date, User user) {
+        return linkFpoRepository.findByUserAndDate(user, date);
     }
 
-    public DatesDTO getDates() {
+    public DatesDTO getDates(User user) {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<LinkFpo> linkFpoList = linkFpoRepository.findAll(sort);
+        List<DateProjection> linkFpoList = linkFpoRepository.findAllByUser(user, DateProjection.class, sort);
 
         DatesDTO datesDTO = new DatesDTO();
         linkFpoList.forEach( linkFpoListf -> {
@@ -59,9 +57,9 @@ public class LinkFpoService {
         return datesDTO;
     }
 
-    public DatesSigtapDTO getDates(DatesSigtap datesSigtap) {
+    public DatesSigtapDTO getDates(DatesSigtap datesSigtap, User user) {
         Sort sort = Sort.by(Sort.Direction.DESC, "date");
-        List<LinkFpo> bpaiList = linkFpoRepository.findAll(sort);
+        List<DateProjection> bpaiList = linkFpoRepository.findAllByUser(user, DateProjection.class, sort);
 
         List<Integer> years = new ArrayList<>();
         List<List<List<Integer>>> dateCurrent = new ArrayList<>();
@@ -125,7 +123,23 @@ public class LinkFpoService {
         );
     }
 
-    public boolean exists(LocalDate date) {
-        return linkFpoRepository.existsByDate(date);
+    public boolean haveFile(User user) {
+        return linkFpoRepository.findFirstByUser(user).isPresent();
+    }
+
+    public boolean exists(LocalDate date , User user) {
+        return linkFpoRepository.existsByDateAndUser(date, user);
+    }
+
+    public LinkFpo save(LinkFpo linkFpo) {
+        return linkFpoRepository.save(linkFpo);
+    }
+
+    public List<LinkFpo> save(List<LinkFpo> linkFpoList) {
+        return linkFpoRepository.saveAll(linkFpoList);
+    }
+
+    public void delete(LinkFpo link) {
+        linkFpoRepository.delete(link);
     }
 }

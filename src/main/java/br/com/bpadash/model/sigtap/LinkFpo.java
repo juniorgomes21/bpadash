@@ -1,12 +1,12 @@
-package br.com.bpadash.model;
+package br.com.bpadash.model.sigtap;
 
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.fpo.ParamNewFpo;
 import br.com.bpadash.utilities.Utilities;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -21,15 +21,18 @@ public class LinkFpo {
     private LocalDate date;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkFpo")
     private List<Fpo> fpoList = new ArrayList<>();
+    @ManyToOne
+    private User user;
 
 
     public LinkFpo() {
     }
 
-    public LinkFpo(ParamNewFpo paramNewFpo, Long fileSizeInBytes) {
+    public LinkFpo(ParamNewFpo paramNewFpo, Long fileSizeInBytes, User user) {
         this.name = paramNewFpo.getName();
         this.fileSizeInBytes = fileSizeInBytes;
         this.date = Utilities.formatDate(paramNewFpo.getDate());
+        this.user = user;
     }
 
     public Long getId() {
@@ -66,5 +69,13 @@ public class LinkFpo {
 
     public void setFpoList(List<Fpo> fpoList) {
         this.fpoList = fpoList;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

@@ -1,21 +1,28 @@
 package br.com.bpadash.api;
 
-import br.com.bpadash.model.*;
+import br.com.bpadash.errorValidation.ErrorsFile;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.repository.CodLogradRepository;
 import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.repository.bpa.*;
-import br.com.bpadash.repository.professional.ProfessionalCompleteRepository;
+import br.com.bpadash.repository.sigtap.AddressRepository;
 import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.security.*;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/aux")
@@ -23,21 +30,23 @@ public class auxApi {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private TitleBpaRepository titleBpaRepository;
-
     @Autowired
     private BpaRepository bpaRepository;
-
     @Autowired
     private BpaiRepository bpaiRepository;
-
     @Autowired
     private BpacRepository bpacRepository;
-
+    @Autowired
+    private AddressRepository addressRepository;
     @Autowired
     private TitleValidationRepository titleValidationRepository;
+    @Autowired
+    private CodLogradRepository codLogradRepository;
+    @Autowired
+    private BpaiService bpaiService;
+
 
     @PostMapping("/delete/bpai")
     public ResponseEntity<Object> deleteBpai() {
@@ -58,17 +67,61 @@ public class auxApi {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/ping/{num}")
-    public ResponseEntity<Object> ping(@PathVariable String num) {
+    @PostMapping("/ping")
+    public ResponseEntity<Object> ping() throws NoSuchAlgorithmException {
+
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/file/cep", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> pingx(@RequestPart("file") MultipartFile file) throws IOException {
         User user = userRepository.getById(1L);
+        List<ErrorsFile> errorsFileList = new ArrayList<>();
+        List<Bpai> bpaiList = new ArrayList<>();
 
-        TitleValidation titleValidation = new TitleValidation();
-        titleValidation = titleValidationRepository.save(titleValidation);
+        InputStream inputStream = file.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-        user.setTitleValidation(titleValidation);
-        userRepository.save(user);
+        String line;
+        int lineNumber = 1;
+        while ((line = br.readLine()) != null) {
+            if (line.startsWith("03")) {
+                Bpai bpai = bpaiService.create(line, lineNumber, null, user, errorsFileList);
+                if(bpai != null) {
+                    bpaiList.add(bpai);
+                }
+            }
 
-        return ResponseEntity.ok(EncryptionService.hashString(num));
+            lineNumber++;
+        }
+
+        List<Address> addresseDB = addressRepository.findAll();
+        List<Address> addressList = new ArrayList<>();
+
+        bpaiList.forEach( bpai -> {
+            if(!bpai.getCepPcnte().isBlank()) {
+                String cepPcnte =  bpai.getCepPcnte();
+
+                boolean isOk = addresseDB.stream().anyMatch( address -> address.getCep().equals(cepPcnte));
+                boolean isOk2 = addressList.stream().anyMatch( address -> address.getCep().equals(cepPcnte));
+
+                if(!isOk && !isOk2) {
+                    String logradPcnte= bpai.getLogradPcnte();
+                    String complPcnte = bpai.getComplPcnte();
+                    String endPcnte = bpai.getEndPcnte();
+                    String bairroPcnte = bpai.getBairroPcnte();
+
+                    if(!cepPcnte.isBlank() || !logradPcnte.isBlank() || !complPcnte.isBlank() || !endPcnte.isBlank() || !bairroPcnte.isBlank()) {
+                        addressList.add(new Address(bpai));
+                    }
+                }
+            }
+        });
+
+        addressRepository.saveAll(addressList);
+
+        return ResponseEntity.ok(addressList);
     }
 
     @PostMapping("/add/erros/pa")
@@ -151,7 +204,7 @@ public class auxApi {
     public ResponseEntity<Object> errosD() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(6L);
+        Bpa bpa = bpaRepository.getById(1L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("22200555", "66600000", "65611111", "62655555"));
 

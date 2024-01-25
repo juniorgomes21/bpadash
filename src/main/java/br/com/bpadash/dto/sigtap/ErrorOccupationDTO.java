@@ -1,8 +1,5 @@
 package br.com.bpadash.dto.sigtap;
 
-import br.com.bpadash.model.Bpac;
-import br.com.bpadash.model.Bpai;
-
 public class ErrorOccupationDTO extends ErrorSigTapDTO{
     private String cbo;
     private String pa;

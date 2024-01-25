@@ -1,6 +1,6 @@
 package br.com.bpadash.repository.bpa;
 
-import br.com.bpadash.model.BpaiValidation;
+import br.com.bpadash.model.bpa.BpaiValidation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

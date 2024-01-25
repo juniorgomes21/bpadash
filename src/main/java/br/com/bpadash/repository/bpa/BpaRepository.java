@@ -1,7 +1,7 @@
 package br.com.bpadash.repository.bpa;
 
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.projections.DateProjection;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;

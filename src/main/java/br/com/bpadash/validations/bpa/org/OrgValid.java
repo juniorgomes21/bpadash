@@ -9,7 +9,6 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OrgValid {
-
     String message() default "O campo deve ser preenchido apenas com (BPA, PNI, SIE, SIB, MIN, PAC, SCL, EXT)";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

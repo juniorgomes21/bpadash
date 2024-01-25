@@ -1,4 +1,5 @@
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamUpdateBpac.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\CodLogradService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\sexo\SexoValid.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\professional\ProfessionalService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\treatment\RuleReplacementCustom.java
@@ -26,6 +27,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\sexo\SexoValidator.
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\BpaiValidation.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\BpaValidator.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpaApi.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\repository\CodLogradRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\TreatmentFileService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleTreatmentPaDeleteRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\errorValidation\ErrorValidationDTO.java
@@ -107,6 +109,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\TreatmentPaCboDTO.jav
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleTreatmentPaRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\projections\DateProjection.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\IsValidToken.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\model\CodLograd.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\race\RaceValid.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpaiApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\LinkProfessionals.java
@@ -191,6 +194,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\errorValidation\ErrorsFile.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorOccupationDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\projections\ProcedurePaProjection.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorSigTapDTO.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\AddressTreatment.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\OccupationService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamNewProfessional.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamUpdateTitle.java

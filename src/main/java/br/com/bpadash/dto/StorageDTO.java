@@ -1,6 +1,6 @@
 package br.com.bpadash.dto;
 
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.services.user.StorageService;
 
 public class StorageDTO {

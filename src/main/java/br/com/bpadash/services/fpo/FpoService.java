@@ -2,10 +2,12 @@ package br.com.bpadash.services.fpo;
 
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Fpo;
-import br.com.bpadash.model.LinkFpo;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.sigtap.Fpo;
+import br.com.bpadash.model.sigtap.LinkFpo;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.fpo.FpoRepository;
+import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,15 @@ public class FpoService {
 
     @Autowired
     private FpoRepository fpoRepository;
+
+    public Fpo get(LinkFpo linkFpo, String pa) {
+        return fpoRepository.findByLinkFpoAndPa(linkFpo, pa).orElse(null);
+    }
+
+    public List<Fpo> get(LinkFpo linkFpo) {
+
+        return fpoRepository.findByLinkFpo(linkFpo);
+    }
 
     public Fpo create(LinkFpo linkFpo, String pa, String line, int lineNumber, List<ErrorsFile> errorsFiles) {
         List<ErrorValidationDTO> errors = new ArrayList<>();
@@ -98,16 +109,6 @@ public class FpoService {
         );
     }
 
-    public Optional<Fpo> get(LocalDate date, User user) {
-
-        return null;
-    }
-
-    public List<Fpo> get(LinkFpo linkFpo) {
-
-        return fpoRepository.findByLinkFpo(linkFpo);
-    }
-
     public void save(Fpo fpo) {
         fpoRepository.save(fpo);
     }
@@ -128,7 +129,7 @@ public class FpoService {
     public boolean isValidFile(MultipartFile file) {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
-            String fraseEspecifica = "PROGRAMACAO FISICO  ORCAMENTARIA";
+            String fraseEspecifica = "PROGRAMACAO FISICO";
             String line;
             int lineNumber = 1;
             while (lineNumber < 15) {
@@ -145,5 +146,9 @@ public class FpoService {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public void delete(LinkFpo link) {
+        fpoRepository.deleteByLinkFpo(link);
     }
 }

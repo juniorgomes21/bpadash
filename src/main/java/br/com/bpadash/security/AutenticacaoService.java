@@ -1,7 +1,7 @@
 package br.com.bpadash.security;
 
 import br.com.bpadash.model.Administrator;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.AdministratorRepository;
 import br.com.bpadash.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,8 @@ public class AutenticacaoService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String credencials) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByKeyEmail(credencials);
 
         if (user.isPresent()) {
             //TODO fazer verificação de validade do usuário
@@ -43,7 +43,7 @@ public class AutenticacaoService implements UserDetailsService {
 
         }
 
-        Optional<Administrator> adm = admRepository.findByEmail(username);
+        Optional<Administrator> adm = admRepository.findByKeyEmail(credencials);
 
         if (adm.isPresent()) {
             Administrator administrator = adm.get();

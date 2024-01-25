@@ -1,6 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.BpaiValidation;
+import br.com.bpadash.model.bpa.BpaiValidation;
 
 public class BpaiValidationDTO {
     private boolean cnes;

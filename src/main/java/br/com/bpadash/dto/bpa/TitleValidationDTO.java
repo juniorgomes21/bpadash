@@ -1,7 +1,6 @@
 package br.com.bpadash.dto.bpa;
 
-import br.com.bpadash.model.TitleValidation;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.TitleValidation;
 
 public class TitleValidationDTO {
     private boolean lin;

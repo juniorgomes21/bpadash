@@ -1,17 +1,21 @@
 package br.com.bpadash.services.user;
 
 import br.com.bpadash.dto.UserDTO;
-import br.com.bpadash.dto.bpa.TimeLineUserDTO;
-import br.com.bpadash.model.*;
-import br.com.bpadash.model.enumModel.Role;
+import br.com.bpadash.dto.bpa.TimeLineDTO;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.sigtap.LinkFpo;
+import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.model.treatment.TreatmentFile;
+import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.user.PackageUser;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
 import br.com.bpadash.repository.UserRepository;
-import br.com.bpadash.services.bpa.BpacService;
-import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.adm.PackageUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,13 +29,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
-    private BpacService bpacService;
-
-    @Autowired
-    private BpaiService bpaiService;
-
+    private PackageUserService packageUserService;
 
     public User get(Authentication authentication) {
         User user;
@@ -45,7 +44,7 @@ public class UserService {
         return null;
     }
 
-    public User userLogado(Authentication authentication) {
+    public User userLogged(Authentication authentication) {
         User user = null;
         if(authentication.getPrincipal() instanceof User) {
             user = (User) authentication.getPrincipal();
@@ -55,17 +54,25 @@ public class UserService {
     }
 
     @Transactional
-    public User createUser(ParamNewUser paramNewUser, Address address) {
+    public User createUser(ParamNewUser paramNewUser, AddressUser address) {
         User user = new User();
 
-        user.setAddress(address);
-        user.setName(paramNewUser.getName());
-        user.setCnpj(paramNewUser.getCnpj());
-        user.setCell(paramNewUser.getCell());
-        user.setEmail(paramNewUser.getEmail());
+        PackageUser packageUser = packageUserService.get(paramNewUser.getPackageUser());
+
+        user.setAddressUser(address);
+        user.setName(EncryptionService.encrypt(paramNewUser.getName()));
+        user.setCnpj(EncryptionService.encrypt(paramNewUser.getCnpj()));
+        user.setKeyCnpj(EncryptionService.hashString(paramNewUser.getCnpj()));
+        user.setCell(EncryptionService.encrypt(paramNewUser.getCell()));
+        user.setEmail(EncryptionService.encrypt(paramNewUser.getEmail()));
+        user.setKeyEmail(EncryptionService.hashString(paramNewUser.getEmail()));
+        user.setPackageUser(EncryptionService.encrypt(packageUser.getPackageName()));
+        user.setStorageFree(packageUser.getSizeStorage());
+        user.setStorageTotal(packageUser.getSizeStorage());
+        user.setTreatmentFile(new TreatmentFile(packageUser.getNumberRules()));
         user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
 
-        return this.save(user);
+        return user;
     }
 
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
@@ -159,19 +166,50 @@ public class UserService {
         this.save(user);
     }
 
-    public List<TimeLineUserDTO> timeLine(User user) {
+    public List<TimeLineDTO> timeLine(User user) {
         List<Bpa> bpaList = user.getBpas();
 
-        List<TimeLineUserDTO> timeLineUserDTOS = new ArrayList<>();
+        List<TimeLineDTO> timeLineDTOS = new ArrayList<>();
+
         bpaList.forEach( bpa -> {
-            timeLineUserDTOS.add(new TimeLineUserDTO(bpa));
+            timeLineDTOS.add(new TimeLineDTO(bpa));
         });
 
-        Comparator<TimeLineUserDTO> dateComparator = (dto1, dto2) -> dto2.getDate().compareTo(dto1.getDate());
+        Comparator<TimeLineDTO> dateComparator = (dto1, dto2) -> dto2.getDate().compareTo(dto1.getDate());
 
-        timeLineUserDTOS.sort(dateComparator);
+        timeLineDTOS.sort(dateComparator);
 
-        return timeLineUserDTOS;
+        return timeLineDTOS;
+    }
+
+    public List<TimeLineDTO> timeLineProfessionals(List<LinkProfessionals> linkProfessionalsList) {
+
+        List<TimeLineDTO> timeLineDTOS = new ArrayList<>();
+
+        linkProfessionalsList.forEach( link -> {
+            timeLineDTOS.add(new TimeLineDTO(link));
+        });
+
+        Comparator<TimeLineDTO> dateComparator = (dto1, dto2) -> dto2.getDate().compareTo(dto1.getDate());
+
+        timeLineDTOS.sort(dateComparator);
+
+        return timeLineDTOS;
+    }
+
+    public List<TimeLineDTO> timeLineFpo(List<LinkFpo> linkFpos) {
+
+        List<TimeLineDTO> timeLineDTOS = new ArrayList<>();
+
+        linkFpos.forEach( link -> {
+            timeLineDTOS.add(new TimeLineDTO(link));
+        });
+
+        Comparator<TimeLineDTO> dateComparator = (dto1, dto2) -> dto2.getDate().compareTo(dto1.getDate());
+
+        timeLineDTOS.sort(dateComparator);
+
+        return timeLineDTOS;
     }
 
     public void updateStorageAndSave(User user, Long totalBytes, String action) {
@@ -184,6 +222,19 @@ public class UserService {
         }
 
         this.saveAndFlush(user);
+    }
+
+    public void updateStorageBpaiAndSave(User user, Long bytesOld, Long bytesNew) {
+
+        //ADD
+        user.setStorageUsed(user.getStorageUsed() - bytesOld);
+        user.setStorageFree(user.getStorageFree() + bytesOld);
+
+        //SUBTRACT
+        user.setStorageUsed(user.getStorageUsed() + bytesNew);
+        user.setStorageFree(user.getStorageFree() - bytesNew);
+
+        this.save(user);
     }
 
     public boolean testPassword(User user, String password) {
@@ -203,4 +254,9 @@ public class UserService {
     }
 
 
+    public boolean existe(User user) {
+        Optional<User> userOptinal = userRepository.findByKeyCnpj(user.getKeyCnpj());
+
+        return userOptinal.isPresent();
+    }
 }

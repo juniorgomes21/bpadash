@@ -2,9 +2,9 @@ package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.bpa.TitleBpaDTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
-import br.com.bpadash.model.Bpa;
-import br.com.bpadash.model.TitleBpa;
-import br.com.bpadash.model.User;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamUpdateTitle;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.TitleBpaService;

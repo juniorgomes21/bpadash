@@ -5,8 +5,12 @@ import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.sigtap.ErrorRaceDTO;
 import br.com.bpadash.dto.sigtap.ErrorAgeDatesDTO;
 import br.com.bpadash.dto.sigtap.ErrorDtAtendDTODTO;
-import br.com.bpadash.model.*;
+import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.TitleBpa;
 import br.com.bpadash.model.enumModel.ZoneTime;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.bpa.BpaRepository;
 import br.com.bpadash.services.EncryptionService;
@@ -123,9 +127,9 @@ public class BpaService {
         List<Bpac> bpacList = bpacService.get(bpa);
         List<Bpai> bpaiList = bpaiService.get(bpa);
 
-        EncryptionService.decryptBpai(bpaiList);
+        EncryptionService.decryptBpai(bpaiList, true);
 
-        fileContent.append(titleBpa.toString() );
+        fileContent.append(titleBpa.toString());
         fileContent.append("\n");
 
         for (Bpac bpac : bpacList) {

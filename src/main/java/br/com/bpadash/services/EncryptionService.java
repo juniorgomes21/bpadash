@@ -1,7 +1,10 @@
 package br.com.bpadash.services;
 
-import br.com.bpadash.model.Bpai;
-import br.com.bpadash.model.ProfessionalComplete;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.user.User;
+import br.com.bpadash.model.sigtap.ProfessionalComplete;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
@@ -9,24 +12,27 @@ import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class EncryptionService {
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String ENCODE_KEY = dotenv.get("ENCODE_KEY");
+    private static final String ENCODE_ALGORITHM = dotenv.get("ENCODE_ALGORITHM");
+
+    private static final StandardPBEStringEncryptor encryptor;
+
+    static {
+        // Inicialize a instância de encryptor no bloco estático
+        encryptor = new StandardPBEStringEncryptor();
+        encryptor.setPassword(ENCODE_KEY);
+        encryptor.setAlgorithm(ENCODE_ALGORITHM);
+    }
+
 
     public static String encrypt(String data) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
         return encryptor.encrypt(data);
     }
 
     public static void encryptBpai(List<Bpai> bpaiList) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
 
         bpaiList.forEach(bpai -> {
             String cnspac = bpai.getCnspac();
@@ -50,17 +56,13 @@ public class EncryptionService {
         });
     }
 
-    public static void decryptBpai(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+    public static void decryptBpai(List<Bpai> bpaiListDB, boolean isCnsPac) {
 
         bpaiListDB.forEach(bpai -> {
-            bpai.setCnspac(bpai.getCnspac().isBlank() ? bpai.getCnspac() : encryptor.decrypt(bpai.getCnspac()));
+            if(isCnsPac) bpai.setCnspac(bpai.getCnspac().isBlank() ? bpai.getCnspac() : encryptor.decrypt(bpai.getCnspac()));
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.decrypt(bpai.getCid()));
             bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.decrypt(bpai.getNmpac()));
-            bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.decrypt(bpai.getDtnasc()));
+            if(isCnsPac) bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.decrypt(bpai.getDtnasc()));
             bpai.setIdade(bpai.getIdade().isBlank() ? bpai.getIdade() : encryptor.decrypt(bpai.getIdade()));
             bpai.setCepPcnte(bpai.getCepPcnte().isBlank() ? bpai.getCepPcnte() : encryptor.decrypt(bpai.getCepPcnte()));
             bpai.setLogradPcnte(bpai.getLogradPcnte().isBlank() ? bpai.getLogradPcnte() : encryptor.decrypt(bpai.getLogradPcnte()));
@@ -76,11 +78,6 @@ public class EncryptionService {
     }
 
     public static void decryptBpaiForTreatment(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             bpai.setCnspac(bpai.getCnspac().isBlank() ? bpai.getCnspac() : encryptor.decrypt(bpai.getCnspac()));
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.decrypt(bpai.getCid()));
@@ -93,11 +90,6 @@ public class EncryptionService {
     }
 
     public static void encryptBpaiForTreatment(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             bpai.setCnspac(bpai.getCnspac().isBlank() ? bpai.getCnspac() : encryptor.encrypt(bpai.getCnspac()));
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.encrypt(bpai.getCid()));
@@ -110,22 +102,12 @@ public class EncryptionService {
     }
 
     public static void decryptBpaiCep(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach( bpai -> {
             if(!bpai.getCepPcnte().isBlank()) bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
         });
     }
 
     public static void decryptBpaiAddress(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             if(!bpai.getCepPcnte().isBlank()) bpai.setCepPcnte(encryptor.decrypt(bpai.getCepPcnte()));
             if(!bpai.getLogradPcnte().isBlank()) bpai.setLogradPcnte(encryptor.decrypt(bpai.getLogradPcnte()));
@@ -135,12 +117,44 @@ public class EncryptionService {
         });
     }
 
-    public static void decryptBpaiDtNasc(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+    public static void encryptBpaiAddress(List<Bpai> bpaiListDB) {
+        bpaiListDB.forEach(bpai -> {
+            if(!bpai.getCepPcnte().isBlank()) bpai.setCepPcnte(encryptor.encrypt(bpai.getCepPcnte()));
+            if(!bpai.getLogradPcnte().isBlank()) bpai.setLogradPcnte(encryptor.encrypt(bpai.getLogradPcnte()));
+            if(!bpai.getComplPcnte().isBlank()) bpai.setComplPcnte(encryptor.encrypt(bpai.getComplPcnte()));
+            if(!bpai.getEndPcnte().isBlank()) bpai.setEndPcnte(encryptor.encrypt(bpai.getEndPcnte()));
+            if(!bpai.getBairroPcnte().isBlank()) bpai.setBairroPcnte(encryptor.encrypt(bpai.getBairroPcnte()));
+        });
+    }
 
+    public static void encryptAddressUser(Address address) {
+        if(!address.getCep().isBlank()) address.setCep(encryptor.encrypt(address.getCep()));
+        if(!address.getCodLograud().isBlank()) address.setCodLograud(encryptor.encrypt(address.getCodLograud()));
+        if(!address.getComplemento().isBlank()) address.setComplemento(encryptor.encrypt(address.getComplemento()));
+        if(!address.getLogradouro().isBlank()) address.setLogradouro(encryptor.encrypt(address.getLogradouro()));
+        if(!address.getBairro().isBlank()) address.setBairro(encryptor.encrypt(address.getBairro()));
+        // NOT USED
+        if(!address.getLocalidade().isBlank()) address.setLocalidade(encryptor.encrypt(address.getLocalidade()));
+        if(!address.getUf().isBlank()) address.setUf(encryptor.encrypt(address.getUf()));
+        if(!address.getIbge().isBlank()) address.setIbge(encryptor.encrypt(address.getIbge()));
+        if(!address.getGia().isBlank()) address.setGia(encryptor.encrypt(address.getGia()));
+        if(!address.getDdd().isBlank()) address.setDdd(encryptor.encrypt(address.getDdd()));
+        if(!address.getSiafi().isBlank()) address.setSiafi(encryptor.encrypt(address.getSiafi()));
+
+    }
+
+    public static AddressUser decryptAddressUser(AddressUser address) {
+        if(!address.getCep().isBlank()) address.setCep(encryptor.decrypt(address.getCep()));
+        if(!address.getComplemento().isBlank()) address.setComplemento(encryptor.decrypt(address.getComplemento()));
+        if(!address.getLogradouro().isBlank()) address.setLogradouro(encryptor.decrypt(address.getLogradouro()));
+        if(!address.getLocalidade().isBlank()) address.setLocalidade(encryptor.decrypt(address.getLocalidade()));
+        if(!address.getUf().isBlank()) address.setUf(encryptor.decrypt(address.getUf()));
+        if(!address.getBairro().isBlank()) address.setBairro(encryptor.decrypt(address.getBairro()));
+
+        return address;
+    }
+
+    public static void decryptBpaiDtNasc(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
             try {
                 if(!bpai.getDtnasc().isBlank()) bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
@@ -151,52 +165,24 @@ public class EncryptionService {
     }
 
     public static void decryptSex(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             bpai.setSexo(encryptor.decrypt(bpai.getSexo()));
         });
     }
 
     public static void encryptSex(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             bpai.setSexo(encryptor.encrypt(bpai.getSexo()));
         });
     }
 
     public static void decryptBpaiIdade(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             if(!bpai.getIdade().isBlank()) bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
         });
     }
 
     public static void decryptBpaiIdadeAndDtnasc(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             if(!bpai.getIdade().isBlank()) bpai.setIdade(encryptor.decrypt(bpai.getIdade()));
             if(!bpai.getDtnasc().isBlank()) bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
@@ -204,13 +190,6 @@ public class EncryptionService {
     }
 
     public static void encryptBpaiIdadeAndDtnasc(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach(bpai -> {
             bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
             bpai.setDtnasc(encryptor.encrypt(bpai.getDtnasc()));
@@ -218,26 +197,12 @@ public class EncryptionService {
     }
 
     public static void decryptRace(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach( bpai -> {
             bpai.setRaca(encryptor.decrypt(bpai.getRaca()));
         });
     }
 
     public static void decryptCnsPac(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach( bpai -> {
             bpai.setDtnasc(encryptor.decrypt(bpai.getDtnasc()));
             bpai.setCnspac(encryptor.decrypt(bpai.getCnspac()));
@@ -245,38 +210,18 @@ public class EncryptionService {
     }
 
     public static void encryptCnsPac(List<Bpai> bpaiListDB) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         bpaiListDB.forEach( bpai -> {
             if(!bpai.getCnspac().isBlank()) bpai.setCnspac(encryptor.encrypt(bpai.getCnspac()));;
         });
     }
 
     public static void decryptProfessionalCns(List<ProfessionalComplete> professionalCompleteList) {
-        Dotenv dotenv = Dotenv.load();
-
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
         professionalCompleteList.forEach(bpai -> {
             bpai.setCodCns(encryptor.decrypt(bpai.getCodCns()));
         });
     }
 
     public static void encrypt(List<ProfessionalComplete> list) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
-
         list.forEach( professional -> {
             String profId = professional.getProfId();
 
@@ -298,17 +243,12 @@ public class EncryptionService {
             professional.setUser(encryptor.encrypt(professional.getUser()));
             professional.setCdRaca(encryptor.encrypt(professional.getCdRaca()));
             professional.setNameFather(encryptor.encrypt(professional.getNameFather()));
+            professional.getDadosVinc().setCodCbo(encryptor.encrypt(professional.getDadosVinc().getCodCbo()));
             professional.setTelephone(professional.getTelephone().isBlank() ? professional.getTelephone() : encryptor.encrypt(professional.getTelephone()));
         });
     }
 
     public static void decrypt(List<ProfessionalComplete> list) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
-
-
         list.forEach(professional -> {
             professional.setProfId(encryptor.decrypt(professional.getProfId()));
             professional.setName(encryptor.decrypt(professional.getName()));
@@ -327,18 +267,27 @@ public class EncryptionService {
             professional.setUser(encryptor.decrypt(professional.getUser()));
             professional.setCdRaca(encryptor.decrypt(professional.getCdRaca()));
             professional.setNameFather(encryptor.decrypt(professional.getNameFather()));
+            professional.getDadosVinc().setCodCbo(encryptor.decrypt(professional.getDadosVinc().getCodCbo()));
             professional.setTelephone(professional.getTelephone().isBlank() ? professional.getTelephone() : encryptor.decrypt(professional.getTelephone()));
         });
     }
 
-    public static String decrypt(String encryptedData) {
-        Dotenv dotenv = Dotenv.load();
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(dotenv.get("ENCODE_KEY"));
-        encryptor.setAlgorithm(dotenv.get("ENCODE_ALGORITHM"));
+    public static void encryptUser(User user) {
+        user.setName(encryptor.encrypt(user.getName()));
+        user.setCnpj(encryptor.encrypt(user.getCnpj()));
+        user.setKeyCnpj(hashString(user.getCnpj()));
+        user.setPackageUser(encryptor.encrypt(user.getPackageUser()));
+        user.setCell(encryptor.encrypt(user.getCell()));
+        user.setEmail(encryptor.encrypt(user.getEmail()));
+        user.setKeyEmail(hashString(user.getEmail()));
 
+    }
+
+    public static String decrypt(String encryptedData) {
         return encryptedData.isBlank() ? encryptedData : encryptor.decrypt(encryptedData);
     }
+
+
 
     public static String hashString(String s) {
         Dotenv dotenv = Dotenv.load();
@@ -358,5 +307,4 @@ public class EncryptionService {
             return null;
         }
     }
-
 }

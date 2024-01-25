@@ -1,67 +1,38 @@
 package br.com.bpadash.params.professional;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 
 public class ParamUpdateProfessional {
-    @Positive
-    private Long id;
+    @NotBlank
+    @Size(min = 15, max = 15)
+    private String codCns;
+    @NotBlank
+    @Size(min = 6, max = 6)
+    private String codCbo;
     @NotNull
-    private String profId;
-    @NotNull
-    private String cpf;
-    @NotNull
-    private String name;
-    @NotNull
+    @Size(max = 30)
     private String logradouro;
     @NotNull
+    @Size(max = 6)
     private String number;
     @NotNull
+    @Size(max = 30)
     private String complement;
     @NotNull
+    @Size(max = 30)
     private String bairrodist;
     @NotNull
+    @Size(max = 8)
     private String codCep;
     @NotNull
-    private String codCns;
-    @NotNull
+    @Size(max = 11)
     private String telephone;
-    @NotNull
-    private String codCbo;
+
 
     public ParamUpdateProfessional() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getProfId() {
-        return profId;
-    }
-
-    public void setProfId(String profId) {
-        this.profId = profId;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getLogradouro() {

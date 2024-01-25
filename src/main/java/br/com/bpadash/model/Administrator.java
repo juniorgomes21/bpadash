@@ -2,6 +2,9 @@ package br.com.bpadash.model;
 
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.enumModel.ZoneTime;
+import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.user.AddressUser;
+import org.hibernate.engine.internal.Cascade;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,17 +20,20 @@ public class Administrator implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @Column(unique = true)
     private String cpf;
     @Column(unique = true)
+    private String keyCpf;
     private String email;
+    @Column(unique = true)
+    private String keyEmail;
     private String password;
     private String cell;
     private String profile;
     private LocalDateTime dateCreateAccount = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
     private LocalDateTime lastLogin = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
-    @OneToOne
-    private Address address;
+    @OneToOne(cascade = CascadeType.ALL)
+    private AddressUser addressUser;
+
 
     public Administrator() {
     }
@@ -65,6 +71,22 @@ public class Administrator implements UserDetails {
         this.password = password;
     }
 
+    public String getKeyCpf() {
+        return keyCpf;
+    }
+
+    public void setKeyCpf(String keyCpf) {
+        this.keyCpf = keyCpf;
+    }
+
+    public String getKeyEmail() {
+        return keyEmail;
+    }
+
+    public void setKeyEmail(String keyEmail) {
+        this.keyEmail = keyEmail;
+    }
+
     public String getCell() {
         return cell;
     }
@@ -97,12 +119,12 @@ public class Administrator implements UserDetails {
         this.lastLogin = lastLogin;
     }
 
-    public Address getAddress() {
-        return address;
+    public Address getAddressUser() {
+        return addressUser;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
+    public void setAddressUser(AddressUser addressUser) {
+        this.addressUser = addressUser;
     }
 
     @Override
