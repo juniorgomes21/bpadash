@@ -12,6 +12,7 @@ import br.com.bpadash.params.bpa.ParamUpdateBpac;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
+import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
@@ -39,15 +40,16 @@ public class BpacApi {
 
     @Autowired
     private BpacService bpacService;
-
     @Autowired
     private BpaService bpaService;
-
+    @Autowired
+    private CacheService cacheService;
     @Autowired
     private ScannerFile scannerFile;
-
     @Autowired
     private UserService userService;
+
+
 
     @GetMapping("/get/{identifier}")
     public ResponseEntity<Page<BpacDTO>> getBpacForIndentifier(
@@ -55,8 +57,10 @@ public class BpacApi {
             @PathVariable @Valid @NotBlank String identifier,
             Authentication authentication
     ) {
+
         User user = userService.get(authentication);
         Bpa bpa = bpaService.get(identifier, user);
+
         Page<BpacDTO> page = bpacService.get(bpa, pageable);
 
         return ResponseEntity.ok(page);
@@ -81,8 +85,8 @@ public class BpacApi {
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+    @PostMapping( value = "/create/{month}/{year}/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable Long id, @RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String cacheId, Authentication authentication) {
         try {
             User user = userService.get(authentication);
             List<ErrorsFile> errorsFiles = new ArrayList<>();
@@ -116,6 +120,10 @@ public class BpacApi {
                 }
             }
 
+            bpaService.updateStateManager(bpa, false);
+
+            cacheService.evictAll(cacheId);
+
             return ResponseEntity.ok().build();
 
         } catch (StringIndexOutOfBoundsException e) {
@@ -125,12 +133,16 @@ public class BpacApi {
         }
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<Object> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac) {
+    @PostMapping("/edit/{id}/{cacheId}")
+    public ResponseEntity<Object> editBpac(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac) {
         try {
             Bpac bpac = bpacService.bpacId(id);
 
             bpacService.editAndSave(bpac, paramUpdateBpac);
+
+            bpaService.updateStateManager(bpac.getBpa(), false);
+
+            cacheService.evictAll(cacheId);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -138,8 +150,8 @@ public class BpacApi {
         }
     }
 
-    @PostMapping("/update/{id}")
-    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}/{cacheId}")
+    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
 
         Optional<Bpac> optionalBpac = bpacService.get(id);
         if(optionalBpac.isEmpty()) {
@@ -165,22 +177,37 @@ public class BpacApi {
 
         bpacService.editAndSave(bpac, paramBpa, bpaOptional.orElse(null));
 
+        bpaService.updateStateManager(bpac.getBpa(), false);
+
+        cacheService.evictAll(cacheId);
+
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteBpac(@RequestBody @Valid ParamDeleteBpac paramDeleteBpac) {
+    @PostMapping("/delete/{cacheId}")
+    public ResponseEntity<Object> deleteBpac(@PathVariable String cacheId, @RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
         try {
+            User user = userService.get(authentication);
+
             Bpac bpac = bpacService.bpacId(paramDeleteBpac.getList().get(0));
 
             Long size = bpacService.sizeByte(paramDeleteBpac.getList());
 
             bpacService.deleteByIds(paramDeleteBpac.getList());
+
             bpaService.updatebyte(bpac.getBpa(), size, false);
 
+            userService.updateStorageAndSave(user, size, true);
+
+            bpaService.updateStateManager(bpac.getBpa(), true);
+
+            cacheService.evictAll(cacheId);
+
             return ResponseEntity.ok(size);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
     }
+
 }

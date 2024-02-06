@@ -12,6 +12,7 @@ import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
@@ -39,15 +40,15 @@ public class BpaiApi {
 
     @Autowired
     private BpaiService bpaiService;
-
     @Autowired
     private BpaService bpaService;
-
+    @Autowired
+    private CacheService cacheService;
     @Autowired
     private ScannerFile scannerFile;
-
     @Autowired
     private UserService userService;
+
 
     @GetMapping("/get/{month}/{year}")
     public ResponseEntity<Page<BpaiDTO>> getBpai(
@@ -81,8 +82,9 @@ public class BpaiApi {
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping(value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+
+    @PostMapping(value = "/create/{month}/{year}/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String cacheId, Authentication authentication) {
 
         List<ErrorsFile> errorsFiles = new ArrayList<>();
         try {
@@ -123,6 +125,10 @@ public class BpaiApi {
                 }
             }
 
+            bpaService.updateStateManager(bpa, false);
+
+            cacheService.evictAll(cacheId);
+
             return ResponseEntity.ok().build();
 
         } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
@@ -132,8 +138,8 @@ public class BpaiApi {
         }
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
+    @PostMapping("/edit/{id}/{cacheId}")
+    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
         try {
             List<ErrorValidationDTO> erros = new ArrayList<>();
 
@@ -151,7 +157,12 @@ public class BpaiApi {
                 return ResponseEntity.badRequest().body(erros);
             }
 
+            //TODO tem que atualizar o tamanho do arquivo
             bpaiService.editAndSave(optionalBpai.get(), paramUpdateBpai);
+
+            bpaService.updateStateManager(optionalBpai.get().getBpa(), false);
+
+            cacheService.evictAll(cacheId);
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -165,8 +176,8 @@ public class BpaiApi {
      * @param paramBpa
      * @return
      */
-    @PostMapping("/update/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}/{cacheId}")
+    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
         User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = Optional.empty();
@@ -191,18 +202,29 @@ public class BpaiApi {
 
         int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
 
+        cacheService.evictAll(cacheId);
+
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<Object> editBpai(@RequestBody @Valid ParamDeleteBpai paramDeleteBpai) {
+    @PostMapping("/delete/{cacheId}")
+    public ResponseEntity<Object> editBpai(@PathVariable String cacheId, @RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
         try {
+            User user = userService.get(authentication);
+
             Bpai bpai = bpaiService.get(paramDeleteBpai.getList().get(0)).get();
 
             Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
 
             bpaiService.deleteById(paramDeleteBpai.getList());
+
             bpaService.updatebyte(bpai.getBpa(), size, false);
+
+            userService.updateStorageAndSave(user, size, true);
+
+            bpaService.updateStateManager(bpai.getBpa(), true);
+
+            cacheService.evictAll(cacheId);
 
             return ResponseEntity.ok(size);
         } catch (Exception e) {

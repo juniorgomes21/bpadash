@@ -13,6 +13,7 @@ public class ProfessionalComplete {
     private String cpf;
     private String pispasep;
     private String name;
+    private String keyName;
     private String nameMother;
     private String birthDate;
     private String codMun;
@@ -45,6 +46,7 @@ public class ProfessionalComplete {
     private String numAgenc;
     private String contaCc;
     private String codCns;
+    private String keyCodCns;
     private String dTercsih;
     private String status;
     private String statusmov;
@@ -162,6 +164,14 @@ public class ProfessionalComplete {
         this.name = name;
     }
 
+    public String getKeyName() {
+        return keyName;
+    }
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
     public String getNameMother() {
         return nameMother;
     }
@@ -176,6 +186,14 @@ public class ProfessionalComplete {
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public String getKeyCodCns() {
+        return keyCodCns;
+    }
+
+    public void setKeyCodCns(String keyCodCns) {
+        this.keyCodCns = keyCodCns;
     }
 
     public String getCodMun() {
@@ -522,11 +540,11 @@ public class ProfessionalComplete {
         this.dadosVinc = dadosVinc;
     }
 
-    public LinkProfessionals getMainProfessionals() {
+    public LinkProfessionals getLinkProfessionals() {
         return linkProfessionals;
     }
 
-    public void setMainProfessionals(LinkProfessionals linkProfessionals) {
+    public void setLinkProfessionals(LinkProfessionals linkProfessionals) {
         this.linkProfessionals = linkProfessionals;
     }
 

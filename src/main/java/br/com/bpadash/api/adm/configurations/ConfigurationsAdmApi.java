@@ -15,11 +15,9 @@ import br.com.bpadash.services.sigtap.AddressService;
 import br.com.bpadash.services.sigtap.CepService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -95,7 +93,6 @@ public class ConfigurationsAdmApi {
         }
     }
 
-
     @PostMapping("/create/user")
     public ResponseEntity<Object> createUser(@RequestBody @Valid ParamNewUser paramNewUser) {
         try {
@@ -120,4 +117,5 @@ public class ConfigurationsAdmApi {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
     }
+
 }

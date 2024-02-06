@@ -35,7 +35,8 @@ public class User implements UserDetails {
     private Long storageFree = 0L;
     private Long storageTotal = 0L;
     @NotBlank
-    private String packageUser;
+    private String packageNameUser;
+    private String packageNumberRules;
     private boolean valid = true;
     private boolean changePass = false;
     private boolean termsAndUse = true;
@@ -80,12 +81,20 @@ public class User implements UserDetails {
         this.cnpj = cnpj;
     }
 
-    public String getPackageUser() {
-        return packageUser;
+    public String getPackageNameUser() {
+        return packageNameUser;
     }
 
-    public void setPackageUser(String packageUser) {
-        this.packageUser = packageUser;
+    public void setPackageNameUser(String packageNameUser) {
+        this.packageNameUser = packageNameUser;
+    }
+
+    public String getPackageNumberRules() {
+        return packageNumberRules;
+    }
+
+    public void setPackageNumberRules(String packageNumberRules) {
+        this.packageNumberRules = packageNumberRules;
     }
 
     public String getEmail() {

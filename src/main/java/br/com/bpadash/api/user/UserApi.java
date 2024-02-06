@@ -41,8 +41,9 @@ public class UserApi {
     @Autowired
     private BpaiService bpaiService;
 
+
     @GetMapping
-    public ResponseEntity<UserDTO> userDTO(Authentication authentication) {
+    public ResponseEntity<UserDTO> getUser(Authentication authentication) {
         User user = userService.get(authentication);
 
         UserDTO userDTO = new UserDTO(user);
@@ -58,7 +59,7 @@ public class UserApi {
     }
 
     @GetMapping("/get/{dateBPA}/{cnsPac}")
-    public ResponseEntity<Object> getProfessionals(@PathVariable String dateBPA, @PathVariable String cnsPac, Authentication authentication) {
+    public ResponseEntity<Object> getUserForCnsPac(@PathVariable String dateBPA, @PathVariable String cnsPac, Authentication authentication) {
         User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(dateBPA), user);
@@ -85,7 +86,32 @@ public class UserApi {
             return ResponseEntity.ok(new BpaiDTO(bpaiOk, ""));
         }
 
-        return ResponseEntity.badRequest().body("NOT EXIST DATE PROFESSIONALS");
+        return ResponseEntity.badRequest().body("NOT EXIST DATE BPA");
+    }
+
+    @GetMapping("/get/total/rules")
+    public ResponseEntity<List<String>> getTotalRules(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        List<String> rulesDTO = new ArrayList<>();
+
+        int rules = user.getTreatmentFile().getRuleTreatmentPaList().size();
+        int rules1 = user.getTreatmentFile().getRuleTreatmentPaCboList().size();
+        int rules2 = user.getTreatmentFile().getRuleTreatmentPaDeleteList().size();
+        int rules3 = user.getTreatmentFile().getRuleReplacementCustoms().size();
+        int total = rules + rules1 + rules2 + rules3;
+
+        rulesDTO.add(String.valueOf(total));
+        rulesDTO.add(EncryptionService.decrypt(user.getPackageNumberRules()));
+
+        return ResponseEntity.ok(rulesDTO);
+    }
+
+    @GetMapping("/get/total/bpa")
+    public ResponseEntity<Integer> getTotalBpas(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        return ResponseEntity.ok(user.getBpas().size());
     }
 
     @GetMapping("/get/validations")

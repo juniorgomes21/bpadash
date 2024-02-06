@@ -17,7 +17,6 @@ public class LinkFpo {
     private Long id;
     private String name;
     private Long fileSizeInBytes;
-    @Column(unique = true)
     private LocalDate date;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "linkFpo")
     private List<Fpo> fpoList = new ArrayList<>();

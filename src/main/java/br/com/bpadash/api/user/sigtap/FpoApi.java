@@ -137,7 +137,7 @@ public class FpoApi {
 
             fpoService.delete(link);
 
-            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), "add");
+            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
 
             linkFpoService.delete(link);
         });

@@ -44,8 +44,8 @@ public class ProfessionalApi {
     private DatesSigtapService datesSigtapService;
 
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Object> getProfessionals(@PathVariable String id, Authentication authentication) {
+    @GetMapping("/get/{key}")
+    public ResponseEntity<Object> getProfessionals(@PathVariable String key, Authentication authentication) {
         User user = userService.get(authentication);
 
         DatesSigtap datesSigtap = user.getDatesSigtap();
@@ -60,10 +60,10 @@ public class ProfessionalApi {
         if(linkProfessionalsOptional.isPresent()) {
             LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
 
-            ProfessionalComplete professionalComplete = professionalService.get(linkProfessionals, id);
+            ProfessionalComplete professionalComplete = professionalService.get(linkProfessionals, key);
 
             if(professionalComplete == null) {
-                return ResponseEntity.badRequest().body("NOT FOUND PROFESSIONAL");
+                return ResponseEntity.badRequest().body("NOT FOUND");
             }
 
             EncryptionService.decrypt(new ArrayList<>(List.of(professionalComplete)));
@@ -71,7 +71,7 @@ public class ProfessionalApi {
             return ResponseEntity.ok(new ProfessionalDTO(professionalComplete));
         }
 
-        return ResponseEntity.badRequest().body("NOT EXIST DATE PROFESSIONALS");
+        return ResponseEntity.badRequest().body("NOT EXIST DATE");
     }
 
     @GetMapping("/timeline")
@@ -136,7 +136,7 @@ public class ProfessionalApi {
 
             professionalService.delete(link);
 
-            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), "add");
+            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
 
             linkProfessionalsService.delete(link);
         });

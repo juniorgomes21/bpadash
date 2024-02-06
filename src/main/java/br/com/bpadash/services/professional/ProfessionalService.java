@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class ProfessionalService {
@@ -63,9 +64,17 @@ public class ProfessionalService {
         return professionalCompleteOptional.orElse(null);
     }
 
-    public ProfessionalComplete get(LinkProfessionals linkProfessionals , String idProfessional) {
-        String key = EncryptionService.hashString(idProfessional);
-        Optional<ProfessionalComplete> professionalCompleteOptional = professionalCompleteRepository.findByKeyProfIdAndLinkProfessionals(key, linkProfessionals);
+    public ProfessionalComplete get(LinkProfessionals linkProfessionals , String keyP) {
+        boolean isNumber = Pattern.matches("\\d+", keyP);
+
+        String key = EncryptionService.hashString(keyP);
+        Optional<ProfessionalComplete> professionalCompleteOptional;
+
+        if(isNumber) {
+            professionalCompleteOptional = professionalCompleteRepository.findByKeyCodCnsAndLinkProfessionals(key, linkProfessionals);
+        } else {
+            professionalCompleteOptional = professionalCompleteRepository.findByKeyNameAndLinkProfessionals(key, linkProfessionals);
+        }
 
         return professionalCompleteOptional.orElse(null);
     }

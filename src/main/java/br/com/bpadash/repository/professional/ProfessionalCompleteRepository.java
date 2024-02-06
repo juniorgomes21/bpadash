@@ -14,4 +14,8 @@ public interface ProfessionalCompleteRepository extends JpaRepository<Profession
     Optional<ProfessionalComplete> findByNameAndLinkProfessionals(String paramProfessional , LinkProfessionals linkProfessionals);
 
     void deleteByLinkProfessionals(LinkProfessionals linkProfessionals);
+
+    Optional<ProfessionalComplete> findByKeyCodCnsAndLinkProfessionals(String key , LinkProfessionals linkProfessionals);
+
+    Optional<ProfessionalComplete> findByKeyNameAndLinkProfessionals(String key , LinkProfessionals linkProfessionals);
 }

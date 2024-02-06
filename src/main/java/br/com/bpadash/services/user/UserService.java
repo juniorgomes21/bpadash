@@ -1,6 +1,7 @@
 package br.com.bpadash.services.user;
 
 import br.com.bpadash.dto.UserDTO;
+import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.sigtap.LinkFpo;
@@ -36,13 +37,18 @@ public class UserService {
         User user;
         if(authentication.getPrincipal() instanceof User) {
             user = (User) authentication.getPrincipal();
-            Optional<User> userDb = userRepository.findById(user.getId());
+            Optional<User> userDbOptional = userRepository.findById(user.getId());
 
-            return userDb.orElse(null);
+            return userDbOptional.orElse(null);
         }
 
         return null;
     }
+
+    public User get(Long id) {
+        return userRepository.getById(id);
+    }
+
 
     public User userLogged(Authentication authentication) {
         User user = null;
@@ -66,7 +72,8 @@ public class UserService {
         user.setCell(EncryptionService.encrypt(paramNewUser.getCell()));
         user.setEmail(EncryptionService.encrypt(paramNewUser.getEmail()));
         user.setKeyEmail(EncryptionService.hashString(paramNewUser.getEmail()));
-        user.setPackageUser(EncryptionService.encrypt(packageUser.getPackageName()));
+        user.setPackageNameUser(EncryptionService.encrypt(packageUser.getPackageName()));
+        user.setPackageNumberRules(EncryptionService.encrypt(String.valueOf(packageUser.getNumberRules())));
         user.setStorageFree(packageUser.getSizeStorage());
         user.setStorageTotal(packageUser.getSizeStorage());
         user.setTreatmentFile(new TreatmentFile(packageUser.getNumberRules()));
@@ -77,7 +84,7 @@ public class UserService {
 
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
         user.getBpas().add(bpa);
-        this.updateStorageAndSave(user, totalBytes, "sub");
+        this.updateStorageAndSave(user, totalBytes, false);
     }
 
     public User save(User user) {
@@ -212,13 +219,13 @@ public class UserService {
         return timeLineDTOS;
     }
 
-    public void updateStorageAndSave(User user, Long totalBytes, String action) {
-        if(action.equals("sub")) {
-            user.setStorageUsed(user.getStorageUsed() + totalBytes);
-            user.setStorageFree(user.getStorageFree() - totalBytes);
-        } else {
+    public void updateStorageAndSave(User user, Long totalBytes, boolean add) {
+        if(add) {
             user.setStorageUsed(user.getStorageUsed() - totalBytes);
             user.setStorageFree(user.getStorageFree() + totalBytes);
+        } else {
+            user.setStorageUsed(user.getStorageUsed() + totalBytes);
+            user.setStorageFree(user.getStorageFree() - totalBytes);
         }
 
         this.saveAndFlush(user);
@@ -258,5 +265,16 @@ public class UserService {
         Optional<User> userOptinal = userRepository.findByKeyCnpj(user.getKeyCnpj());
 
         return userOptinal.isPresent();
+    }
+
+    public List<BpaDTO> getBpaDates(List<Bpa> bpaList) {
+
+        List<BpaDTO> bpaDTOList = new ArrayList<>();
+        bpaList.forEach( bpa -> {
+            BpaDTO bpaDto = new BpaDTO(bpa);
+            bpaDTOList.add(bpaDto);
+        });
+
+        return bpaDTOList;
     }
 }

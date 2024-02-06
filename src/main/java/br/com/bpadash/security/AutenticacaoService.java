@@ -40,7 +40,6 @@ public class AutenticacaoService implements UserDetailsService {
             authorities.add(authority);
 
             return userLogged;
-
         }
 
         Optional<Administrator> adm = admRepository.findByKeyEmail(credencials);

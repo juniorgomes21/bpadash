@@ -128,13 +128,13 @@ public class auxApi {
     public ResponseEntity<Object> errosA() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(6L);
+        Bpa bpa = bpaRepository.getById(8L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("1201012010", "0000001110", "2221113330", "0123210123"));
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        for (int i = 0; i <= 275; i++) {
+        for (int i = 0; i <= 10; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
@@ -151,13 +151,13 @@ public class auxApi {
     public ResponseEntity<Object> errosB() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(20L);
+        Bpa bpa = bpaRepository.getById(8L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("135", "256", "768", "999"));
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        for (int i = 0; i <= 1850; i++) {
+        for (int i = 0; i <= 10; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
@@ -174,7 +174,7 @@ public class auxApi {
     public ResponseEntity<Object> errosC() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(6L);
+        Bpa bpa = bpaRepository.getById(8L);
 
 
 //        List<String> pa = new ArrayList<>(Arrays.asList("17150501", "18950101", "18990301", "18771201"));

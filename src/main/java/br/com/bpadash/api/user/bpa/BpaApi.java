@@ -2,8 +2,8 @@ package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.bpa.*;
+import br.com.bpadash.dto.graphics.CountLineBpaForYearGraphicsDTO;
 import br.com.bpadash.dto.sigtap.*;
-import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
@@ -15,6 +15,7 @@ import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.sigtap.ParamInconsistency;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.*;
+import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,9 +36,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,17 +76,22 @@ public class BpaApi {
     @Autowired
     private CepService cepService;
     @Autowired
+    private CacheService cacheService;
+    @Autowired
     private ProcedureService procedureService;
     @Autowired
     private DatesSigtapService datesSigtapService;
     @Autowired
     private OccupationService occupationService;
-    
+
+
     @GetMapping("/get/all")
     public ResponseEntity<List<BpaDTO>> getAll(Authentication authentication) {
         User user = userService.get(authentication);
 
-        List<BpaDTO> bpaDTOList = bpaService.getAll(user);
+        List<Bpa> bpaList = bpaService.get(user);
+
+        List<BpaDTO> bpaDTOList = userService.getBpaDates(bpaList);
 
         return ResponseEntity.ok(bpaDTOList);
     }
@@ -131,6 +141,90 @@ public class BpaApi {
         return ResponseEntity.ok(new BpaDTO(bpa));
     }
 
+    @GetMapping("/invoicing/{dateBpa}")
+    public ResponseEntity<Object> calculateInvoicing(@PathVariable String dateBpa, Authentication authentication) {
+        User user = userService.get(authentication);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(dateBpa), user);
+
+        if(bpaOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            if(bpa.getManagerBpa().isCalculateInvoicing()) {
+                DatesSigtap datesSigtap = user.getDatesSigtap();
+
+                Optional<LinkFpo> linkFpoOptional;
+                if(datesSigtap.isDateFpoAuto()) {
+                    linkFpoOptional = linkFpoService.get(user);
+                } else {
+                    linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
+                }
+
+                if (linkFpoOptional.isEmpty()) return ResponseEntity.badRequest().body("NOT FOUND FPO");
+
+                LinkFpo linkFpo = linkFpoOptional.get();
+
+                BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList());
+
+                bpaService.saveManagerInvoicing(bpa, valeuTotalInvoicing);
+
+                return ResponseEntity.ok(valeuTotalInvoicing);
+            }
+
+            return ResponseEntity.ok(bpa.getManagerBpa().getInvoicing());
+        }
+
+        return ResponseEntity.badRequest().body("NOT FOUND");
+    }
+
+    @GetMapping("/invoicing/year/{year}")
+    public ResponseEntity<Object> calculateInvoicingYear(@PathVariable int year, Authentication authentication) {
+        User user = userService.get(authentication);
+
+        List<Bpa> bpaList = bpaService.getForYear(user, year);
+
+        boolean calculate = bpaList.stream().anyMatch(bpa -> bpa.getManagerBpa().isCalculateInvoicing());
+
+        BigDecimal totalInvoicing = BigDecimal.ZERO;
+        if(calculate) {
+            DatesSigtap datesSigtap = user.getDatesSigtap();
+
+            Optional<LinkFpo> linkFpoOptional;
+            if(datesSigtap.isDateFpoAuto()) {
+                linkFpoOptional = linkFpoService.get(user);
+            } else {
+                linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
+            }
+
+            if(linkFpoOptional.isPresent()) {
+                LinkFpo linkFpo = linkFpoOptional.get();
+
+                for (Bpa bpa: bpaList) {
+                    if(bpa.getManagerBpa().isCalculateInvoicing()) {
+                        BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList());
+                        totalInvoicing = totalInvoicing.add(valeuTotalInvoicing);
+
+                        bpaService.saveManagerInvoicing(bpa, valeuTotalInvoicing);
+
+                    } else {
+                        totalInvoicing = totalInvoicing.add(bpa.getManagerBpa().getInvoicing());
+                    }
+
+                }
+
+            } else {
+                return ResponseEntity.badRequest().body("NOT FOUND FPO");
+            }
+
+        } else {
+            for (Bpa bpa: bpaList) {
+                totalInvoicing = totalInvoicing.add(bpa.getManagerBpa().getInvoicing());
+            }
+        }
+
+        return ResponseEntity.ok(totalInvoicing);
+    }
+
     @GetMapping("/generateFile/{identifier}")
     public ResponseEntity<byte[]> generateTextFile(@PathVariable String identifier, Authentication authentication) {
         try {
@@ -152,19 +246,89 @@ public class BpaApi {
         }
     }
 
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteMany(@RequestBody List<String> identifiers, Authentication authentication) {
+    @Transactional
+    @PostMapping("/delete/{cacheId}")
+    public ResponseEntity<Object> deleteMany(@PathVariable String cacheId, @RequestBody List<String> identifiers, Authentication authentication) {
         User user = userService.get(authentication);
 
         identifiers.forEach(identifier -> {
             Bpa bpa = bpaService.get(identifier, user);
+
+            Long totalBytes = bpa.getFileSizeInBytesInt();
+
             bpaService.delete(bpa, user);
+
+            userService.updateStorageAndSave(user, totalBytes, true);
         });
 
+        cacheService.evictAll(cacheId);
 
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping( value = "/create/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable String cacheId, @RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
+        try {
+            StopWatch stopWatch = StopWatch.createStarted();
+
+            User user = userService.get(authentication);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ParamNewBpa paramNewBpa = objectMapper.readValue(paramNewBpaJson, ParamNewBpa.class);
+
+            List<ErrorsFile> errorsFileList = new ArrayList<>();
+
+            String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch);
+
+            switch (response) {
+                case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+                case "FILE INVALID" -> {
+                    errorsFileList.add(new ErrorsFile("FILE INVALID"));
+
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+                case "ERROR FORMAT DATE" -> {
+                    errorsFileList.add(new ErrorsFile("ERROR FORMAT DATE"));
+
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+                case "NOT STORAGE" -> {
+                    errorsFileList.add(new ErrorsFile("NOT STORAGE"));
+
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+                case "EXIST DATE" -> {
+                    errorsFileList.add(new ErrorsFile("EXIST DATE"));
+
+                    return ResponseEntity.badRequest().body(errorsFileList);
+                }
+            }
+
+            cacheService.evictAll(cacheId);
+
+            return ResponseEntity.ok().build();
+
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("A estrutura do arquivo está incorreta: " + e.getMessage());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/dates")
+    public ResponseEntity<DatesDTO> dates(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        DatesDTO datesDTO = bpaService.getDates(user);
+
+        return ResponseEntity.ok(datesDTO);
+    }
+
+    // INCONSISTENCY
 
     /**
      * Se idade em (bpaI) é inferior a 1900 ou superior à data atual
@@ -581,134 +745,5 @@ public class BpaApi {
 
         return ResponseEntity.badRequest().body("NOT DATE EXISTS FPO");
     }
-
-    @PostMapping("/delete/{identifier}")
-    public ResponseEntity<Object> deleteBPA(@PathVariable String identifier, Authentication authentication) {
-        User user = userService.get(authentication);
-        Bpa bpa = bpaService.get(identifier, user);
-
-        bpaService.delete(bpa, user);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping( value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
-        try {
-            StopWatch stopWatch = StopWatch.createStarted();
-
-            User user = userService.get(authentication);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            ParamNewBpa paramNewBpa = objectMapper.readValue(paramNewBpaJson, ParamNewBpa.class);
-
-            List<ErrorsFile> errorsFileList = new ArrayList<>();
-            List<ErrorValidationDTO> errors = new ArrayList<>();
-
-
-            String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch);
-            switch (response) {
-                case "ERROR FILE" -> {
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "FILE INVALID" -> {
-                    errors.add(new ErrorValidationDTO("FILE INVALID" , "Este aquivo não é um arquivo BPA"));
-                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "ERROR FORMAT DATE" -> {
-                    errors.add(new ErrorValidationDTO("ERROR FORMAT DATE" , "Erro na formação da data do arquivo BPA. Por favor verifique a data no título do arquivo."));
-                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "NOT STORAGE" -> {
-                    errors.add(new ErrorValidationDTO("NOT STORAGE" , "Espaço de armazenamento insuficiente."));
-                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "EXIST DATE" -> {
-                    errors.add(new ErrorValidationDTO("EXIST DATE" , "A data do arquivo já existe."));
-                    errorsFileList.add(new ErrorsFile(String.valueOf(0) , errors));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-            }
-
-            return ResponseEntity.ok().build();
-
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("A estrutura do arquivo está incorreta: " + e.getMessage());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @GetMapping("/dates")
-    public ResponseEntity<DatesDTO> dates(Authentication authentication) {
-        User user = userService.get(authentication);
-
-        DatesDTO datesDTO = bpaService.getDates(user);
-
-        return ResponseEntity.ok(datesDTO);
-    }
-
-
-//    public ResponseEntity<Object> inconsistencyFpo(@RequestBody ParamInconsistency paramInconsistency, Authentication authentication)  {
-//        User user = userService.get(authentication);
-//        DatesSigtap datesSigtap = user.getDatesSigtap();
-//
-//        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
-//
-//        Optional<LinkFpo> linkFpoOptional;
-//        if(datesSigtap.isDateFpoAuto()) {
-//            linkFpoOptional = linkFpoService.get();
-//        } else {
-//            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo());
-//        }
-//
-//        Optional<LinkProcedure> linkProcedureOptional;
-//        if(datesSigtap.isDateProcedureAuto()) {
-//            linkProcedureOptional = linkProcedureService.get();
-//        } else {
-//            linkProcedureOptional = linkProcedureService.get(datesSigtap.getDateProcedure());
-//        }
-//
-//        Optional<LinkOccupation> linkOccupationOptional;
-//        if(datesSigtap.isDateOccupationAuto()) {
-//            linkOccupationOptional = linkOccupationService.get();
-//        } else {
-//            linkOccupationOptional = linkOccupationService.get(datesSigtap.getDateOccupation());
-//        }
-//
-//        if(bpaOptional.isPresent() && linkFpoOptional.isPresent() && linkProcedureOptional.isPresent() && linkOccupationOptional.isPresent()) {
-//            Bpa bpa = bpaOptional.get();
-//
-//            LinkFpo linkFpo = linkFpoOptional.get();
-//            LinkProcedure linkProcedure = linkProcedureOptional.get();
-//            List<CodProcedureProjection> paOccupation = occupationService.get(linkOccupationOptional.get());
-//
-//            List<Bpac> bpacListDB = bpacService.getBpacList(bpa);
-//            List<Bpai> bpaiListDB = bpaiService.get(bpa);
-//
-//            //Campo PA de (BPAC e BPAI) e campo SEXO de BPAI estão em tb_procedimento
-//            Set<String> procedurePa = linkProcedure.getProcedureList().stream().map(Procedure::getCodProcedimento).collect(Collectors.toSet());
-//            //Se PA e CBO de (bpaC e bpaI) estão em tb_procedimento_ocupação
-//            Set<String> occupationPa = paOccupation.stream().map(CodProcedureProjection::getCodProcedimento).collect(Collectors.toSet());
-//            paOccupation = null;
-//
-//            List<ErrorPaDTO> errorsPaBpacDTOS = bpacService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpacListDB);
-//            List<ErrorPaDTO> errorsPaBpaiDTOS = bpaiService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpaiListDB);
-//
-//            return ResponseEntity.ok(new InconsistencyPaDTO(errorsPaBpacDTOS, errorsPaBpaiDTOS));
-//
-//        }
-//
-//        return ResponseEntity.badRequest().body(bpaOptional.isPresent() ? "NOT DATE EXISTS FPO" : "NOT DATE EXISTS BPA");
-//    }
 
 }

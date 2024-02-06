@@ -55,7 +55,8 @@ public class BpacService {
     public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 
             List<ErrorValidationDTO> errors = new ArrayList<>();
-            
+            List<String> orgsValids = new ArrayList<>(List.of("BPA", "PNI", "SIE", "SIB", "MIN", "PAC", "SCL", "EXT"));
+
             if (line.length() < 48) {
                 errors.add(errorValidation("LINHA","A linha Não contém 49 caracteres."));
             }
@@ -121,7 +122,7 @@ public class BpacService {
             //TODO verificar validação
             String org = line.substring(45, 48);
             if(user.getBpacValidation().isOrg()) {
-                if(!org.equals("BPA")) {
+                if(!orgsValids.contains(org)) {
                     errors.add(errorValidation("ORG", "O campo deverá ser preenchido apenas com (\"BPA\", \"PNI\", \"SIE\", \"SIB\", \"MIN\", \"PAC\", \"SCL\" ou \"EXT\")"));
                 }
             }

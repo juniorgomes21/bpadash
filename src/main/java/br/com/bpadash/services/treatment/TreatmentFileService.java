@@ -271,7 +271,7 @@ public class TreatmentFileService {
 
         Long quantityBytes = storageService.quantityBytes(new TitleBpa(), bpacProcessedList, bpaiProcessedList);
 
-        userService.updateStorageAndSave(user, quantityBytes, "add");
+        userService.updateStorageAndSave(user, quantityBytes, true);
 
         bpacService.delete(bpacProcessedList);
         bpaiService.delete(bpaiProcessedList);

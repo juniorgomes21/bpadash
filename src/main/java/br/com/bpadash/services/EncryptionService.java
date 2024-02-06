@@ -16,6 +16,7 @@ import java.util.List;
 public class EncryptionService {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String ENCODE_KEY = dotenv.get("ENCODE_KEY");
+    private static final String ENCODE_KEY_USER = dotenv.get("ENCODE_KEY_USER");
     private static final String ENCODE_ALGORITHM = dotenv.get("ENCODE_ALGORITHM");
 
     private static final StandardPBEStringEncryptor encryptor;
@@ -224,11 +225,14 @@ public class EncryptionService {
     public static void encrypt(List<ProfessionalComplete> list) {
         list.forEach( professional -> {
             String profId = professional.getProfId();
+            String codCns = professional.getCodCns();
+            String name = professional.getName();
 
             professional.setProfId(encryptor.encrypt(profId));
             professional.setKeyProfId(hashString(profId));
             professional.setCpf(encryptor.encrypt(professional.getCpf()));
-            professional.setName(encryptor.encrypt(professional.getName()));
+            professional.setName(encryptor.encrypt(name));
+            professional.setKeyName(hashString(name));
             professional.setNameMother(encryptor.encrypt(professional.getNameMother()));
             professional.setBirthDate(encryptor.encrypt(professional.getBirthDate()));
             professional.setSexo(encryptor.encrypt(professional.getSexo()));
@@ -239,7 +243,8 @@ public class EncryptionService {
             professional.setCodCep(encryptor.encrypt(professional.getCodCep()));
             professional.setNumAgenc(encryptor.encrypt(professional.getNumAgenc()));
             professional.setContaCc(encryptor.encrypt(professional.getContaCc()));
-            professional.setCodCns(encryptor.encrypt(professional.getCodCns()));
+            professional.setCodCns(encryptor.encrypt(codCns));
+            professional.setKeyCodCns(hashString(codCns));
             professional.setUser(encryptor.encrypt(professional.getUser()));
             professional.setCdRaca(encryptor.encrypt(professional.getCdRaca()));
             professional.setNameFather(encryptor.encrypt(professional.getNameFather()));
@@ -276,7 +281,7 @@ public class EncryptionService {
         user.setName(encryptor.encrypt(user.getName()));
         user.setCnpj(encryptor.encrypt(user.getCnpj()));
         user.setKeyCnpj(hashString(user.getCnpj()));
-        user.setPackageUser(encryptor.encrypt(user.getPackageUser()));
+        user.setPackageNameUser(encryptor.encrypt(user.getPackageNameUser()));
         user.setCell(encryptor.encrypt(user.getCell()));
         user.setEmail(encryptor.encrypt(user.getEmail()));
         user.setKeyEmail(hashString(user.getEmail()));
@@ -290,11 +295,9 @@ public class EncryptionService {
 
 
     public static String hashString(String s) {
-        Dotenv dotenv = Dotenv.load();
         try {
             MessageDigest md = MessageDigest.getInstance(dotenv.get("ENCODE_TYPE"));
-            byte[] emailBytes = s.getBytes();
-            byte[] emailHashBytes = md.digest(emailBytes);
+            byte[] emailHashBytes = md.digest(s.getBytes());
             StringBuilder stringBuilder = new StringBuilder();
 
             for (byte b : emailHashBytes) {
@@ -303,8 +306,11 @@ public class EncryptionService {
 
             return stringBuilder.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
+    }
+
+    public static Long encryptKeyUser(Long id) {
+        return id + Long.parseLong(ENCODE_KEY_USER);
     }
 }

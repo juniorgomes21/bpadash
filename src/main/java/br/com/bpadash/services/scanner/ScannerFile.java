@@ -34,11 +34,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -151,6 +149,9 @@ public class ScannerFile {
 
                     lineNumber++;
                 }
+
+                bpa.getManagerBpa().setCountTotalLine(lineNumber);
+
                 System.out.println("criou todas as linhas do BPA: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
                 if(!errorsFileList.isEmpty()) {
@@ -263,7 +264,7 @@ public class ScannerFile {
                 bpacService.save(bpacList);
             }
 
-            userService.updateStorageAndSave(user, totalBytes, "sub");
+            userService.updateStorageAndSave(user, totalBytes, false);
             bpaService.updatebyte(bpa, totalBytes, true);
 
             return "CREATE";
@@ -343,7 +344,7 @@ public class ScannerFile {
                 bpaiService.save(bpaiList);
             }
 
-            userService.updateStorageAndSave(user, totalBytes, "sub");
+            userService.updateStorageAndSave(user, totalBytes, false);
             bpaService.updatebyte(bpa, totalBytes, true);
 
             return "CREATE";
@@ -519,7 +520,7 @@ public class ScannerFile {
             linkFpo.getFpoList().addAll(fpoList);
             linkFpoService.save(linkFpo);
 
-            userService.updateStorageAndSave(user, file.getSize(), "sub");
+            userService.updateStorageAndSave(user, file.getSize(), false);
 
             return "CREATE";
 
@@ -701,7 +702,7 @@ public class ScannerFile {
 
             linkProfessionalsService.save(linkProfessionals);
 
-            userService.updateStorageAndSave(user, totalBytes, "sub");
+            userService.updateStorageAndSave(user, totalBytes, false);
 
             return "CREATE";
         } catch (Exception e) {

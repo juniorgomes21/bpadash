@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 public class BpaiService {
 
     @Autowired
+    private BpaiRepository bpaiRepository;
+    @Autowired
     private CepService cepService;
     @Autowired
     private LinkCepService linkCepService;
@@ -43,12 +45,12 @@ public class BpaiService {
     private ProcedureService procedureService;
     @Autowired
     private LinkProcedureService linkProcedureService;
-    @Autowired
-    private BpaiRepository bpaiRepository;
+
 
 
     public Bpai create(String line, int lineNumber, Bpa bpa, User user, List<ErrorsFile> errorsFiles) {
         List<ErrorValidationDTO> errors = new ArrayList<>();
+        List<String> orgsValids = new ArrayList<>(List.of("BPA", "PNI", "SIE", "SIB", "MIN", "PAC", "SCL", "EXT"));
 
         if (line.length() < 247) {
             errors.add(errorValidation("LINHA","A linha Não contém pelo menos 247 caracteres."));
@@ -160,7 +162,7 @@ public class BpaiService {
 
         String org = line.substring(109, 112);
         if(user.getBpaiValidation().isOrg()) {
-            if(!org.equals("BPA")) {
+            if(!orgsValids.contains(org)) {
                 errors.add(errorValidation("ORG", "O campo deverá ser preenchido apenas com (\"BPA\", \"PNI\", \"SIE\", \"SIB\", \"MIN\", \"PAC\", \"SCL\" ou \"EXT\")"));
             }
         }
@@ -638,7 +640,6 @@ public class BpaiService {
             this.save(bpaiList);
         }
     }
-
 
     private void editDtNasc(String dtNasc, List<Long> ids, Bpai bpai) {
         if(ids != null) {

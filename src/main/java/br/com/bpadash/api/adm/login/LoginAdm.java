@@ -34,7 +34,7 @@ public class LoginAdm {
             Authentication authentication = authManager.authenticate(dadosLogin);
             String token = tokenApp.gerarTokenAdm(authentication);
 
-            return ResponseEntity.ok(new TokenDTO(token, "Bearer"));
+            return ResponseEntity.ok(new TokenDTO(token));
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().build();
         }
