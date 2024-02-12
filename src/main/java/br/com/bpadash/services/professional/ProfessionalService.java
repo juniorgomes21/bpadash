@@ -38,6 +38,9 @@ public class ProfessionalService {
         List<ErrorSigTapDTO> errors = new ArrayList<>();
 
         List<String> cnsmedList = new ArrayList<>();
+
+        EncryptionService.decryptCnsmed(bpaiListDB);
+
         for(Bpai bpai: bpaiListDB) {
 
             String cnsmed = bpai.getCnsmed();

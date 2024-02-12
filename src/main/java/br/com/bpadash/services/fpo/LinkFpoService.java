@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -37,6 +38,19 @@ public class LinkFpoService {
 
     public Optional<LinkFpo> get(LocalDate date, User user) {
         return linkFpoRepository.findByUserAndDate(user, date);
+    }
+
+    public Optional<LinkFpo> verify(User user) {
+        DatesSigtap datesSigtap = user.getDatesSigtap();
+
+        Optional<LinkFpo> linkFpoOptional;
+        if(datesSigtap.isDateFpoAuto()) {
+            linkFpoOptional = this.get(user);
+        } else {
+            linkFpoOptional = this.get(datesSigtap.getDateFpo(), user);
+        }
+
+        return linkFpoOptional;
     }
 
     public DatesDTO getDates(User user) {
@@ -141,5 +155,21 @@ public class LinkFpoService {
 
     public void delete(LinkFpo link) {
         linkFpoRepository.delete(link);
+    }
+
+    public Long calculateByte(User user) {
+        List<LinkFpo> linkFpoList = this.getAll(user);
+
+        Long totalByte = 0L;
+
+        for (LinkFpo linkFpo: linkFpoList) {
+            totalByte = totalByte + linkFpo.getFileSizeInBytes();
+        }
+
+        return totalByte;
+    }
+
+    public boolean exist(User user) {
+        return linkFpoRepository.existsByUser(user);
     }
 }

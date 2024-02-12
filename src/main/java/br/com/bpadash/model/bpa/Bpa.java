@@ -4,7 +4,6 @@ import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -23,6 +22,8 @@ public class Bpa {
     private User user;
     @OneToOne(cascade = CascadeType.ALL)
     private ManagerBpa managerBpa = new ManagerBpa();
+//    @OneToOne(cascade = CascadeType.ALL)
+//    private ManagerYear managerYear = new ManagerYear();
 
     public Bpa() {
     }
@@ -71,10 +72,6 @@ public class Bpa {
         this.date = date;
     }
 
-    public Long getFileSizeInBytesInt() {
-        return this.fileSizeInBytes;
-    }
-
     public Long getFileSizeInBytes() {
         return fileSizeInBytes;
     }
@@ -98,6 +95,14 @@ public class Bpa {
     public void setManagerBpa(ManagerBpa managerBpa) {
         this.managerBpa = managerBpa;
     }
+
+//    public ManagerYear getManagerYear() {
+//        return managerYear;
+//    }
+//
+//    public void setManagerYear(ManagerYear managerYear) {
+//        this.managerYear = managerYear;
+//    }
 
     @Override
     public boolean equals(Object o) {

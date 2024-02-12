@@ -1,28 +1,38 @@
 package br.com.bpadash.api;
 
 import br.com.bpadash.errorValidation.ErrorsFile;
+import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.Address;
+import br.com.bpadash.model.user.CodLograd;
 import br.com.bpadash.model.user.User;
+import br.com.bpadash.repository.AdministratorRepository;
 import br.com.bpadash.repository.CodLogradRepository;
 import br.com.bpadash.repository.UserRepository;
 import br.com.bpadash.repository.bpa.*;
 import br.com.bpadash.repository.sigtap.AddressRepository;
 import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.utilities.Utilities;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import java.io.*;
 import java.security.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/aux")
@@ -45,7 +55,15 @@ public class auxApi {
     @Autowired
     private CodLogradRepository codLogradRepository;
     @Autowired
+    private AdministratorRepository administratorRepository;
+    @Autowired
     private BpaiService bpaiService;
+    @Autowired
+    private BpaService bpaService;
+    @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
+    private EntityManager entityManager;
 
 
     @PostMapping("/delete/bpai")
@@ -67,11 +85,38 @@ public class auxApi {
         return ResponseEntity.ok().build();
     }
 
+
     @PostMapping("/ping")
     public ResponseEntity<Object> ping() throws NoSuchAlgorithmException {
 
+        Bpa bpa = bpaRepository.getById(12L);
+
+        List<Bpai> bpaiList = this.get(bpa);
+
+        List<Bpai> newbpaiList = bpaiList.stream()
+                .map(bpai -> modelMapper.map(bpai, Bpai.class))
+                .collect(Collectors.toList());
+
+
+        EncryptionService.decryptCnsmed(newbpaiList);
+
+
+
+        this.saveLog();
 
         return ResponseEntity.ok().build();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<Bpai> get(Bpa bpa) {
+        return bpaiRepository.findByBpa(bpa);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveLog() {
+        CodLograd codLograd = new CodLograd("123", "43211");
+
+        codLogradRepository.save(codLograd);
     }
 
     @PostMapping(value = "/file/cep", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -413,4 +458,5 @@ public class auxApi {
 
         return ResponseEntity.ok().build();
     }
+
 }

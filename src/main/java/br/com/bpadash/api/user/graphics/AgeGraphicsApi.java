@@ -2,6 +2,7 @@ package br.com.bpadash.api.user.graphics;
 
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.ManagerBpa;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
@@ -11,16 +12,14 @@ import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,6 +33,7 @@ public class AgeGraphicsApi {
     @Autowired
     private BpaService bpaService;
 
+    @Transactional
     @GetMapping("/{date}")
     public ResponseEntity<Object> used(@PathVariable String date, Authentication authentication) {
         User user = userService.get(authentication);
@@ -44,53 +44,20 @@ public class AgeGraphicsApi {
             Bpa bpa = bpaOptional.get();
 
             if(bpa.getManagerBpa().isCalculateAge()) {
-                List<Bpai> bpaiList = bpaiService.get(bpa);
 
-                EncryptionService.decryptBpaiIdade(bpaiList);
-
-                Map<String, Integer> contagemIdades = new HashMap<>();
-
-                bpaiList.forEach(bpai -> {
-                    String age = bpai.getIdade();
-                    contagemIdades.put(age, contagemIdades.getOrDefault(age, 0) + 1);
-                });
-
-                // Agrupar as idades em faixas e calcular a porcentagem para cada grupo
-                Map<String, Integer> grupos = new HashMap<>();
-                contagemIdades.forEach((idade, ocorrencias) -> {
-                    int idadeInt = Integer.parseInt(idade);
-
-                    if (idadeInt <= 20) {
-                        grupos.put("yong", grupos.getOrDefault("yong", 0) + ocorrencias);
-                    } else if (idadeInt <= 50) {
-                        grupos.put("middleAge", grupos.getOrDefault("middleAge", 0) + ocorrencias);
-                    } else {
-                        grupos.put("old", grupos.getOrDefault("old", 0) + ocorrencias);
-                    }
-                });
-
-
-                // Total de ocorrências
-                int totalOcorrencias = contagemIdades.values().stream().mapToInt(Integer::intValue).sum();
-
-                // Calcular a porcentagem para cada grupo
-                Map<String, Integer> porcentagensGrupos = grupos.entrySet().stream()
-                    .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> (int) Math.round(((double) entry.getValue() / totalOcorrencias) * 100)
-                ));
-
-                bpaService.saveManagerAge(bpa, porcentagensGrupos);
-
-                contagemIdades.put("total", bpa.getManagerBpa().getCountLineBpai());
+                Map<String, Integer> porcentagensGrupos = bpaService.calculateAge(bpa, null);
 
                 return ResponseEntity.ok(porcentagensGrupos);
+
             } else  {
+                ManagerBpa managerBpa = bpa.getManagerBpa();
+
                 Map<String, Integer> contagemIdades = new HashMap<>();
-                contagemIdades.put("yong", bpa.getManagerBpa().getYong());
-                contagemIdades.put("middleAge", bpa.getManagerBpa().getMiddleAge());
-                contagemIdades.put("old", bpa.getManagerBpa().getOld());
-                contagemIdades.put("total", bpa.getManagerBpa().getCountLineBpai());
+
+                contagemIdades.put("yong", managerBpa.getYong());
+                contagemIdades.put("middleAge", managerBpa.getMiddleAge());
+                contagemIdades.put("old", managerBpa.getOld());
+                contagemIdades.put("total", managerBpa.getCountLineBpai());
 
                 return ResponseEntity.ok(contagemIdades);
             }
@@ -98,5 +65,37 @@ public class AgeGraphicsApi {
         }
 
         return ResponseEntity.badRequest().body("NOT FOUND");
+    }
+
+    @GetMapping("/year/{year}")
+    public ResponseEntity<Object> usedYear(@PathVariable Integer year, Authentication authentication) {
+        User user = userService.userLogged(authentication);
+
+        List<Bpa> bpaList = bpaService.getForYear(user, year);
+
+        List<Integer> yongs = new ArrayList<>(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        List<Integer> middleAges = new ArrayList<>(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        List<Integer> olds = new ArrayList<>(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
+        if(!bpaList.isEmpty()) {
+            bpaList.forEach( bpa -> {
+                int month = bpa.getDate().getMonthValue() - 1;
+                int yong = bpa.getManagerBpa().getYong();
+                int middleAge = bpa.getManagerBpa().getMiddleAge();
+                int old = bpa.getManagerBpa().getOld();
+
+                yongs.set(month, yong);
+                middleAges.set(month, middleAge);
+                olds.set(month, old);
+            });
+        }
+
+        Map<String, List<Integer>> graphics = new HashMap<>();
+
+        graphics.put("yongs", yongs);
+        graphics.put("middleAges", middleAges);
+        graphics.put("olds", olds);
+
+        return ResponseEntity.ok(graphics);
     }
 }

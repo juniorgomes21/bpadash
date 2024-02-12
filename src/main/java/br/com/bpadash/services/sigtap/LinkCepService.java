@@ -3,6 +3,7 @@ package br.com.bpadash.services.sigtap;
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
 import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.LinkCep;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.sigtap.LinkCepRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,4 +104,5 @@ public class LinkCepService {
                 datesFull
         );
     }
+
 }

@@ -18,13 +18,21 @@ public class ManagerBpa {
     private int countLineBpai = 0;
     private int	old = 0;
     private int	yong = 0;
+    private int	blank = 0;
+    private int	black = 0;
+    private int	brown = 0;
+    private int	yellow = 0;
+    private int	Indigenous = 0;
+    private int	noInformation = 0;
     private int	middleAge = 0;
     private int sexM = 0;
     private int sexF = 0;
     private boolean calculateInvoicing = true;
-    private boolean calculateCountLine = true;
-    private boolean calculateAge = true;
-    private boolean calculateSex = true;
+    private boolean calculateCountLine = false;
+    private boolean calculateAge = false;
+    private boolean calculateRace = false;
+    private boolean calculateSex = false;
+
 
     public ManagerBpa() {
     }
@@ -78,6 +86,54 @@ public class ManagerBpa {
         return yong;
     }
 
+    public int getBlank() {
+        return blank;
+    }
+
+    public void setBlank(int blank) {
+        this.blank = blank;
+    }
+
+    public int getBlack() {
+        return black;
+    }
+
+    public void setBlack(int black) {
+        this.black = black;
+    }
+
+    public int getBrown() {
+        return brown;
+    }
+
+    public void setBrown(int brown) {
+        this.brown = brown;
+    }
+
+    public int getYellow() {
+        return yellow;
+    }
+
+    public void setYellow(int yellow) {
+        this.yellow = yellow;
+    }
+
+    public int getIndigenous() {
+        return Indigenous;
+    }
+
+    public void setIndigenous(int indigenous) {
+        Indigenous = indigenous;
+    }
+
+    public int getNoInformation() {
+        return noInformation;
+    }
+
+    public void setNoInformation(int noInformation) {
+        this.noInformation = noInformation;
+    }
+
     public void setYong(int yong) {
         this.yong = yong;
     }
@@ -116,6 +172,14 @@ public class ManagerBpa {
 
     public boolean isCalculateCountLine() {
         return calculateCountLine;
+    }
+
+    public boolean isCalculateRace() {
+        return calculateRace;
+    }
+
+    public void setCalculateRace(boolean calculateRace) {
+        this.calculateRace = calculateRace;
     }
 
     public void setCalculateCountLine(boolean calculateCountLine) {

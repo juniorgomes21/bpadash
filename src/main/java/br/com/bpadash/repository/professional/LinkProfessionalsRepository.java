@@ -23,4 +23,6 @@ public interface LinkProfessionalsRepository extends JpaRepository<LinkProfessio
 
     Optional<LinkProfessionals> findFirstByUser(User user);
     Optional<LinkProfessionals> findFirstByUser(User user, Sort sort);
+
+    boolean existsByUser(User user);
 }

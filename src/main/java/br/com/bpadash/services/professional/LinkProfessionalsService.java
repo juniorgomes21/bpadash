@@ -2,6 +2,7 @@ package br.com.bpadash.services.professional;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.sigtap.DatesSigtapDTO;
+import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.LinkProfessionals;
@@ -137,6 +138,10 @@ public class LinkProfessionalsService {
         return linkProfessionalsRepository.findByDate(date).isPresent();
     }
 
+    public boolean exist(User user) {
+        return linkProfessionalsRepository.existsByUser(user);
+    }
+
     public LinkProfessionals save(LinkProfessionals linkProfessionals) {
         return linkProfessionalsRepository.save(linkProfessionals);
     }
@@ -149,4 +154,15 @@ public class LinkProfessionalsService {
         linkProfessionalsRepository.delete(linkProfessionals);
     }
 
+    public Long calculateByte(User user) {
+        List<LinkProfessionals> linkProfessionalsList = this.getAll(user);
+
+        Long totalByte = 0L;
+
+        for (LinkProfessionals linkProfessionals: linkProfessionalsList) {
+            totalByte = totalByte + linkProfessionals.getFileSizeInBytes();
+        }
+
+        return totalByte;
+    }
 }

@@ -2,7 +2,6 @@ package br.com.bpadash.api.user.bpa;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.bpa.*;
-import br.com.bpadash.dto.graphics.CountLineBpaForYearGraphicsDTO;
 import br.com.bpadash.dto.sigtap.*;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
@@ -27,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,7 +39,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,6 +138,7 @@ public class BpaApi {
         return ResponseEntity.ok(new BpaDTO(bpa));
     }
 
+    @Transactional
     @GetMapping("/invoicing/{dateBpa}")
     public ResponseEntity<Object> calculateInvoicing(@PathVariable String dateBpa, Authentication authentication) {
         User user = userService.get(authentication);
@@ -151,22 +149,13 @@ public class BpaApi {
             Bpa bpa = bpaOptional.get();
 
             if(bpa.getManagerBpa().isCalculateInvoicing()) {
-                DatesSigtap datesSigtap = user.getDatesSigtap();
-
-                Optional<LinkFpo> linkFpoOptional;
-                if(datesSigtap.isDateFpoAuto()) {
-                    linkFpoOptional = linkFpoService.get(user);
-                } else {
-                    linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
-                }
+                Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
 
                 if (linkFpoOptional.isEmpty()) return ResponseEntity.badRequest().body("NOT FOUND FPO");
 
                 LinkFpo linkFpo = linkFpoOptional.get();
 
-                BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList());
-
-                bpaService.saveManagerInvoicing(bpa, valeuTotalInvoicing);
+                BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, false);
 
                 return ResponseEntity.ok(valeuTotalInvoicing);
             }
@@ -187,21 +176,17 @@ public class BpaApi {
 
         BigDecimal totalInvoicing = BigDecimal.ZERO;
         if(calculate) {
-            DatesSigtap datesSigtap = user.getDatesSigtap();
 
-            Optional<LinkFpo> linkFpoOptional;
-            if(datesSigtap.isDateFpoAuto()) {
-                linkFpoOptional = linkFpoService.get(user);
-            } else {
-                linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
-            }
+            Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
 
             if(linkFpoOptional.isPresent()) {
                 LinkFpo linkFpo = linkFpoOptional.get();
 
                 for (Bpa bpa: bpaList) {
                     if(bpa.getManagerBpa().isCalculateInvoicing()) {
-                        BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList());
+
+                        BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, false);
+
                         totalInvoicing = totalInvoicing.add(valeuTotalInvoicing);
 
                         bpaService.saveManagerInvoicing(bpa, valeuTotalInvoicing);
@@ -254,7 +239,7 @@ public class BpaApi {
         identifiers.forEach(identifier -> {
             Bpa bpa = bpaService.get(identifier, user);
 
-            Long totalBytes = bpa.getFileSizeInBytesInt();
+            Long totalBytes = bpa.getFileSizeInBytes();
 
             bpaService.delete(bpa, user);
 

@@ -84,6 +84,7 @@ public class UserService {
 
     public void addBpa(User user, Bpa bpa, Long totalBytes) {
         user.getBpas().add(bpa);
+
         this.updateStorageAndSave(user, totalBytes, false);
     }
 
@@ -276,5 +277,25 @@ public class UserService {
         });
 
         return bpaDTOList;
+    }
+
+    public List<Double> caculatePercentStorage(User user , Long sizeByteBpa , Long sizeByteFpo , Long sizeByteProfe) {
+        List<Double> percentages = new ArrayList<>();
+        Long totalByteUser = user.getStorageTotal();
+
+        double percentBpa = (sizeByteBpa * 100.0) / totalByteUser;
+        double percentFpo = (sizeByteFpo * 100.0) / totalByteUser;
+        double percentProfe = (sizeByteProfe * 100.0) / totalByteUser;
+
+        percentages.add(roundToTwoDecimalPlaces(percentBpa));
+        percentages.add(roundToTwoDecimalPlaces(percentFpo));
+        percentages.add(roundToTwoDecimalPlaces(percentProfe));
+
+        return percentages;
+
+    }
+
+    private double roundToTwoDecimalPlaces(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }

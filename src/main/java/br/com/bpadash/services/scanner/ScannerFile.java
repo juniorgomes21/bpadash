@@ -150,15 +150,32 @@ public class ScannerFile {
                     lineNumber++;
                 }
 
-                bpa.getManagerBpa().setCountTotalLine(lineNumber);
-
                 System.out.println("criou todas as linhas do BPA: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
                 if(!errorsFileList.isEmpty()) {
                     return "ERROR FILE";
                 }
-                System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
+                int countBpac = bpacList.size();
+                int countBpai = bpaiList.size();
+
+                bpa.getManagerBpa().setCountLineBpac(countBpac);
+                bpa.getManagerBpa().setCountLineBpai(countBpai);
+                bpa.getManagerBpa().setCountTotalLine(countBpac + countBpai + 1);
+
+                System.out.println("calculateAge: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+                bpaService.calculateAge(bpa, bpaiList);
+
+                System.out.println("calculateSex: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+                bpaService.calculateSex(bpa, bpaiList);
+
+                System.out.println("calculateRace: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+                bpaService.calculateRace(bpa, bpaiList);
+
+                System.out.println("calculateInvoicing: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
+                if(linkFpoService.exist(user)) bpaService.calculateInvoicing(bpa, null, bpacList, bpaiList, user, true);
+
+                System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
                 EncryptionService.encryptBpai(bpaiList);
 
                 System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
@@ -393,7 +410,6 @@ public class ScannerFile {
             return "FAILURE";
         }
     }
-
 
     public String createCep(MultipartFile file, ParamNewCep paramNewCep, List<ErrorsFile> errorsFiles, StopWatch startTime) {
         try {

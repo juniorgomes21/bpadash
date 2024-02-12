@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -45,7 +46,8 @@ public class BpaiService {
     private ProcedureService procedureService;
     @Autowired
     private LinkProcedureService linkProcedureService;
-
+    @Autowired
+    private EntityManager entityManager;
 
 
     public Bpai create(String line, int lineNumber, Bpa bpa, User user, List<ErrorsFile> errorsFiles) {
@@ -816,5 +818,10 @@ public class BpaiService {
     }
 
 
+    public void EntityManagerDetach(List<Bpai> bpaiList) {
+        for (Bpai bpai : bpaiList) {
+            entityManager.detach(bpai);
+        }
+    }
 }
 

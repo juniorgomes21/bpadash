@@ -40,9 +40,11 @@ public class EncryptionService {
 
             bpai.setCnspac(encryptor.encrypt(cnspac));
             bpai.setCnspacHas(cnspac.isBlank() ? "" : hashString(cnspac));
+            bpai.setCnsmed(bpai.getCnsmed().isBlank() ? bpai.getCnsmed() : encryptor.encrypt(bpai.getCnsmed()));
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.encrypt(bpai.getCid()));
             bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.encrypt(bpai.getNmpac()));
             bpai.setIdade(bpai.getIdade().isBlank() ? bpai.getIdade() : encryptor.encrypt(bpai.getIdade()));
+            bpai.setDtaten(bpai.getDtaten().isBlank() ? bpai.getDtaten() : encryptor.encrypt(bpai.getDtaten()));
             bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.encrypt(bpai.getDtnasc()));
             bpai.setCepPcnte(bpai.getCepPcnte().isBlank() ? bpai.getCepPcnte() : encryptor.encrypt(bpai.getCepPcnte()));
             bpai.setLogradPcnte(bpai.getLogradPcnte().isBlank() ? bpai.getLogradPcnte() : encryptor.encrypt(bpai.getLogradPcnte()));
@@ -64,6 +66,8 @@ public class EncryptionService {
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.decrypt(bpai.getCid()));
             bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.decrypt(bpai.getNmpac()));
             if(isCnsPac) bpai.setDtnasc(bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : encryptor.decrypt(bpai.getDtnasc()));
+            bpai.setCnsmed(bpai.getCnsmed().isBlank() ? bpai.getCnsmed() : encryptor.decrypt(bpai.getCnsmed()));
+            bpai.setDtaten(bpai.getDtaten().isBlank() ? bpai.getDtaten() : encryptor.decrypt(bpai.getDtaten()));
             bpai.setIdade(bpai.getIdade().isBlank() ? bpai.getIdade() : encryptor.decrypt(bpai.getIdade()));
             bpai.setCepPcnte(bpai.getCepPcnte().isBlank() ? bpai.getCepPcnte() : encryptor.decrypt(bpai.getCepPcnte()));
             bpai.setLogradPcnte(bpai.getLogradPcnte().isBlank() ? bpai.getLogradPcnte() : encryptor.decrypt(bpai.getLogradPcnte()));
@@ -190,6 +194,12 @@ public class EncryptionService {
         });
     }
 
+    public static void decryptBpaiDtAtendi(List<Bpai> bpaiListDB) {
+        bpaiListDB.forEach(bpai -> {
+            bpai.setDtaten(encryptor.decrypt(bpai.getDtaten()));
+        });
+    }
+
     public static void encryptBpaiIdadeAndDtnasc(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
             bpai.setIdade(encryptor.encrypt(bpai.getIdade()));
@@ -219,6 +229,12 @@ public class EncryptionService {
     public static void decryptProfessionalCns(List<ProfessionalComplete> professionalCompleteList) {
         professionalCompleteList.forEach(bpai -> {
             bpai.setCodCns(encryptor.decrypt(bpai.getCodCns()));
+        });
+    }
+
+    public static void decryptCnsmed(List<Bpai> bpaiList) {
+        bpaiList.forEach(bpai -> {
+            bpai.setCnsmed(encryptor.decrypt(bpai.getCnsmed()));
         });
     }
 
@@ -313,4 +329,5 @@ public class EncryptionService {
     public static Long encryptKeyUser(Long id) {
         return id + Long.parseLong(ENCODE_KEY_USER);
     }
+
 }

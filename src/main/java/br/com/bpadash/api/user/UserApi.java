@@ -18,6 +18,9 @@ import br.com.bpadash.params.user.ParamNewPassword;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.fpo.FpoService;
+import br.com.bpadash.services.fpo.LinkFpoService;
+import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,10 @@ public class UserApi {
     private BpaService bpaService;
     @Autowired
     private BpaiService bpaiService;
+    @Autowired
+    private LinkFpoService linkFpoService;
+    @Autowired
+    private LinkProfessionalsService linkProfessionalsService;
 
 
     @GetMapping
@@ -49,6 +56,20 @@ public class UserApi {
         UserDTO userDTO = new UserDTO(user);
 
         return ResponseEntity.ok(userDTO);
+    }
+
+    @GetMapping("/exist/fpo")
+    public ResponseEntity<Boolean> getExistFpo(Authentication authentication) {
+        User user = userService.userLogged(authentication);
+
+        return ResponseEntity.ok(linkFpoService.exist(user));
+    }
+
+    @GetMapping("/exist/prof")
+    public ResponseEntity<Boolean> getExistProf(Authentication authentication) {
+        User user = userService.userLogged(authentication);
+
+        return ResponseEntity.ok(linkProfessionalsService.exist(user));
     }
 
     @GetMapping("/storage")

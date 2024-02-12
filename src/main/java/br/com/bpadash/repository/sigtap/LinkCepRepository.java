@@ -1,6 +1,7 @@
 package br.com.bpadash.repository.sigtap;
 
 import br.com.bpadash.model.sigtap.LinkCep;
+import br.com.bpadash.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,8 +12,7 @@ import java.util.Optional;
 public interface LinkCepRepository extends JpaRepository<LinkCep, Long> {
 
     boolean existsByDate(LocalDate date);
-
     Optional<LinkCep> findByDate(LocalDate date);
-
     Optional<LinkCep> findFirstByOrderByDateDesc();
+
 }

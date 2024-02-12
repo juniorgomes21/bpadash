@@ -1,11 +1,13 @@
 package br.com.bpadash.api.user.graphics;
 
+import br.com.bpadash.dto.graphics.SexGraphicsDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.graphics.GraphicsService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +18,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Month;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,6 +31,10 @@ public class SexGraphicsApi {
     private BpaiService bpaiService;
     @Autowired
     private BpaService bpaService;
+    @Autowired
+    private GraphicsService graphicsService;
+
+
 
     @GetMapping("/per/{date}")
     public ResponseEntity<Object> used(@PathVariable String date, Authentication authentication) {
@@ -46,26 +50,7 @@ public class SexGraphicsApi {
 
                 EncryptionService.decryptSex(bpaiList);
 
-                Map<String, Integer> contagemIdades = new HashMap<>();
-
-                bpaiList.forEach(bpai -> {
-                    String age = bpai.getSexo();
-                    contagemIdades.put(age, contagemIdades.getOrDefault(age, 0) + 1);
-                });
-
-
-                int totalOcorrencias = contagemIdades.values().stream().mapToInt(Integer::intValue).sum();
-
-                // Calcular a porcentagem para cada grupo
-                Map<String, Integer> porcentagensGrupos = contagemIdades.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> (int) Math.round(((double) entry.getValue() / totalOcorrencias) * 100)
-                    ));
-
-                bpaService.saveManagerSex(bpa, porcentagensGrupos);
-
-                porcentagensGrupos.put("total", bpa.getManagerBpa().getCountLineBpai());
+                Map<String, Integer> porcentagensGrupos = bpaService.calculateSex(bpa, bpaiList);
 
                 return ResponseEntity.ok(porcentagensGrupos);
             } else  {
@@ -81,4 +66,33 @@ public class SexGraphicsApi {
 
         return ResponseEntity.badRequest().body("NOT FOUND");
     }
+
+    @GetMapping("/{year}")
+    public ResponseEntity<Object> getForSex(@PathVariable Integer year, Authentication authentication) {
+        User user = userService.userLogged(authentication);
+
+        List<Bpa> bpaList = bpaService.getForYear(user, year);
+
+        List<Integer> mans = new ArrayList<>(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        List<Integer> womans = new ArrayList<>(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
+        if(!bpaList.isEmpty()) {
+            bpaList.forEach( bpa -> {
+                int month = bpa.getDate().getMonthValue() - 1;
+                int countM = bpa.getManagerBpa().getSexM();
+                int countF = bpa.getManagerBpa().getSexF();
+
+                mans.set(month, countM);
+                womans.set(month, countF);
+            });
+        }
+
+        Map<String, List<Integer>> graphics = new HashMap<>();
+
+        graphics.put("mans", mans);
+        graphics.put("womans", womans);
+
+        return ResponseEntity.ok(graphics);
+    }
+
 }
