@@ -1,8 +1,10 @@
 package br.com.bpadash.api.user.graphics;
 
 import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.ManagerBpa;
 import br.com.bpadash.model.user.User;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.user.UserService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,7 +34,7 @@ public class RaceGraphicsApi {
     @Autowired
     private BpaService bpaService;
 
-    @Transactional
+
     @GetMapping("/{date}")
     public ResponseEntity<Object> used(@PathVariable String date, Authentication authentication) {
         User user = userService.get(authentication);
@@ -40,29 +43,22 @@ public class RaceGraphicsApi {
 
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
+//            List<Bpai> bpaiList = bpaiService.get(bpa);
+//            EncryptionService.decryptRace(bpaiList);
 
-            if(bpa.getManagerBpa().isCalculateRace()) {
+            ManagerBpa managerBpa = bpa.getManagerBpa();
 
-                Map<String, Integer> porcentagensGrupos = bpaService.calculateRace(bpa, null);
+            Map<String, Integer> contagemIdades = new HashMap<>(); //bpaService.calculateRace(bpa, bpaiList);
 
-                return ResponseEntity.ok(porcentagensGrupos);
+            contagemIdades.put("blank", managerBpa.getBlank());
+            contagemIdades.put("black", managerBpa.getBlack());
+            contagemIdades.put("brown", managerBpa.getBrown());
+            contagemIdades.put("yellow", managerBpa.getYellow());
+            contagemIdades.put("Indigenous", managerBpa.getIndigenous());
+            contagemIdades.put("noInformation", managerBpa.getNoInformation());
+            contagemIdades.put("total", bpa.getManagerBpa().getCountLineBpai());
 
-            } else  {
-                ManagerBpa managerBpa = bpa.getManagerBpa();
-
-                Map<String, Integer> contagemIdades = new HashMap<>();
-
-                contagemIdades.put("blank", managerBpa.getBlank());
-                contagemIdades.put("black", managerBpa.getBlack());
-                contagemIdades.put("brown", managerBpa.getBrown());
-                contagemIdades.put("yellow", managerBpa.getYellow());
-                contagemIdades.put("Indigenous", managerBpa.getIndigenous());
-                contagemIdades.put("noInformation", managerBpa.getNoInformation());
-                contagemIdades.put("total", managerBpa.getCountLineBpai());
-
-                return ResponseEntity.ok(contagemIdades);
-            }
-
+            return ResponseEntity.ok(contagemIdades);
         }
 
         return ResponseEntity.badRequest().body("NOT FOUND");

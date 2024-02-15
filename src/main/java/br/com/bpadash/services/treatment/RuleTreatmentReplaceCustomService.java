@@ -186,7 +186,26 @@ public class RuleTreatmentReplaceCustomService {
     }
 
     public void executeBpai(RuleReplacementCustom rule, List<Bpai> bpaiList, List<Bpai> bpaiModify, boolean all) {
-        List<String> values = new ArrayList<>(List.of("cnspac", "cid", "Nmpac", "dtnasc", "idade", "sexo", "raca"));
+        List<String> values = new ArrayList<>(List.of(
+                "cnspac",
+                "cid",
+                "Nmpac",
+                "dtnasc",
+                "cnsmed",
+                "dtaten",
+                "idade",
+                "cepPcnte",
+                "logradPcnte",
+                "endPcnte",
+                "complPcnte",
+                "numPcnte",
+                "sexo",
+                "raca",
+                "bairroPcnte",
+                "ddtelPcnte",
+                "emailPcnte"
+        ));
+
 
         String field = rule.getField();
         String criterionOne = rule.getCriterionOne();
@@ -205,7 +224,7 @@ public class RuleTreatmentReplaceCustomService {
             criterionThreeB = values.contains(rule.getCriterionThree());
 
             if(fieldB || criterionOneB || criterionTwoB || criterionThreeB) {
-                EncryptionService.decryptBpaiForTreatment(bpaiList);
+                EncryptionService.decryptBpai(bpaiList, true);
             }
         }
 
@@ -272,7 +291,7 @@ public class RuleTreatmentReplaceCustomService {
 
         if(!all) {
             if(fieldB || criterionOneB || criterionTwoB || criterionThreeB) {
-                EncryptionService.encryptBpaiForTreatment(bpaiList);
+                EncryptionService.encryptBpai(bpaiList, true);
             }
         }
     }

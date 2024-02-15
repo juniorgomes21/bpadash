@@ -6,7 +6,6 @@ import br.com.bpadash.dto.sigtap.ErrorAgeDatesDTO;
 import br.com.bpadash.dto.sigtap.ErrorDtAtendDTODTO;
 import br.com.bpadash.model.bpa.*;
 import br.com.bpadash.model.enumModel.ZoneTime;
-import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.Fpo;
 import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.user.User;
@@ -44,8 +43,6 @@ public class BpaService {
     private BpaiService bpaiService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private StorageService storageService;
     @Autowired
     private LinkFpoService linkFpoService;
 
@@ -102,7 +99,7 @@ public class BpaService {
     public void updateStateManager(Bpa bpa, boolean isCount) {
         if(isCount) bpa.getManagerBpa().setCalculateCountLine(true);
         bpa.getManagerBpa().setCalculateAge(true);
-        bpa.getManagerBpa().setCalculateInvoicing(true);
+        bpa.getManagerBpa().setCalculateRace(true);
         bpa.getManagerBpa().setCalculateSex(true);
 
         this.save(bpa);
@@ -167,7 +164,7 @@ public class BpaService {
         return bpaRepository.findByDateAndUser(LocalDate.of(year, month, 1), user).orElse(null);
     }
 
-    public void updatebyte(Bpa bpa, Long totalBytes, boolean add) {
+    public void updateBytes(Bpa bpa, Long totalBytes, boolean add) {
         if(add) {
             bpa.setFileSizeInBytes(bpa.getFileSizeInBytes() + totalBytes);
         } else {
@@ -332,9 +329,9 @@ public class BpaService {
         return errors;
     }
 
-    public BigDecimal calculateInvoicing(Bpa bpa, List<Fpo> fpoList, List<Bpac> bpacList, List<Bpai> bpaiList, User user, boolean create) {
+    public BigDecimal calculateInvoicing(Bpa bpa, List<Fpo> fpoList, List<Bpac> bpacList, List<Bpai> bpaiList, User user, boolean isSave) {
 
-        if(create) {
+        if(fpoList == null) {
             Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
 
             if(linkFpoOptional.isEmpty()) return BigDecimal.ZERO;
@@ -342,8 +339,11 @@ public class BpaService {
             fpoList = linkFpoOptional.get().getFpoList();
         }
 
-        if(!create) {
+        if(bpacList == null) {
             bpacList = bpacService.get(bpa);
+        }
+
+        if(bpaiList == null) {
             bpaiList = bpaiService.get(bpa);
         }
 
@@ -396,7 +396,7 @@ public class BpaService {
             }
         }
 
-        if(!create) {
+        if(isSave) {
             this.saveManagerInvoicing(bpa, invoicingTotal);
         } else {
             bpa.getManagerBpa().setInvoicing(invoicingTotal);
@@ -428,16 +428,15 @@ public class BpaService {
         return totalByte;
     }
 
+    public void calculateLine(Bpa bpa , int countBpac , int countBpai) {
+        bpa.getManagerBpa().setCountLineBpac(countBpac);
+        bpa.getManagerBpa().setCountLineBpai(countBpai);
+        bpa.getManagerBpa().setCountTotalLine(countBpac + countBpai + 1);
+    }
+
     public Map<String, Integer> calculateAge(Bpa bpa, List<Bpai> bpaiList) {
 
-        if(bpaiList == null) {
-            bpaiList = bpaiService.get(bpa);
-
-            EncryptionService.decryptBpaiIdade(bpaiList);
-        }
-
         Map<String, Integer> contagemIdades = new HashMap<>();
-
 
         bpaiList.forEach( bpai -> {
             String age = bpai.getIdade();
@@ -464,7 +463,7 @@ public class BpaService {
 
 
         // Total de ocorrências
-        int totalOcorrencias = contagemIdades.values().stream().mapToInt(Integer::intValue).sum();
+        int totalOcorrencias = bpaiList.size();
 
         // Calcular a porcentagem para cada grupo
         Map<String, Integer> porcentagensGrupos = grupos.entrySet().stream()
@@ -473,15 +472,9 @@ public class BpaService {
                         entry -> (int) Math.round(((double) entry.getValue() / totalOcorrencias) * 100)
                 ));
 
-        if(bpa.getId() != null) {
-            bpaiService.EntityManagerDetach(bpaiList);
-
-            this.saveManagerAge(bpa, porcentagensGrupos);
-        } else {
-            bpa.getManagerBpa().setYong(porcentagensGrupos.get("yong"));
-            bpa.getManagerBpa().setMiddleAge(porcentagensGrupos.get("middleAge"));
-            bpa.getManagerBpa().setOld(porcentagensGrupos.get("old"));
-        }
+        bpa.getManagerBpa().setYong(porcentagensGrupos.get("yong"));
+        bpa.getManagerBpa().setMiddleAge(porcentagensGrupos.get("middleAge"));
+        bpa.getManagerBpa().setOld(porcentagensGrupos.get("old"));
 
         return porcentagensGrupos;
     }
@@ -498,7 +491,7 @@ public class BpaService {
         });
 
 
-        int totalOcorrencias = contagemIdades.values().stream().mapToInt(Integer::intValue).sum();
+        int totalOcorrencias = bpaiList.size();
 
         // Calcular a porcentagem para cada grupo
         Map<String, Integer> porcentagensGrupos = contagemIdades.entrySet().stream()
@@ -507,25 +500,13 @@ public class BpaService {
                         entry -> (int) Math.round(((double) entry.getValue() / totalOcorrencias) * 100)
                 ));
 
-
-        if(bpa.getId() != null) {
-            bpaiService.EntityManagerDetach(bpaiList);
-
-            this.saveManagerSex(bpa, porcentagensGrupos);
-        } else {
-            bpa.getManagerBpa().setSexM(porcentagensGrupos.get("M"));
-            bpa.getManagerBpa().setSexF(porcentagensGrupos.get("F"));
-        }
+        bpa.getManagerBpa().setSexM(porcentagensGrupos.get("M"));
+        bpa.getManagerBpa().setSexF(porcentagensGrupos.get("F"));
 
         return porcentagensGrupos;
     }
 
     public Map<String, Integer> calculateRace(Bpa bpa , List<Bpai> bpaiList) {
-        if(bpaiList == null) {
-            bpaiList = bpaiService.get(bpa);
-
-            EncryptionService.decryptRace(bpaiList);
-        }
 
         Map<String, Integer> contagemRace = new HashMap<>();
 
@@ -564,18 +545,12 @@ public class BpaService {
                         entry -> (int) Math.round(((double) entry.getValue() / totalOcorrencias) * 100)
                 ));
 
-        if(bpa.getId() != null) {
-            bpaiService.EntityManagerDetach(bpaiList);
-
-            this.saveManagerRace(bpa, porcentagensGrupos);
-        } else {
-            bpa.getManagerBpa().setBlank(porcentagensGrupos.get("blank") == null ? 0 : porcentagensGrupos.get("blank"));
-            bpa.getManagerBpa().setBlack(porcentagensGrupos.get("black") == null ? 0 : porcentagensGrupos.get("black"));
-            bpa.getManagerBpa().setBrown(porcentagensGrupos.get("brown") == null ? 0 : porcentagensGrupos.get("brown"));
-            bpa.getManagerBpa().setYellow(porcentagensGrupos.get("yellow") == null ? 0 : porcentagensGrupos.get("yellow"));
-            bpa.getManagerBpa().setIndigenous(porcentagensGrupos.get("Indigenous") == null ? 0 : porcentagensGrupos.get("Indigenous"));
-            bpa.getManagerBpa().setNoInformation(porcentagensGrupos.get("noInformation") == null ? 0 : porcentagensGrupos.get("noInformation"));
-        }
+        bpa.getManagerBpa().setBlank(porcentagensGrupos.get("blank") == null ? 0 : porcentagensGrupos.get("blank"));
+        bpa.getManagerBpa().setBlack(porcentagensGrupos.get("black") == null ? 0 : porcentagensGrupos.get("black"));
+        bpa.getManagerBpa().setBrown(porcentagensGrupos.get("brown") == null ? 0 : porcentagensGrupos.get("brown"));
+        bpa.getManagerBpa().setYellow(porcentagensGrupos.get("yellow") == null ? 0 : porcentagensGrupos.get("yellow"));
+        bpa.getManagerBpa().setIndigenous(porcentagensGrupos.get("Indigenous") == null ? 0 : porcentagensGrupos.get("Indigenous"));
+        bpa.getManagerBpa().setNoInformation(porcentagensGrupos.get("noInformation") == null ? 0 : porcentagensGrupos.get("noInformation"));
 
         return porcentagensGrupos;
     }
@@ -638,5 +613,29 @@ public class BpaService {
         }
 
         return porcentagensGrupos;
+    }
+
+    public void calculateAll(User user, Bpa bpa , List<Bpai> bpaiList, List<Bpac> bpacList, boolean calculateAll) {
+
+        if(bpa.getId() != null) {
+            bpaiList = bpaiService.get(bpa);
+            bpacList = bpacService.get(bpa);
+            EncryptionService.decryptAgeAndSexAndRace(bpaiList);
+
+            bpaiService.EntityManagerDetach(bpaiList);
+        }
+
+        if(calculateAll) {
+            this.calculateLine(bpa, bpacList.size(), bpaiList.size());
+            this.calculateAge(bpa, bpaiList);
+            this.calculateSex(bpa, bpaiList);
+            this.calculateRace(bpa, bpaiList);
+            if(linkFpoService.exist(user)) {
+                this.calculateInvoicing(bpa, null, bpacList, bpaiList, user, false);
+            } else {
+                bpa.getManagerBpa().setCalculateInvoicing(true);
+            }
+        }
+
     }
 }

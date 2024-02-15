@@ -100,6 +100,26 @@ public class BpaApi {
         return ResponseEntity.ok(userService.timeLine(user));
     }
 
+    @PostMapping("/recalculate/{date}")
+    public ResponseEntity<Object> timeLineUser(@PathVariable String date, Authentication authentication) {
+        User user = userService.userLogged(authentication);
+
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+
+        if(bpaOptional.isPresent()) {
+            Bpa bpa = bpaOptional.get();
+
+            bpaService.calculateAll(user, bpa, null, null, true);
+
+            bpaService.save(bpa);
+
+            return ResponseEntity.ok().build();
+
+        }
+
+        return ResponseEntity.badRequest().body("NOT FOUND BPA");
+    }
+
     @GetMapping("/get/pa/cbo/{month}/{year}")
     public ResponseEntity<Page<BpaiDTO>> getBpaPaCbo(
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
@@ -138,7 +158,7 @@ public class BpaApi {
         return ResponseEntity.ok(new BpaDTO(bpa));
     }
 
-    @Transactional
+
     @GetMapping("/invoicing/{dateBpa}")
     public ResponseEntity<Object> calculateInvoicing(@PathVariable String dateBpa, Authentication authentication) {
         User user = userService.get(authentication);
@@ -148,17 +168,17 @@ public class BpaApi {
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
 
-            if(bpa.getManagerBpa().isCalculateInvoicing()) {
-                Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
-
-                if (linkFpoOptional.isEmpty()) return ResponseEntity.badRequest().body("NOT FOUND FPO");
-
-                LinkFpo linkFpo = linkFpoOptional.get();
-
-                BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, false);
-
-                return ResponseEntity.ok(valeuTotalInvoicing);
-            }
+//            if(bpa.getManagerBpa().isCalculateInvoicing()) {
+//                Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
+//
+//                if (linkFpoOptional.isEmpty()) return ResponseEntity.badRequest().body("NOT FOUND FPO");
+//
+//                LinkFpo linkFpo = linkFpoOptional.get();
+//
+//                BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, true);
+//
+//                return ResponseEntity.ok(valeuTotalInvoicing);
+//            }
 
             return ResponseEntity.ok(bpa.getManagerBpa().getInvoicing());
         }
@@ -185,7 +205,7 @@ public class BpaApi {
                 for (Bpa bpa: bpaList) {
                     if(bpa.getManagerBpa().isCalculateInvoicing()) {
 
-                        BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, false);
+                        BigDecimal valeuTotalInvoicing = bpaService.calculateInvoicing(bpa, linkFpo.getFpoList(), null, null, user, true);
 
                         totalInvoicing = totalInvoicing.add(valeuTotalInvoicing);
 
@@ -232,8 +252,8 @@ public class BpaApi {
     }
 
     @Transactional
-    @PostMapping("/delete/{cacheId}")
-    public ResponseEntity<Object> deleteMany(@PathVariable String cacheId, @RequestBody List<String> identifiers, Authentication authentication) {
+    @PostMapping("/delete")
+    public ResponseEntity<Object> deleteMany(@RequestBody List<String> identifiers, Authentication authentication) {
         User user = userService.get(authentication);
 
         identifiers.forEach(identifier -> {
@@ -246,13 +266,11 @@ public class BpaApi {
             userService.updateStorageAndSave(user, totalBytes, true);
         });
 
-        cacheService.evictAll(cacheId);
-
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping( value = "/create/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable String cacheId, @RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
+    @PostMapping( value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
         try {
             StopWatch stopWatch = StopWatch.createStarted();
 
@@ -290,8 +308,6 @@ public class BpaApi {
                     return ResponseEntity.badRequest().body(errorsFileList);
                 }
             }
-
-            cacheService.evictAll(cacheId);
 
             return ResponseEntity.ok().build();
 

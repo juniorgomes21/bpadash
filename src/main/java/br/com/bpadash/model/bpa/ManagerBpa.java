@@ -27,7 +27,7 @@ public class ManagerBpa {
     private int	middleAge = 0;
     private int sexM = 0;
     private int sexF = 0;
-    private boolean calculateInvoicing = true;
+    private boolean calculateInvoicing = false;
     private boolean calculateCountLine = false;
     private boolean calculateAge = false;
     private boolean calculateRace = false;

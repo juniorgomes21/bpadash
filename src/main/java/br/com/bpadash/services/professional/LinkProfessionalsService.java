@@ -165,4 +165,17 @@ public class LinkProfessionalsService {
 
         return totalByte;
     }
+
+    public Optional<LinkProfessionals> verify(User user) {
+        DatesSigtap datesSigtap = user.getDatesSigtap();
+
+        Optional<LinkProfessionals> linkProfessionals;
+        if(datesSigtap.isDateProfessionalsAuto()) {
+            linkProfessionals = this.get(user);
+        } else {
+            linkProfessionals = this.get(datesSigtap.getDateFpo(), user);
+        }
+
+        return linkProfessionals;
+    }
 }

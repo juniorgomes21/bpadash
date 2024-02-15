@@ -51,7 +51,7 @@ public class FpoService {
         String valueApro = "";
 
         try {
-            description = line.substring(14, 73).trim();
+            description = line.substring(14, 74).trim();
 
             quantOrcada = line.substring(85, 93).replace(".", "").trim();
             if(!quantOrcada.isEmpty() && !quantOrcada.matches("^\\d+$")) {

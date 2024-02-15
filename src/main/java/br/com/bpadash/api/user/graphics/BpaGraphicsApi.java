@@ -37,7 +37,7 @@ public class BpaGraphicsApi {
             List<Map<Integer, Integer>> countProcessed = new ArrayList<>();
             bpaList.forEach( bpa -> {
 
-                int valeuTotalProcedures = 0;
+                int valeuTotalProcedures;
                 if(bpa.getManagerBpa().isCalculateCountLine()) {
                     valeuTotalProcedures = bpaService.calculateProcedure(bpa);
                 } else {
@@ -73,7 +73,7 @@ public class BpaGraphicsApi {
 
             bpaList.forEach( bpa -> {
                 Map<Integer, BigDecimal> articleMapOne = new HashMap<>();
-                articleMapOne.put(bpa.getDate().getMonthValue(), bpa.getManagerBpa().getInvoicing());
+                articleMapOne.put(bpa.getDate().getMonthValue(), bpaService.calculateInvoicing(bpa, null, null, null, user, false));
 
                 countProcessed.add(articleMapOne);
             });

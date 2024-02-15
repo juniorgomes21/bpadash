@@ -1,5 +1,6 @@
 package br.com.bpadash.services.treatment;
 
+import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.TitleBpa;
@@ -240,7 +241,7 @@ public class TreatmentFileService {
         return count;
     }
 
-    public int executeRulePaDelete(List<Bpac> bpacList, List<Bpai> bpaiList, List<RuleTreatmentPaDelete> ruleTreatmentPaDeletes,User user) {
+    public int executeRulePaDelete(List<Bpac> bpacList, List<Bpai> bpaiList, List<RuleTreatmentPaDelete> ruleTreatmentPaDeletes, Bpa bpa, User user) {
         int count = 0;
 
         List<Bpac> bpacProcessedList = new ArrayList<>();
@@ -269,9 +270,8 @@ public class TreatmentFileService {
         bpacList.removeAll(bpacProcessedList);
         bpaiList.removeAll(bpaiProcessedList);
 
-        Long quantityBytes = storageService.quantityBytes(new TitleBpa(), bpacProcessedList, bpaiProcessedList);
-
-        userService.updateStorageAndSave(user, quantityBytes, true);
+        Long sizeByte = storageService.quantityBytes(null, bpacProcessedList, bpaiProcessedList);
+        storageService.updateBytesBpaAndUser(user, true, bpa, false, sizeByte);
 
         bpacService.delete(bpacProcessedList);
         bpaiService.delete(bpaiProcessedList);

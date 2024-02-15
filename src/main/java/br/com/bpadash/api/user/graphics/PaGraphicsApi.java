@@ -59,11 +59,9 @@ public class PaGraphicsApi {
                 contagemPa.put(pa, contagemPa.getOrDefault(pa, 0) + 1);
             });
 
-
             // Total de ocorrências
-            int totalOcorrencias = contagemPa.values().stream().mapToInt(Integer::intValue).sum();
+            int totalOcorrencias = bpacList.size() + bpaiList.size();
 
-            // Agora você tem um Map com as contagens de cada "pa"
             // Vamos calcular a porcentagem para cada "pa"
             List<Map<String, Object>> resultado = contagemPa.entrySet().stream()
                     .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
@@ -73,11 +71,11 @@ public class PaGraphicsApi {
                         int porcentagem = (int) Math.round(((double) ocorrencias / totalOcorrencias) * 100);
                         Map<String, Object> item = new HashMap<>();
                         item.put("pa", pa);
+                        item.put("total", totalOcorrencias);
                         item.put("occurrences", ocorrencias);
                         item.put("percent", porcentagem);
                         return item;
                     }).collect(Collectors.toList());
-
             return ResponseEntity.ok(resultado.subList(0, 5));
         }
 
@@ -123,7 +121,6 @@ public class PaGraphicsApi {
                     .toList();
 
             contagemPaYear.put(String.valueOf(month), top4);
-
         });
 
 

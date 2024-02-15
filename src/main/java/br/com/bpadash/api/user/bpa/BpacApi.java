@@ -14,6 +14,7 @@ import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,45 +48,29 @@ public class BpacApi {
     private ScannerFile scannerFile;
     @Autowired
     private UserService userService;
+    @Autowired
+    private StorageService storageService;
 
-
-
-    @GetMapping("/get/{identifier}")
-    public ResponseEntity<Page<BpacDTO>> getBpacForIndentifier(
-            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
-            @PathVariable @Valid @NotBlank String identifier,
-            Authentication authentication
-    ) {
-
-        User user = userService.get(authentication);
-        Bpa bpa = bpaService.get(identifier, user);
-
-        Page<BpacDTO> page = bpacService.get(bpa, pageable);
-
-        return ResponseEntity.ok(page);
-    }
-
-    @GetMapping("/get/{month}/{year}")
+    @GetMapping("/get/{date}")
     public ResponseEntity<Page<BpacDTO>> getBpacForDate(
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
-            @PathVariable int month,
-            @PathVariable int year,
+            @PathVariable String date,
             Authentication authentication
     ) {
         User user = userService.get(authentication);
-        Bpa bpa = bpaService.getForDate(month, year, user);
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
 
-        if(bpa == null) {
-            return ResponseEntity.badRequest().body(null);
+        if(bpaOptional.isPresent()) {
+            Page<BpacDTO> page = bpacService.get(bpaOptional.get(), pageable);
+
+            return ResponseEntity.ok(page);
         }
 
-        Page<BpacDTO> page = bpacService.get(bpa, pageable);
-
-        return ResponseEntity.ok(page);
+        return ResponseEntity.badRequest().body(null);
     }
 
-    @PostMapping( value = "/create/{month}/{year}/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable Long id, @RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String cacheId, Authentication authentication) {
+    @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable Long id, @RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
         try {
             User user = userService.get(authentication);
             List<ErrorsFile> errorsFiles = new ArrayList<>();
@@ -122,8 +106,6 @@ public class BpacApi {
 
             bpaService.updateStateManager(bpa, false);
 
-            cacheService.evictAll(cacheId);
-
             return ResponseEntity.ok().build();
 
         } catch (StringIndexOutOfBoundsException e) {
@@ -133,16 +115,25 @@ public class BpacApi {
         }
     }
 
-    @PostMapping("/edit/{id}/{cacheId}")
-    public ResponseEntity<Object> editBpac(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac) {
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<Object> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac, Authentication authentication) {
         try {
+            User user = userService.userLogged(authentication);
+
             Bpac bpac = bpacService.bpacId(id);
+
+            String pa = bpac.getPa();
+            String qt = bpac.getQt();
 
             bpacService.editAndSave(bpac, paramUpdateBpac);
 
-            bpaService.updateStateManager(bpac.getBpa(), false);
+            Bpa bpa = bpac.getBpa();
 
-            cacheService.evictAll(cacheId);
+            if(!pa.equals(paramUpdateBpac.getPa()) || !qt.equals(paramUpdateBpac.getQt())){
+                List<Bpac> bpacList = bpacService.get(bpa);
+
+                bpaService.calculateInvoicing(bpa, null, bpacList, null, user, true);
+            }
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -150,58 +141,70 @@ public class BpacApi {
         }
     }
 
-    @PostMapping("/update/{id}/{cacheId}")
-    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}")
+    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+        User user = userService.get(authentication);
 
         Optional<Bpac> optionalBpac = bpacService.get(id);
         if(optionalBpac.isEmpty()) {
-            return ResponseEntity.badRequest().body("O ID não existe.");
+            return ResponseEntity.badRequest().body("NOT FOUND ID");
         }
 
         Bpac bpac = optionalBpac.get();
 
-        User user;
-        Optional<Bpa> bpaOptional = Optional.empty();
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
-        if(paramBpa.getKey().equals("cbo") || paramBpa.getKey().equals("pa")) {
-            user  = userService.get(authentication);
-            bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+        if(bpaOptional.isEmpty()) {
+            erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
 
-            if(bpaOptional.isEmpty()) {
-                erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
-
-                return ResponseEntity.badRequest().body(erros);
-            }
+            return ResponseEntity.badRequest().body(erros);
         }
 
-        bpacService.editAndSave(bpac, paramBpa, bpaOptional.orElse(null));
+        Bpa bpa = bpaOptional.get();
 
-        bpaService.updateStateManager(bpac.getBpa(), false);
+        bpacService.editAndSave(bpac, paramBpa, bpa);
 
-        cacheService.evictAll(cacheId);
+        String key = paramBpa.getKey();
+
+        if (key.equals("pa")) {
+            bpaService.calculateInvoicing(bpa , null , null , null , user , true);
+
+            bpaService.save(bpa);
+        }
 
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/delete/{cacheId}")
-    public ResponseEntity<Object> deleteBpac(@PathVariable String cacheId, @RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
+    @PostMapping("/delete/{date}")
+    public ResponseEntity<Object> deleteBpac(@PathVariable String date, @RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
         try {
             User user = userService.get(authentication);
 
-            Bpac bpac = bpacService.bpacId(paramDeleteBpac.getList().get(0));
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+
+            if(bpaOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body("NOT FOUND BPA");
+            }
 
             Long size = bpacService.sizeByte(paramDeleteBpac.getList());
 
-            bpacService.deleteByIds(paramDeleteBpac.getList());
+            if(size == null) {
+                return ResponseEntity.ok().build();
+            }
 
-            bpaService.updatebyte(bpac.getBpa(), size, false);
+            try {
+                bpacService.deleteByIds(paramDeleteBpac.getList());
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("ERROR");
+            }
 
-            userService.updateStorageAndSave(user, size, true);
+            Bpa bpa = bpaOptional.get();
 
-            bpaService.updateStateManager(bpac.getBpa(), true);
+            bpaService.calculateAll(user, bpa, null, null, true);
 
-            cacheService.evictAll(cacheId);
+            storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
 
             return ResponseEntity.ok(size);
 

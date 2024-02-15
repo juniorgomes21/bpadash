@@ -92,36 +92,32 @@ public class PaTreatment {
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
             int count;
+            List<Bpac> bpacList = new ArrayList<>();
+            List<Bpai> bpaiList = new ArrayList<>();
             if(id == 0L) {
                 List<RuleTreatmentPa> ruleTreatmentPas = user.getTreatmentFile().getRuleTreatmentPaList();
-                List<Bpac> bpacList = bpacService.get(bpa);
-                List<Bpai> bpaiList = bpaiService.get(bpa);
+                bpacList = bpacService.get(bpa);
+                bpaiList = bpaiService.get(bpa);
 
                 count = treatmentFileService.executeRulePa(bpacList, bpaiList, ruleTreatmentPas);
-
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
 
             } else {
                 RuleTreatmentPa ruleTreatmentPa = ruleTreatmentPaService.get(id);
 
-                List<Bpac> bpacList = new ArrayList<>();
                 if(ruleTreatmentPa.isExecuteBpac()) bpacList = bpacService.get(bpa);
 
-                List<Bpai> bpaiList = new ArrayList<>();
                 if(ruleTreatmentPa.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
                 count = treatmentFileService.executeRulePa(bpacList, bpaiList, new ArrayList<>(List.of(ruleTreatmentPa)));
-
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
             }
+
+            bpaService.calculateInvoicing(bpa, null, bpacList, bpaiList, user, true);
 
             return ResponseEntity.ok(count);
         }
 
 
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.badRequest().body("NOT FOUND BPA");
     }
 
     @PostMapping("/delete/{id}")

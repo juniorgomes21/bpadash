@@ -27,6 +27,6 @@ public class BpaValidator implements ConstraintValidator<BpaValid, String> {
             return value.length() == size;
         }
 
-        return value.length() == size && value.matches("^[0-9]+$");
+        return value.length() == size && value.trim().matches("^[0-9]+$");
     }
 }

@@ -33,7 +33,6 @@ public class AgeGraphicsApi {
     @Autowired
     private BpaService bpaService;
 
-    @Transactional
     @GetMapping("/{date}")
     public ResponseEntity<Object> used(@PathVariable String date, Authentication authentication) {
         User user = userService.get(authentication);
@@ -43,25 +42,16 @@ public class AgeGraphicsApi {
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
 
-            if(bpa.getManagerBpa().isCalculateAge()) {
+            ManagerBpa managerBpa = bpa.getManagerBpa();
 
-                Map<String, Integer> porcentagensGrupos = bpaService.calculateAge(bpa, null);
+            Map<String, Integer> contagemIdades = new HashMap<>();
 
-                return ResponseEntity.ok(porcentagensGrupos);
+            contagemIdades.put("yong", managerBpa.getYong());
+            contagemIdades.put("middleAge", managerBpa.getMiddleAge());
+            contagemIdades.put("old", managerBpa.getOld());
+            contagemIdades.put("total", managerBpa.getCountLineBpai());
 
-            } else  {
-                ManagerBpa managerBpa = bpa.getManagerBpa();
-
-                Map<String, Integer> contagemIdades = new HashMap<>();
-
-                contagemIdades.put("yong", managerBpa.getYong());
-                contagemIdades.put("middleAge", managerBpa.getMiddleAge());
-                contagemIdades.put("old", managerBpa.getOld());
-                contagemIdades.put("total", managerBpa.getCountLineBpai());
-
-                return ResponseEntity.ok(contagemIdades);
-            }
-
+            return ResponseEntity.ok(contagemIdades);
         }
 
         return ResponseEntity.badRequest().body("NOT FOUND");

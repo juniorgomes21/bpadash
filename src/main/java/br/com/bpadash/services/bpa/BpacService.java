@@ -203,10 +203,10 @@ public class BpacService {
                 bpacx.setPa(newPa);
             });
 
-            this.save(bpacList);
+            this.saveAndFlush(bpacList);
         } else {
             bpac.setPa(newPa);
-            this.save(bpac);
+            this.saveAndFlush(bpac);
         }
     }
 
@@ -230,6 +230,14 @@ public class BpacService {
 
     public Bpac save(Bpac bpac) {
         return bpacRepository.save(bpac);
+    }
+
+    public Bpac saveAndFlush(Bpac bpac) {
+        return bpacRepository.saveAndFlush(bpac);
+    }
+
+    public List<Bpac> saveAndFlush(List<Bpac> bpacList) {
+        return bpacRepository.saveAllAndFlush(bpacList);
     }
 
     public List<Bpac> save(List<Bpac> bpacList) {

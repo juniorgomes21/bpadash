@@ -8,9 +8,9 @@ import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.ManagerBpa;
 import br.com.bpadash.model.enumModel.ZoneTime;
 import br.com.bpadash.model.sigtap.*;
-import br.com.bpadash.model.bpa.Address;
 import br.com.bpadash.model.user.AddressUser;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
@@ -302,6 +302,11 @@ public class BpaiService {
     }
 
     public Bpai editAndSave(Bpai bpai, ParamUpdateBpai paramUpdateBpai) {
+
+        bpai.setPa(paramUpdateBpai.getPa());
+        bpai.setSexo(paramUpdateBpai.getSexo());
+        bpai.setRaca(paramUpdateBpai.getRaca());
+        bpai.setIdade(paramUpdateBpai.getIdade());
         bpai.setCnes(paramUpdateBpai.getCnes());
         bpai.setCmp(paramUpdateBpai.getCmp());
         bpai.setCnsmed(paramUpdateBpai.getCnsmed());
@@ -309,19 +314,15 @@ public class BpaiService {
         bpai.setDtaten(paramUpdateBpai.getDtaten());
         bpai.setFlh(paramUpdateBpai.getFlh());
         bpai.setSeq(paramUpdateBpai.getSeq());
-        bpai.setPa(paramUpdateBpai.getPa());
         bpai.setCnspac(paramUpdateBpai.getCnspac());
-        bpai.setSexo(paramUpdateBpai.getSexo());
         bpai.setIbge(paramUpdateBpai.getIbge());
         bpai.setCid(paramUpdateBpai.getCid());
-        bpai.setIdade(paramUpdateBpai.getIdade());
         bpai.setQt(paramUpdateBpai.getQt());
         bpai.setCaten(paramUpdateBpai.getCaten());
         bpai.setNaut(paramUpdateBpai.getNaut());
         bpai.setOrg(paramUpdateBpai.getOrg());
         bpai.setNmpac(paramUpdateBpai.getNmpac());
         bpai.setDtnasc(paramUpdateBpai.getDtnasc());
-        bpai.setRaca(paramUpdateBpai.getRaca());
         bpai.setEtnia(paramUpdateBpai.getEtnia());
         bpai.setNac(paramUpdateBpai.getNac());
         bpai.setSrv(paramUpdateBpai.getSrv());
@@ -340,9 +341,9 @@ public class BpaiService {
         bpai.setIne(paramUpdateBpai.getIne());
         bpai.setFim(paramUpdateBpai.getFim());
 
-        EncryptionService.encryptBpai(new ArrayList<>(List.of(bpai)));
+        EncryptionService.encryptBpaiInitial(new ArrayList<>(List.of(bpai)));
 
-        return this.save(bpai);
+        return this.saveAndFlush(bpai);
     }
 
     public int editAndSave(Bpai bpai, ParamUpdateErrorsBpa paramBpa, Bpa bpa, User user) {
@@ -362,7 +363,6 @@ public class BpaiService {
             case "cbo" -> this.editCbo(paramBpa.getCbo(), bpai, bpa);
             case "ageMaxMin" -> this.editAge(paramBpa.getAge(), paramBpa.getIds(), bpai);
         }
-
 
         return count;
     }
@@ -393,10 +393,10 @@ public class BpaiService {
                 }
             });
 
-            this.save(bpaiList);
+            this.saveAndFlush(bpaiList);
         } else {
             bpai.setIdade(EncryptionService.encrypt(String.valueOf(age)));
-            this.save(bpai);
+            this.saveAndFlush(bpai);
         }
     }
 
@@ -455,7 +455,7 @@ public class BpaiService {
                 }
             }
 
-            this.save(bpaiList);
+            this.saveAndFlush(bpaiList);
         }
     }
 
@@ -517,7 +517,7 @@ public class BpaiService {
             }
         } else {
             bpai.setRaca(EncryptionService.encrypt(race));
-            this.save(bpai);
+            this.saveAndFlush(bpai);
         }
     }
 
@@ -565,12 +565,12 @@ public class BpaiService {
                     }
                 });
 
-                this.save(bpaiList);
+                this.saveAndFlush(bpaiList);
             }
 
         } else {
             bpai.setQt(String.valueOf(qtService.get(0)));
-            this.save(bpai);
+            this.saveAndFlush(bpai);
         }
     }
 
@@ -685,11 +685,11 @@ public class BpaiService {
                 bpaix.setPa(newPa);
             });
 
-            this.save(bpaiList);
+            this.saveAndFlush(bpaiList);
 
         } else {
             bpai.setPa(newPa);
-            this.save(bpai);
+            this.saveAndFlush(bpai);
         }
     }
 
@@ -717,6 +717,14 @@ public class BpaiService {
 
     public List<Bpai> save(List<Bpai> bpais) {
         return bpaiRepository.saveAll(bpais);
+    }
+
+    public Bpai saveAndFlush(Bpai bpai) {
+        return bpaiRepository.saveAndFlush(bpai);
+    }
+
+    public List<Bpai> saveAndFlush(List<Bpai> bpais) {
+        return bpaiRepository.saveAllAndFlush(bpais);
     }
 
     @Transactional
@@ -821,6 +829,75 @@ public class BpaiService {
     public void EntityManagerDetach(List<Bpai> bpaiList) {
         for (Bpai bpai : bpaiList) {
             entityManager.detach(bpai);
+        }
+    }
+
+    public void updateManagerRace(String raceOld, String raceNew, ManagerBpa managerBpa) {
+        switch (raceOld) {
+            case "01" -> {
+                managerBpa.setBlank(managerBpa.getBlank() - 1);
+            }
+            case "02" -> {
+                managerBpa.setBlack(managerBpa.getBlack() - 1);
+            }
+            case "03" -> {
+                managerBpa.setBrown(managerBpa.getBrown() - 1);
+            }
+            case "04" -> {
+                managerBpa.setYellow(managerBpa.getYellow() - 1);
+            }
+            case "05" -> {
+                managerBpa.setIndigenous(managerBpa.getIndigenous() - 1);
+            }
+        }
+
+        switch (raceNew) {
+            case "01" -> {
+                managerBpa.setBlank(managerBpa.getBlank() + 1);
+            }
+            case "02" -> {
+                managerBpa.setBlack(managerBpa.getBlack() + 1);
+            }
+            case "03" -> {
+                managerBpa.setBrown(managerBpa.getBrown() + 1);
+            }
+            case "04" -> {
+                managerBpa.setYellow(managerBpa.getYellow() + 1);
+            }
+            case "05" -> {
+                managerBpa.setIndigenous(managerBpa.getIndigenous() + 1);
+            }
+        }
+    }
+
+    public void updateManagerSex(String sexNew, ManagerBpa managerBpa) {
+        if(sexNew.equals("M")) {
+            managerBpa.setSexF(managerBpa.getSexF() - 1);
+            managerBpa.setSexM(managerBpa.getSexM() + 1);
+        } else {
+            managerBpa.setSexF(managerBpa.getSexF() + 1);
+            managerBpa.setSexM(managerBpa.getSexM() - 1);
+        }
+    }
+
+    public void updateManagerAge(String ageOld , String ageNew, ManagerBpa managerBpa) {
+        int ageInt = Integer.parseInt(ageOld);
+        if(ageInt <= 20) {
+            managerBpa.setYong(managerBpa.getYong() - 1);
+        } else if (ageInt <= 50) {
+            managerBpa.setMiddleAge(managerBpa.getMiddleAge() - 1);
+        } else {
+            managerBpa.setOld(managerBpa.getOld() - 1);
+        }
+
+        ageInt = Integer.parseInt(ageNew);
+
+        if(ageInt <= 20) {
+            managerBpa.setYong(managerBpa.getYong() + 1);
+        } else if (ageInt <= 50) {
+            managerBpa.setMiddleAge(managerBpa.getMiddleAge() + 1);
+        } else {
+            managerBpa.setOld(managerBpa.getOld() + 1);
         }
     }
 }

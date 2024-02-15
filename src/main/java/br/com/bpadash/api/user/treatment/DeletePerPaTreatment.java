@@ -9,17 +9,20 @@ import br.com.bpadash.model.treatment.RuleTreatmentPaDelete;
 import br.com.bpadash.params.bpa.ParamDateBpa;
 import br.com.bpadash.params.treatment.ParamTreatmentPaDelete;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaDeleteService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaService;
 import br.com.bpadash.services.treatment.TreatmentFileService;
+import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -45,6 +48,8 @@ public class DeletePerPaTreatment {
     private RuleTreatmentPaService ruleTreatmentPaService;
     @Autowired
     private RuleTreatmentPaDeleteService ruleTreatmentPaDeleteService;
+    @Autowired
+    private StorageService storageService;
 
 
     @GetMapping("/get")
@@ -95,6 +100,7 @@ public class DeletePerPaTreatment {
         return ResponseEntity.ok().build();
     }
 
+    @Transactional
     @PostMapping("/execute/{id}")
     public ResponseEntity<Object> playTreatmentPaDelete(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
         User user = userService.get(authentication);
@@ -106,35 +112,36 @@ public class DeletePerPaTreatment {
             int count;
             Bpa bpa = bpaOptional.get();
 
+            List<Bpac> bpacList = new ArrayList<>();
+            List<Bpai> bpaiList = new ArrayList<>();
+            Long sizeByte = 0L;
+
             if(id == 0L) {
                 List<RuleTreatmentPaDelete> ruleTreatmentPaDeletes = user.getTreatmentFile().getRuleTreatmentPaDeleteList();
-                List<Bpac> bpacList = bpacService.get(bpa);
-                List<Bpai> bpaiList = bpaiService.get(bpa);
+                bpacList = bpacService.get(bpa);
+                bpaiList = bpaiService.get(bpa);
 
-                count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, ruleTreatmentPaDeletes, user);
+                count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, ruleTreatmentPaDeletes, bpa, user);
 
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
             } else {
                 RuleTreatmentPaDelete ruleTreatmentPaDelete = ruleTreatmentPaDeleteService.get(id);
 
-                List<Bpac> bpacList = new ArrayList<>();
                 if(ruleTreatmentPaDelete.isExecuteBpac()) bpacList = bpacService.get(bpa);
 
-                List<Bpai> bpaiList = new ArrayList<>();
                 if(ruleTreatmentPaDelete.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
-                count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, new ArrayList<>(List.of(ruleTreatmentPaDelete)), user);
-
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
+                count = treatmentFileService.executeRulePaDelete(bpacList, bpaiList, new ArrayList<>(List.of(ruleTreatmentPaDelete)), bpa, user);
             }
+
+            bpaService.calculateAll(user, bpa, null, null, true);
+
+            bpaiService.EntityManagerDetach(bpaiList);
 
             return ResponseEntity.ok(count);
         }
 
 
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.badRequest().body("NOT FOUND BPA");
     }
 
     @PostMapping("/update/execute/file/{id}")

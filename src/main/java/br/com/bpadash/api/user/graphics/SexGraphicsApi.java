@@ -3,6 +3,7 @@ package br.com.bpadash.api.user.graphics;
 import br.com.bpadash.dto.graphics.SexGraphicsDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.bpa.ManagerBpa;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
@@ -35,7 +36,6 @@ public class SexGraphicsApi {
     private GraphicsService graphicsService;
 
 
-
     @GetMapping("/per/{date}")
     public ResponseEntity<Object> used(@PathVariable String date, Authentication authentication) {
         User user = userService.get(authentication);
@@ -44,24 +44,16 @@ public class SexGraphicsApi {
 
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
+//            List<Bpai> bpaiList = bpaiService.get(bpa);
+//            EncryptionService.decryptSex(bpaiList);
 
-            if(bpa.getManagerBpa().isCalculateSex()) {
-                List<Bpai> bpaiList = bpaiService.get(bpa);
+            Map<String, Integer> contagemIdades = new HashMap<>(); //bpaService.calculateSex(bpa, bpaiList);
 
-                EncryptionService.decryptSex(bpaiList);
+            contagemIdades.put("M", bpa.getManagerBpa().getSexM());
+            contagemIdades.put("F", bpa.getManagerBpa().getSexF());
+            contagemIdades.put("total", bpa.getManagerBpa().getCountLineBpai());
 
-                Map<String, Integer> porcentagensGrupos = bpaService.calculateSex(bpa, bpaiList);
-
-                return ResponseEntity.ok(porcentagensGrupos);
-            } else  {
-                Map<String, Integer> contagemIdades = new HashMap<>();
-                contagemIdades.put("M", bpa.getManagerBpa().getSexM());
-                contagemIdades.put("F", bpa.getManagerBpa().getSexF());
-                contagemIdades.put("total", bpa.getManagerBpa().getCountLineBpai());
-
-                return ResponseEntity.ok(contagemIdades);
-            }
-
+            return ResponseEntity.ok(contagemIdades);
         }
 
         return ResponseEntity.badRequest().body("NOT FOUND");
@@ -78,12 +70,17 @@ public class SexGraphicsApi {
 
         if(!bpaList.isEmpty()) {
             bpaList.forEach( bpa -> {
-                int month = bpa.getDate().getMonthValue() - 1;
-                int countM = bpa.getManagerBpa().getSexM();
-                int countF = bpa.getManagerBpa().getSexF();
+//                List<Bpai> bpaiList = bpaiService.get(bpa);
+//
+//                EncryptionService.decryptSex(bpaiList);
 
-                mans.set(month, countM);
-                womans.set(month, countF);
+//                Map<String, Integer> map = bpaService.calculateSex(bpa, bpaiList);
+
+                ManagerBpa managerBpa = bpa.getManagerBpa();
+
+                int month = bpa.getDate().getMonthValue() - 1;
+                mans.set(month, managerBpa.getSexM());
+                womans.set(month, managerBpa.getSexF());
             });
         }
 

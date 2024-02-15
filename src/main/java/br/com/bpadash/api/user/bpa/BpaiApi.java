@@ -10,6 +10,7 @@ import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpai;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.cache.CacheService;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,41 +50,26 @@ public class BpaiApi {
     private UserService userService;
 
 
-    @GetMapping("/get/{month}/{year}")
+    @GetMapping("/get/{date}")
     public ResponseEntity<Page<BpaiDTO>> getBpai(
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
-            @PathVariable int month,
-            @PathVariable int year,
+            @PathVariable String date,
             Authentication authentication
     ) {
         User user = userService.get(authentication);
-        Bpa bpa = bpaService.getForDate(month, year, user);
+        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
 
-        if(bpa == null) {
+        if(bpaOptional.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
+        Page<BpaiDTO> page = bpaiService.get(bpaOptional.get(), pageable);
 
         return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/get/{identifier}")
-    public ResponseEntity<Page<BpaiDTO>> getBpaiIdent(
-            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
-            @PathVariable @Valid @NotBlank String identifier,
-            Authentication authentication
-    ) {
-        User user = userService.get(authentication);
-        Bpa bpa = bpaService.get(identifier, user);
-        Page<BpaiDTO> page = bpaiService.get(bpa, pageable);
-
-        return ResponseEntity.ok(page);
-    }
-
-
-    @PostMapping(value = "/create/{month}/{year}/{cacheId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String cacheId, Authentication authentication) {
+    @PostMapping(value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
 
         List<ErrorsFile> errorsFiles = new ArrayList<>();
         try {
@@ -127,8 +112,6 @@ public class BpaiApi {
 
             bpaService.updateStateManager(bpa, false);
 
-            cacheService.evictAll(cacheId);
-
             return ResponseEntity.ok().build();
 
         } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
@@ -138,9 +121,11 @@ public class BpaiApi {
         }
     }
 
-    @PostMapping("/edit/{id}/{cacheId}")
-    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai) {
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai, Authentication authentication) {
         try {
+            User user = userService.get(authentication);
+
             List<ErrorValidationDTO> erros = new ArrayList<>();
 
             if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
@@ -157,15 +142,62 @@ public class BpaiApi {
                 return ResponseEntity.badRequest().body(erros);
             }
 
+            Bpai bpai = optionalBpai.get();
+
+            EncryptionService.decryptBpai(List.of(bpai), false);
+
+            Bpa bpa = bpai.getBpa();
+
+            String qt = bpai.getQt();
+            String pa = bpai.getPa();
+            String sex = bpai.getSexo();
+            String age = bpai.getIdade();
+            String race = bpai.getRaca();
+
             //TODO tem que atualizar o tamanho do arquivo
-            bpaiService.editAndSave(optionalBpai.get(), paramUpdateBpai);
+            bpaiService.editAndSave(bpai, paramUpdateBpai);
 
-            bpaService.updateStateManager(optionalBpai.get().getBpa(), false);
+            List<Bpai> bpaiList = new ArrayList<>();
 
-            cacheService.evictAll(cacheId);
+            boolean paDiff = !pa.equals(paramUpdateBpai.getPa());
+            boolean qtDiff = !qt.equals(paramUpdateBpai.getQt());
+            boolean sexDiff = !sex.equals(paramUpdateBpai.getSexo());
+            boolean ageDiff = !age.equals(paramUpdateBpai.getIdade());
+            boolean raceDiff = !race.equals(paramUpdateBpai.getRaca());
+
+            if( paDiff || qtDiff || sexDiff || raceDiff || ageDiff ) {
+                bpaiList = bpaiService.get(bpa);
+            }
+
+            if(sexDiff || raceDiff || ageDiff) {
+                EncryptionService.decryptAgeAndSexAndRace(bpaiList);
+            }
+
+            if(paDiff || qtDiff){
+                bpaService.calculateInvoicing(bpa, null, null, bpaiList, user, true);
+            }
+
+            if(sexDiff) {
+                bpaService.calculateSex(bpa, bpaiList);
+            }
+
+            if(raceDiff){
+                bpaService.calculateRace(bpa, bpaiList);
+            }
+
+            if(ageDiff){
+                bpaService.calculateAge(bpa, bpaiList);
+            }
+
+            if(sexDiff || raceDiff || ageDiff) {
+                bpaiService.EntityManagerDetach(bpaiList);
+
+                bpaService.save(bpa);
+            }
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -176,18 +208,17 @@ public class BpaiApi {
      * @param paramBpa
      * @return
      */
-    @PostMapping("/update/{id}/{cacheId}")
-    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @PathVariable String cacheId, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}")
+    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
         User user = userService.get(authentication);
 
         Optional<Bpa> bpaOptional = Optional.empty();
         List<ErrorValidationDTO> erros = new ArrayList<>();
 
         switch (paramBpa.getKey()) {
-            case "cbo" , "cnsmedProfessional" , "birthDate", "pa" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+            case "pa", "qtService", "race", "sexProcedure", "ageMaxMin", "cbo" , "cnsmedProfessional" , "birthDate" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
             case "dateBpaInvalid" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid()), user);
         }
-
 
         Bpai bpai = null;
         if(id != 0) {
@@ -202,32 +233,71 @@ public class BpaiApi {
 
         int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
 
-        cacheService.evictAll(cacheId);
+        String key = paramBpa.getKey();
+
+        switch (key) {
+            case "pa", "qtService" -> bpaService.calculateInvoicing(bpaOptional.get(), null, null, null, user, true);
+            case "race", "sexProcedure", "ageMaxMin" -> {
+                Bpa bpa = bpaOptional.get();
+
+                List<Bpai> bpaiList = bpaiService.get(bpa);
+
+                switch (key) {
+                    case "race" -> {
+                        EncryptionService.decryptRace(bpaiList);
+                        bpaService.calculateRace(bpa, bpaiList);
+                    }
+                    case "sexProcedure" -> {
+                        EncryptionService.decryptSex(bpaiList);
+                        bpaService.calculateSex(bpa, bpaiList);
+                    }
+                    case "ageMaxMin" -> {
+                        EncryptionService.decryptBpaiIdade(bpaiList);
+                        bpaService.calculateAge(bpa, bpaiList);
+                    }
+                }
+
+                bpaiService.EntityManagerDetach(bpaiList);
+
+                bpaService.save(bpa);
+            }
+        }
 
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/delete/{cacheId}")
-    public ResponseEntity<Object> editBpai(@PathVariable String cacheId, @RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
+    @PostMapping("/delete/{date}")
+    public ResponseEntity<Object> editBpai(@PathVariable String date, @RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
         try {
             User user = userService.get(authentication);
 
-            Bpai bpai = bpaiService.get(paramDeleteBpai.getList().get(0)).get();
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+
+            if(bpaOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body("NOT FOUND BPA");
+            }
 
             Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
 
-            bpaiService.deleteById(paramDeleteBpai.getList());
+            if(size == null) {
+                return ResponseEntity.ok().build();
+            }
 
-            bpaService.updatebyte(bpai.getBpa(), size, false);
+            try {
+                bpaiService.deleteById(paramDeleteBpai.getList());
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("ERROR");
+            }
 
-            userService.updateStorageAndSave(user, size, true);
+            Bpa bpa = bpaOptional.get();
 
-            bpaService.updateStateManager(bpai.getBpa(), true);
+            bpaService.calculateAll(user, bpa, null, null, true);
 
-            cacheService.evictAll(cacheId);
+            bpaService.updateBytes(bpa, size, false);
 
             return ResponseEntity.ok(size);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
     }

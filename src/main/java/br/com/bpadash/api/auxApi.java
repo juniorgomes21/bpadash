@@ -87,22 +87,12 @@ public class auxApi {
 
 
     @PostMapping("/ping")
-    public ResponseEntity<Object> ping() throws NoSuchAlgorithmException {
+    public ResponseEntity<Object> ping() {
+        User user = userRepository.getById(1L);
+        Bpa bpa = bpaRepository.getById(50L);
 
-        Bpa bpa = bpaRepository.getById(12L);
+        bpaService.calculateInvoicing(bpa, null, null, null, user, true);
 
-        List<Bpai> bpaiList = this.get(bpa);
-
-        List<Bpai> newbpaiList = bpaiList.stream()
-                .map(bpai -> modelMapper.map(bpai, Bpai.class))
-                .collect(Collectors.toList());
-
-
-        EncryptionService.decryptCnsmed(newbpaiList);
-
-
-
-        this.saveLog();
 
         return ResponseEntity.ok().build();
     }
@@ -425,7 +415,7 @@ public class auxApi {
     public ResponseEntity<Object> crp() {
 
         User user = userRepository.getById(1L);
-        LocalDate date = Utilities.formatDate("2023-11-1");
+        LocalDate date = Utilities.formatDate("2023-06-01");
 
         Bpa bpa = bpaRepository.findByDateAndUser(date, user).get();
 
@@ -433,6 +423,25 @@ public class auxApi {
 
         for (Bpai bpai: bpaiList) {
             bpai.setIdade(EncryptionService.encrypt(bpai.getIdade()));
+        }
+
+        bpaiRepository.saveAll(bpaiList);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/cripto/race")
+    public ResponseEntity<Object> race() {
+
+        User user = userRepository.getById(1L);
+        LocalDate date = Utilities.formatDate("2023-06-01");
+
+        Bpa bpa = bpaRepository.findByDateAndUser(date, user).get();
+
+        List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
+
+        for (Bpai bpai: bpaiList) {
+            bpai.setRaca(EncryptionService.encrypt(bpai.getRaca()));
         }
 
         bpaiRepository.saveAll(bpaiList);
