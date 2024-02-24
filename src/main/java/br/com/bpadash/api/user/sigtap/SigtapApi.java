@@ -59,19 +59,21 @@ public class SigtapApi {
         User user = userService.get(authentication);
         DatesSigtap datesSigtap = user.getDatesSigtap();
 
-        DatesSigtapDTO dateOccupation = linkOccupationService.getDates(datesSigtap);
+//        DatesSigtapDTO dateOccupation = linkOccupationService.getDates(datesSigtap);
         DatesSigtapDTO dateFpo = linkFpoService.getDates(datesSigtap, user);
         DatesSigtapDTO dateProf = linkProfessionalsService.getDates(datesSigtap, user);
-        DatesSigtapDTO dateCep = linkCepService.getDates(datesSigtap);
-        DatesSigtapDTO dateProc = linkProcedureService.getDates(datesSigtap);
+//        DatesSigtapDTO dateCep = linkCepService.getDates(datesSigtap);
+//        DatesSigtapDTO dateProc = linkProcedureService.getDates(datesSigtap);
 
-        return ResponseEntity.ok(new ArrayList<>(List.of(dateOccupation, dateFpo, dateProf, dateCep, dateProc)));
+//        return ResponseEntity.ok(new ArrayList<>(List.of(dateOccupation, dateFpo, dateProf, dateCep, dateProc)));
+        return ResponseEntity.ok(new ArrayList<>(List.of(dateFpo, dateProf)));
+
     }
 
     @PostMapping("/update/date")
     public ResponseEntity<Object> updateDate(@RequestBody @Valid ParamUpdateDateSigtap paramUpdateDateSigtap, Authentication authentication) {
         User user = userService.get(authentication);
-        DatesSigtap datesSigtap = datesSigtapService.get(paramUpdateDateSigtap.getId(), user);
+        DatesSigtap datesSigtap = datesSigtapService.get(user);
 
         datesSigtapService.update(datesSigtap, paramUpdateDateSigtap);
 

@@ -15,6 +15,7 @@ import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,8 @@ public class BpaiApi {
     private ScannerFile scannerFile;
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private StorageService storageService;
 
     @GetMapping("/get/{date}")
     public ResponseEntity<Page<BpaiDTO>> getBpai(
@@ -109,6 +111,8 @@ public class BpaiApi {
                     return ResponseEntity.badRequest().body(errorsFiles);
                 }
             }
+
+            bpaService.calculateAll(user, bpa, null, null, true);
 
             bpaService.updateStateManager(bpa, false);
 
@@ -291,9 +295,11 @@ public class BpaiApi {
 
             Bpa bpa = bpaOptional.get();
 
+            bpaService.calculateLineInTitle(bpa, paramDeleteBpai.getList().size(), 0, false);
+
             bpaService.calculateAll(user, bpa, null, null, true);
 
-            bpaService.updateBytes(bpa, size, false);
+            storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
 
             return ResponseEntity.ok(size);
         } catch (Exception e) {

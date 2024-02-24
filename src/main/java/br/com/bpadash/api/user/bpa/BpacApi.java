@@ -70,7 +70,7 @@ public class BpacApi {
     }
 
     @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@PathVariable Long id, @RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
         try {
             User user = userService.get(authentication);
             List<ErrorsFile> errorsFiles = new ArrayList<>();
@@ -79,7 +79,9 @@ public class BpacApi {
 
             Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
             if(bpaOptional.isEmpty()) {
-                return ResponseEntity.badRequest().build();
+                errorsFiles.add(new ErrorsFile("NOT STORAGE"));
+
+                return ResponseEntity.badRequest().body(errorsFiles);
             }
 
             Bpa bpa = bpaOptional.get();
@@ -103,6 +105,8 @@ public class BpacApi {
                     return ResponseEntity.badRequest().body(errorsFiles);
                 }
             }
+
+            bpaService.calculateAll(user, bpa, null, null, true);
 
             bpaService.updateStateManager(bpa, false);
 
@@ -201,6 +205,8 @@ public class BpacApi {
             }
 
             Bpa bpa = bpaOptional.get();
+
+            bpaService.calculateLineInTitle(bpa, 0, paramDeleteBpac.getList().size(), false);
 
             bpaService.calculateAll(user, bpa, null, null, true);
 

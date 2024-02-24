@@ -638,4 +638,19 @@ public class BpaService {
         }
 
     }
+
+    public void calculateLineInTitle(Bpa bpa , int sizeBpai , int sizeBpac , boolean add) {
+        TitleBpa titleBpa = titleBpaService.get(bpa);
+
+        String total;
+        int value = Integer.parseInt(titleBpa.getLin());
+
+        if(add) {
+            total = String.format("%06d", value + sizeBpai + sizeBpac);
+        } else {
+            total = String.format("%06d", value - sizeBpai - sizeBpac);
+        }
+
+        titleBpa.setLin(total);
+    }
 }

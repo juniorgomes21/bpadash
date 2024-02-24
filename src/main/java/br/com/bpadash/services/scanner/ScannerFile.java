@@ -156,6 +156,8 @@ public class ScannerFile {
                     return "ERROR FILE";
                 }
 
+                titleBpa.setLin(String.format("%06d", bpaiList.size() + bpacList.size() + 1));
+
                 bpaService.calculateAll(user, bpa, bpaiList, bpacList, true);
 
                 System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
@@ -201,7 +203,6 @@ public class ScannerFile {
 
     public String createBpac(User user, MultipartFile file, Bpa bpa, Bpac bpacS, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
         List<Bpac> bpacList = new ArrayList<>();
-
 
         try {
             // Obtém o fluxo de entrada do arquivo
@@ -254,6 +255,8 @@ public class ScannerFile {
                 return "ERROR FILE";
             }
 
+            bpaService.calculateLineInTitle(bpa, 0, bpacList.size(), true);
+
             Long totalBytes = storageService.quantityBytes(null, bpacList, null);
 
             if(user.getStorageFree() < totalBytes) {
@@ -264,8 +267,7 @@ public class ScannerFile {
                 bpacService.save(bpacList);
             }
 
-            userService.updateStorageAndSave(user, totalBytes, false);
-            bpaService.updateBytes(bpa, totalBytes, true);
+            storageService.updateBytesBpaAndUser(user, false, bpa, true, totalBytes);
 
             return "CREATE";
 
@@ -335,6 +337,8 @@ public class ScannerFile {
 
             EncryptionService.encryptBpaiInitial(bpaiList);
 
+            bpaService.calculateLineInTitle(bpa, bpaiList.size(), 0, true);
+
             Long totalBytes = storageService.quantityBytes(null, null, bpaiList);
 
             if(user.getStorageFree() < totalBytes) {
@@ -344,8 +348,7 @@ public class ScannerFile {
                 bpaiService.save(bpaiList);
             }
 
-            userService.updateStorageAndSave(user, totalBytes, false);
-            bpaService.updateBytes(bpa, totalBytes, true);
+            storageService.updateBytesBpaAndUser(user, false, bpa, true, totalBytes);
 
             return "CREATE";
 

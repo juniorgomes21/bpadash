@@ -2,7 +2,9 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamUpdateBpac.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\CodLogradService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\user\AddressUser.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\sexo\SexoValid.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\metrics\CnsmedMetricsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\professional\ProfessionalService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\dto\graphics\CountLineBpaForYearGraphicsDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\treatment\RuleReplacementCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\LinkCepService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\IncosistencyErrorCEPsDTO.java
@@ -14,6 +16,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorProcedureDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\LinkProcedure.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\bpa\TitleBpa.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamValidationBpai.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\CnsmedGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\UserApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\user\PackageUserValidator.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamUpdateExecuteFile.java
@@ -22,6 +25,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\api\auxApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\security\AutenticacaoService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\user\ParamNewUser.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\bpa\BpaService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\metrics\PaMetricsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\errorValidation\ResponseTypeError.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamDeleteBpai.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\sexo\SexoValidator.java
@@ -29,8 +33,10 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\user\CodLograd.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\BpaValidator.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpaApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\Cep.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\PaGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\CodLogradRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\TreatmentFileService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\configurations\ModelMapperConfig.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleTreatmentPaDeleteRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\errorValidation\ErrorValidationDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\DatesSigtapRepository.java
@@ -39,6 +45,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\security\AuthenticacaoViaTokenFilte
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\sigtap\ProcedureService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\ExceptionErroLog.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleTreatmentPaCboRepository.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\BpaGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\DatesSigtap.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\adm\PackageUserService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\enumModel\Role.java
@@ -55,6 +62,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\LinkOccupation.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\AddressRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\bpa\TitleBpaService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\ValidationsDTO.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\SexGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\professional\ParamNewProfessionals.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\treatment\ReplacementCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamTreatmentPaDelete.java
@@ -100,11 +108,15 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\InconsistencyCepDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorCEPsInvalidsDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\EncryptionService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\bpa\ParamDateBpa.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\services\graphics\GraphicsService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\model\bpa\ManagerBpa.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\fpo\ParamNewLineFpo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\CepRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamTreatmentReplaceCustom.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\BpaiDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\utilities\Utilities.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\StorageGraphicsApi.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\model\bpa\ManagerYear.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\bpa\BpaRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\TokenDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\fpo\LinkFpoRepository.java
@@ -116,15 +128,19 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\TreatmentPaCboDTO.jav
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\RuleTreatmentPaRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\projections\DateProjection.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\IsValidToken.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\GraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\race\RaceValid.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpaiApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\user\ParamBase.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\CboGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\user\ParamNewPassword.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\bpa\TitleBpaRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\InconsistencyOccupationDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\StorageDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\fpo\ParamNewFpo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\sigtap\ParamNewOccupation.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\dto\graphics\SexGraphicsDTO.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\services\cache\CacheService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\bpa\BpacValidationDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\UserRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\sigtap\ProfessionalApi.java
@@ -133,6 +149,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\params\adm\ParamNewAdm.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\user\StorageService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\security\TokenApp.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\professional\DadosVincService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\metrics\CboMetricsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\ErrorPaDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\params\treatment\ParamTreatmentPaCbo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\race\RaceValidator.java
@@ -148,6 +165,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\model\bpa\Address.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\sigtap\FpoDTO.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\treatment\TreatmentFileRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\professional\LinkProfessionalsService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\AgeGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\bpa\TitleValidation.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpacApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\RuleTreatmentPaDTO.java
@@ -167,6 +185,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\services\bpa\BpaiService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\adm\configurations\ConfigurationsAdmApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\bpa\BpaTitleApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\validations\bpa\qtService\ValidQtService.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\RaceGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\bpa\BpacService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\api\adm\login\LoginAdm.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\treatment\TreatmentFile.java
@@ -220,6 +239,7 @@ G:\bpadash\Java\src\main\java\br\com\bpadash\dto\treatment\TreatmentPaDeleteDTO.
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\professional\DadosVincRepository.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\Fpo.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\repository\sigtap\ProcedureRepository.java
+G:\bpadash\Java\src\main\java\br\com\bpadash\api\user\graphics\DtatenGraphicsApi.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\model\sigtap\LinkProfessionals.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\fpo\FpoService.java
 G:\bpadash\Java\src\main\java\br\com\bpadash\services\treatment\RuleTreatmentReplaceCustomService.java

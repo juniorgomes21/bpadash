@@ -1,3 +1,4 @@
+br\com\bpadash\api\user\graphics\GraphicsApi.class
 br\com\bpadash\projections\CepProjection.class
 br\com\bpadash\services\professional\LinkProfessionalsService.class
 br\com\bpadash\model\treatment\RuleTreatmentPa.class
@@ -7,7 +8,9 @@ br\com\bpadash\utilities\RandomNumber.class
 br\com\bpadash\dto\bpa\InconsistencyPaDTO.class
 br\com\bpadash\repository\bpa\BpaiValidationRepository.class
 br\com\bpadash\dto\treatment\TreatmentPaDTO.class
+br\com\bpadash\api\user\metrics\CboMetricsApi.class
 br\com\bpadash\repository\bpa\BpaRepository.class
+br\com\bpadash\api\user\graphics\AgeGraphicsApi.class
 br\com\bpadash\repository\sigtap\LinkProcedureRepository.class
 br\com\bpadash\services\adm\PackageUserService.class
 br\com\bpadash\params\treatment\ParamTreatmentPaDelete.class
@@ -35,14 +38,17 @@ br\com\bpadash\params\bpa\ParamValidationTitle.class
 br\com\bpadash\model\bpa\Bpa.class
 br\com\bpadash\services\bpa\TitleBpaService.class
 br\com\bpadash\api\user\sigtap\SigtapApi.class
+br\com\bpadash\dto\graphics\CountLineBpaForYearGraphicsDTO.class
 br\com\bpadash\dto\treatment\RuleTreatmentPaCboDTO.class
 br\com\bpadash\dto\sigtap\ErrorPaDTO.class
+br\com\bpadash\api\user\metrics\PaMetricsApi.class
 br\com\bpadash\params\adm\ParamNewAdm.class
 br\com\bpadash\dto\AddressDTO.class
 br\com\bpadash\repository\fpo\FpoRepository.class
 br\com\bpadash\api\user\sigtap\ProfessionalApi.class
 br\com\bpadash\dto\sigtap\ErrorDtAtendDTODTO.class
 br\com\bpadash\params\bpa\ParamUpdateErrorsBpa.class
+br\com\bpadash\api\user\graphics\RaceGraphicsApi.class
 br\com\bpadash\validations\bpa\org\OrgValidator.class
 br\com\bpadash\dto\sigtap\ErrorSigTapDTO.class
 br\com\bpadash\model\sigtap\ProfessionalComplete.class
@@ -63,6 +69,7 @@ br\com\bpadash\dto\bpa\TimeLineDTO.class
 br\com\bpadash\api\IsValidToken.class
 br\com\bpadash\dto\sigtap\ErrorProcedureDTO.class
 br\com\bpadash\model\bpa\TitleBpa.class
+br\com\bpadash\configurations\ModelMapperConfig.class
 br\com\bpadash\dto\treatment\RuleTreatmentPaDTO.class
 br\com\bpadash\services\EncryptionService.class
 br\com\bpadash\model\sigtap\LinkFpo.class
@@ -71,6 +78,7 @@ br\com\bpadash\validations\bpa\BpaValidator.class
 br\com\bpadash\services\treatment\RuleTreatmentReplaceCustomService.class
 br\com\bpadash\api\user\sigtap\FpoApi.class
 br\com\bpadash\params\professional\ParamUpdateProfessional.class
+br\com\bpadash\api\user\graphics\StorageGraphicsApi.class
 br\com\bpadash\dto\bpa\InconsistencyCepDTO.class
 br\com\bpadash\services\professional\DadosVincService.class
 br\com\bpadash\services\treatment\TreatmentFileService.class
@@ -91,6 +99,7 @@ br\com\bpadash\api\user\UserApi.class
 br\com\bpadash\model\user\AddressUser.class
 br\com\bpadash\security\AuthenticacaoViaTokenFilter.class
 br\com\bpadash\params\fpo\ParamNewLineFpo.class
+br\com\bpadash\api\user\graphics\PaGraphicsApi.class
 br\com\bpadash\repository\treatment\RuleReplacementCustomRepository.class
 br\com\bpadash\model\treatment\RuleTreatmentPaDelete.class
 br\com\bpadash\model\sigtap\LinkProfessionals.class
@@ -121,10 +130,12 @@ br\com\bpadash\dto\bpa\TitleValidationDTO.class
 br\com\bpadash\model\enumModel\Role.class
 br\com\bpadash\security\TokenApp.class
 br\com\bpadash\dto\sigtap\ErrorAgeDatesDTO.class
+br\com\bpadash\api\user\graphics\CnsmedGraphicsApi.class
 br\com\bpadash\validations\bpa\sexo\SexoValidator.class
 br\com\bpadash\model\sigtap\Procedure.class
 br\com\bpadash\params\bpa\ParamUpdateTitle.class
 br\com\bpadash\repository\treatment\RuleTreatmentPaCboRepository.class
+br\com\bpadash\api\user\graphics\SexGraphicsApi.class
 br\com\bpadash\validations\bpa\race\RaceValid.class
 br\com\bpadash\services\sigtap\LinkProcedureService.class
 br\com\bpadash\BpadashApplication.class
@@ -138,11 +149,13 @@ br\com\bpadash\errorValidation\ResponseTypeError.class
 br\com\bpadash\api\user\login\LoginFormUser.class
 br\com\bpadash\repository\sigtap\LinkOccupationRepository.class
 br\com\bpadash\services\fpo\FpoService.class
+br\com\bpadash\api\user\graphics\DtatenGraphicsApi.class
 br\com\bpadash\params\treatment\ParamUpdateExecuteFile.class
 br\com\bpadash\api\auxApi.class
 br\com\bpadash\model\bpa\Bpac.class
 br\com\bpadash\repository\bpa\TitleBpaRepository.class
 br\com\bpadash\model\sigtap\Occupation.class
+br\com\bpadash\services\graphics\GraphicsService.class
 br\com\bpadash\repository\sigtap\ProcedureRepository.class
 br\com\bpadash\dto\bpa\BpacDTO.class
 br\com\bpadash\params\bpa\ParamDeleteBpai.class
@@ -158,6 +171,8 @@ br\com\bpadash\dto\sigtap\ErrorAgeProcedureDTO.class
 br\com\bpadash\params\treatment\ParamTreatmentReplaceCustom.class
 br\com\bpadash\dto\professional\CountProfessionalDTO.class
 br\com\bpadash\services\sigtap\LinkOccupationService.class
+br\com\bpadash\api\user\graphics\BpaGraphicsApi.class
+br\com\bpadash\model\bpa\ManagerBpa.class
 br\com\bpadash\api\user\treatment\PaCboTreatment.class
 br\com\bpadash\dto\sigtap\DatesSigtapDTO.class
 br\com\bpadash\repository\sigtap\OccupationRepository.class
@@ -183,6 +198,7 @@ br\com\bpadash\repository\PackageUserRepository.class
 br\com\bpadash\validations\bpa\sexo\SexoValid.class
 br\com\bpadash\model\sigtap\LinkOccupation.class
 br\com\bpadash\services\sigtap\DatesSigtapService.class
+br\com\bpadash\model\bpa\ManagerYear.class
 br\com\bpadash\api\user\bpa\BpaTitleApi.class
 br\com\bpadash\dto\sigtap\ErrorCEPsInvalidsDTO.class
 br\com\bpadash\services\sigtap\LinkCepService.class
@@ -208,8 +224,11 @@ br\com\bpadash\params\bpa\ParamSearchDateBpa.class
 br\com\bpadash\dto\TokenDTO.class
 br\com\bpadash\dto\sigtap\ErrorOccupationDTO.class
 br\com\bpadash\params\user\ParamBase.class
+br\com\bpadash\services\cache\CacheService.class
 br\com\bpadash\dto\bpa\TitleBpaDTO.class
+br\com\bpadash\api\user\graphics\CboGraphicsApi.class
 br\com\bpadash\repository\treatment\RuleTreatmentPaRepository.class
+br\com\bpadash\dto\graphics\SexGraphicsDTO.class
 br\com\bpadash\api\adm\sigtap\SigtapAdmApi.class
 br\com\bpadash\errorValidation\ErrorsFile.class
 br\com\bpadash\services\professional\ProfessionalService.class
@@ -225,3 +244,4 @@ br\com\bpadash\model\sigtap\Cep.class
 br\com\bpadash\params\user\ParamNewPassword.class
 br\com\bpadash\dto\bpa\BpaiValidationDTO.class
 br\com\bpadash\model\treatment\TreatmentFile.class
+br\com\bpadash\api\user\metrics\CnsmedMetricsApi.class

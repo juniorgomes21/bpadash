@@ -234,6 +234,7 @@ public class BpaApi {
     public ResponseEntity<byte[]> generateTextFile(@PathVariable String identifier, Authentication authentication) {
         try {
             User user = userService.get(authentication);
+
             Bpa bpa = bpaService.get(identifier, user);
 
             StringBuilder fileContent = bpaService.createFile(bpa);

@@ -39,10 +39,6 @@ public class DatesSigtapService {
 
     public void update(DatesSigtap datesSigtap , ParamUpdateDateSigtap paramUpdateDateSigtap) {
         switch (paramUpdateDateSigtap.getArqName()) {
-            case "OCU" -> {
-                datesSigtap.setDateOccupationAuto(paramUpdateDateSigtap.isAuto());
-                datesSigtap.setDateOccupation(paramUpdateDateSigtap.getLocalDateCurrent());
-            }
             case "FPO" -> {
                 datesSigtap.setDateFpoAuto(paramUpdateDateSigtap.isAuto());
                 datesSigtap.setDateFpo(paramUpdateDateSigtap.getLocalDateCurrent());
@@ -50,14 +46,6 @@ public class DatesSigtapService {
             case "PROF" -> {
                 datesSigtap.setDateProfessionalsAuto(paramUpdateDateSigtap.isAuto());
                 datesSigtap.setDateProfessionals(paramUpdateDateSigtap.getLocalDateCurrent());
-            }
-            case "CEP" -> {
-                datesSigtap.setDateCepAuto(paramUpdateDateSigtap.isAuto());
-                datesSigtap.setDateCep(paramUpdateDateSigtap.getLocalDateCurrent());
-            }
-            case "PROC" -> {
-                datesSigtap.setDateProcedureAuto(paramUpdateDateSigtap.isAuto());
-                datesSigtap.setDateProcedure(paramUpdateDateSigtap.getLocalDateCurrent());
             }
         }
 

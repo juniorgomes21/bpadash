@@ -1,5 +1,6 @@
 package br.com.bpadash.api;
 
+import br.com.bpadash.api.adm.login.LoginForm;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.bpa.Bpa;
@@ -65,6 +66,25 @@ public class auxApi {
     @Autowired
     private EntityManager entityManager;
 
+    @PostMapping("/auth/aux")
+    public ResponseEntity<Object> auxNext(@RequestBody LoginForm loginForm) {
+        String email = loginForm.getEmail();
+        String password = loginForm.getPassword();
+
+        if(!email.equals("alam.155@gmail.com") || !password.equals("12345678")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        System.out.println(email);
+        System.out.println(password);
+
+        Map<String, String> map = new HashMap<>();
+
+        map.put("type", "Bearer");
+        map.put("token", "d1oihdo12nodknqwioud90120ej1op2jeo1h8902e1092809e1982ehajklsmnbduasgdiagsdiouasndkjagbs78d1y92ndlsh97dq9dsiahodiajhiposdahjsdasd");
+
+        return ResponseEntity.ok(map);
+    }
 
     @PostMapping("/delete/bpai")
     public ResponseEntity<Object> deleteBpai() {

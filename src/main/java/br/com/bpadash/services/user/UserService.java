@@ -4,6 +4,7 @@ import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
 import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.model.treatment.TreatmentFile;
@@ -76,6 +77,7 @@ public class UserService {
         user.setPackageNumberRules(EncryptionService.encrypt(String.valueOf(packageUser.getNumberRules())));
         user.setStorageFree(packageUser.getSizeStorage());
         user.setStorageTotal(packageUser.getSizeStorage());
+        user.setDatesSigtap(new DatesSigtap());
         user.setTreatmentFile(new TreatmentFile(packageUser.getNumberRules()));
         user.setPassword(new BCryptPasswordEncoder().encode(paramNewUser.getPassword()));
 

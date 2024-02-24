@@ -12,7 +12,8 @@ public class CorsConfiguration implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns("Access-Control-Allow-Origin",
                         "https://bpadash.com/",
-                        "http://localhost:9999/"
+                        "http://localhost:9999/",
+                        "http://localhost:3000/"
                 )
                 .allowedMethods("*");
     }
