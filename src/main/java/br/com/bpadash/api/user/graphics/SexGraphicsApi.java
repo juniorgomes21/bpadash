@@ -1,11 +1,8 @@
 package br.com.bpadash.api.user.graphics;
 
-import br.com.bpadash.dto.graphics.SexGraphicsDTO;
 import br.com.bpadash.model.bpa.Bpa;
-import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.ManagerBpa;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.graphics.GraphicsService;
@@ -45,7 +42,6 @@ public class SexGraphicsApi {
         if(bpaOptional.isPresent()) {
             Bpa bpa = bpaOptional.get();
 //            List<Bpai> bpaiList = bpaiService.get(bpa);
-//            EncryptionService.decryptSex(bpaiList);
 
             Map<String, Integer> contagemIdades = new HashMap<>(); //bpaService.calculateSex(bpa, bpaiList);
 
@@ -72,7 +68,7 @@ public class SexGraphicsApi {
             bpaList.forEach( bpa -> {
 //                List<Bpai> bpaiList = bpaiService.get(bpa);
 //
-//                EncryptionService.decryptSex(bpaiList);
+//                EnCryptionAESService.decryptSex(bpaiList);
 
 //                Map<String, Integer> map = bpaService.calculateSex(bpa, bpaiList);
 

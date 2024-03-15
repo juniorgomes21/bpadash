@@ -1,17 +1,20 @@
 package br.com.bpadash.api.user.treatment;
 
-import br.com.bpadash.model.bpa.Address;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
-import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDateBpa;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.sigtap.AddressService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaService;
 import br.com.bpadash.services.treatment.TreatmentFileService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
@@ -43,6 +46,10 @@ public class AddressTreatment {
     private TreatmentFileService treatmentFileService;
     @Autowired
     private RuleTreatmentPaService ruleTreatmentPaService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
 
     /**
@@ -52,34 +59,42 @@ public class AddressTreatment {
      * @return
      */
     @Transactional
-    @PostMapping("/execute")
-    public ResponseEntity<Object> playTreatment(@RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
+    @PostMapping("/execute/{employeeKey}")
+    public ResponseEntity<Object> playTreatment(@PathVariable String employeeKey, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
         User user = userService.get(authentication);
 
-        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        if(bpaOptional.isPresent()) {
-            Bpa bpa = bpaOptional.get();
-            int count;
+        if(employeeOptional.isPresent()) {
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
-            List<Bpai> bpaiList = bpaiService.get(bpa);
+            if(bpaOptional.isPresent()) {
+                Bpa bpa = bpaOptional.get();
+                int count;
 
-            Long bytesOld = storageService.quantityBytes(null, null, bpaiList);
+                List<Bpai> bpaiList = bpaiService.get(bpa);
 
-            EncryptionService.decryptAddressUser(user.getAddressUser());
+                Long bytesOld = storageService.quantityBytes(null, null, bpaiList);
 
-            count = addressService.executeTreatmentCepBlank(bpaiList, user.getAddressUser());
+                EnCryptionAESService.decryptAddressUser(user.getAddressUser());
 
-            Long bytesNew = storageService.quantityBytes(null, null, bpaiList);
+                count = addressService.executeTreatmentCepBlank(bpaiList, user.getAddressUser());
 
-            userService.updateStorageBpaiAndSave(user, bytesOld, bytesNew);
+                Long bytesNew = storageService.quantityBytes(null, null, bpaiList);
 
-            bpaiService.save(bpaiList);
+                userService.updateStorageBpaiAndSave(user, bytesOld, bytesNew);
 
-            return ResponseEntity.ok(count);
+                bpaiService.save(bpaiList);
+
+                stockHistoryService.register(ActionEmployee.UPDATE_RULE_CEP_BLANK.getAction(), ActionType.UPDATE.getAction(), bpa.getDate(), count, user, employeeOptional.get());
+
+                return ResponseEntity.ok(count);
+            }
+
+            return ResponseEntity.badRequest().body("NOT FOUND BPA");
         }
 
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
 
@@ -105,11 +120,11 @@ public class AddressTreatment {
 
             Long bytesOld = storageService.quantityBytes(null, null, bpaiList);
 
-            EncryptionService.decryptBpaiCep(bpaiList);
+            EnCryptionAESService.decryptBpaiCep(bpaiList);
 
             count = addressService.executeTreatment(bpaiList);
 
-            EncryptionService.encryptBpaiAddress(bpaiList);
+            EnCryptionAESService.encryptBpaiAddress(bpaiList);
 
             Long bytesNew = storageService.quantityBytes(null, null, bpaiList);
 

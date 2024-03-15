@@ -3,8 +3,8 @@ package br.com.bpadash.security;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.AdministratorRepository;
-import br.com.bpadash.repository.UserRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.repository.user.UserRepository;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -35,11 +35,12 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = recuperarToken(request);
+
         if(token != null) {
             boolean valido = tokenApp.isTokenValid(token);
 
             if(valido) {
-                authenticate(token);
+                this.authenticate(token);
             }
         }
 
@@ -51,12 +52,13 @@ public class AuthenticacaoViaTokenFilter extends OncePerRequestFilter {
 
         UsernamePasswordAuthenticationToken authentication;
 
-        Optional<User> userOptional = this.userRepository.findByKeyEmail(EncryptionService.decrypt(subject));
+        Optional<User> userOptional = this.userRepository.findByKeyEmail(EnCryptionAESService.decrypt(subject));
         if(userOptional.isPresent()) {
             User user = userOptional.get();
             authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
         } else {
-            Administrator adm = this.admRepository.findByKeyEmail(EncryptionService.decrypt(subject)).get();
+            Administrator adm = this.admRepository.findByKeyEmail(EnCryptionAESService.decrypt(subject)).get();
             authentication = new UsernamePasswordAuthenticationToken(adm, null, adm.getAuthorities());
         }
 

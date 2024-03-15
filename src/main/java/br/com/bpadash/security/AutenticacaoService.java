@@ -3,7 +3,8 @@ package br.com.bpadash.security;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.AdministratorRepository;
-import br.com.bpadash.repository.UserRepository;
+import br.com.bpadash.repository.user.UserRepository;
+import br.com.bpadash.services.user.SessionUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,7 +23,6 @@ public class AutenticacaoService implements UserDetailsService {
 
     @Autowired
     private AdministratorRepository admRepository;
-
     @Autowired
     private UserRepository userRepository;
 

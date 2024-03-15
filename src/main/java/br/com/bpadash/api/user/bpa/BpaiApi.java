@@ -6,15 +6,20 @@ import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpai;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.cache.CacheService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
@@ -51,6 +56,11 @@ public class BpaiApi {
     private UserService userService;
     @Autowired
     private StorageService storageService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
+
 
     @GetMapping("/get/{date}")
     public ResponseEntity<Page<BpaiDTO>> getBpai(
@@ -70,136 +80,176 @@ public class BpaiApi {
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping(value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+    @GetMapping("/get/{dateBPA}/{cnsPac}/{employeeKey}")
+    public ResponseEntity<Object> getUserForCnsPac(@PathVariable String dateBPA, @PathVariable String employeeKey, @PathVariable String cnsPac, Authentication authentication) {
+        User user = userService.get(authentication);
 
-        List<ErrorsFile> errorsFiles = new ArrayList<>();
-        try {
-            User user = userService.get(authentication);
-            LocalDate localDate = LocalDate.of(year, month, 1);
-            Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            if(bpaOptional.isEmpty()) {
-                errorsFiles.add(new ErrorsFile("NOT EXIST DATE"));
+        if(employeeOptional.isPresent()) {
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(dateBPA), user);
+
+            if(bpaOptional.isPresent()) {
+                Bpa bpa = bpaOptional.get();
+
+                List<Bpai> bpaiList = bpaiService.get(bpa);
+
+                EnCryptionAESService.decryptCnsPac(bpaiList);
+
+                Bpai bpaiOk = null;
+                for(Bpai bpai: bpaiList) {
+                    if(bpai.getCnspac().equals(cnsPac)) {
+                        bpaiOk = bpai;
+                    }
+                }
+
+                if(bpaiOk == null) {
+                    return ResponseEntity.badRequest().body("NOT FOUND");
+                }
+
+                EnCryptionAESService.decryptBpai(List.of(bpaiOk), false);
+
+                return ResponseEntity.ok(new BpaiDTO(bpaiOk, ""));
+            }
+
+            return ResponseEntity.badRequest().body("NOT EXIST DATE BPA");
+        }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
+    }
+
+    @PostMapping(value = "/create/{month}/{year}/{employeeKey}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String employeeKey, Authentication authentication) {
+        User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
+
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isAddBpa()) {
+            List<ErrorsFile> errorsFiles = new ArrayList<>();
+            try {
+                LocalDate localDate = LocalDate.of(year, month, 1);
+                Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
+
+                if(bpaOptional.isEmpty()) {
+                    errorsFiles.add(new ErrorsFile("NOT EXIST DATE"));
+
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+
+                Bpa bpa = bpaOptional.get();
+
+                Bpai bpai = bpaiService.getLast(bpa);
+
+                String response = scannerFile.createBpai(file, bpaOptional.get(), bpai, user, errorsFiles, employeeOptional.get());
+
+                switch (response) {
+                    case "CREATE" -> {
+                        bpaService.calculateAll(user, bpa, null, null, true);
+
+                        bpaService.updateStateManager(bpa, false);
+
+                        return ResponseEntity.ok().body(response);
+                    }
+                    case "ERROR FILE" -> {
+                        return ResponseEntity.badRequest().body(errorsFiles);
+                    }
+                    default -> {
+                        return ResponseEntity.badRequest().body(response);
+                    }
+                }
+
+            } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
+                errorsFiles.add(new ErrorsFile("FILE INVALID"));
 
                 return ResponseEntity.badRequest().body(errorsFiles);
             }
-
-            Bpa bpa = bpaOptional.get();
-
-            Bpai bpai = bpaiService.getLast(bpa);
-
-            String response = scannerFile.createBpai(file, bpaOptional.get(), bpai, user, errorsFiles);
-
-            switch (response) {
-                case "ERROR FILE" -> {
-                    return ResponseEntity.badRequest().body(errorsFiles);
-                }
-                case "FILE FULL" -> {
-                    errorsFiles.add(new ErrorsFile("FILE FULL"));
-
-                    return ResponseEntity.badRequest().body(errorsFiles);
-                }
-                case "NOT STORAGE" -> {
-                    errorsFiles.add(new ErrorsFile("NOT STORAGE"));
-
-                    return ResponseEntity.badRequest().body(errorsFiles);
-                }
-                case "EXIST DATE" -> {
-                    errorsFiles.add(new ErrorsFile("EXIST DATE"));
-
-                    return ResponseEntity.badRequest().body(errorsFiles);
-                }
-            }
-
-            bpaService.calculateAll(user, bpa, null, null, true);
-
-            bpaService.updateStateManager(bpa, false);
-
-            return ResponseEntity.ok().build();
-
-        } catch (StringIndexOutOfBoundsException | IllegalArgumentException e) {
-            errorsFiles.add(new ErrorsFile("FILE INVALID"));
-
-            return ResponseEntity.badRequest().body(errorsFiles);
         }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> editBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai, Authentication authentication) {
+    @PostMapping("/edit/{id}/{employeeKey}")
+    public ResponseEntity<Object> editBpai(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamUpdateBpai paramUpdateBpai, Authentication authentication) {
         try {
             User user = userService.get(authentication);
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            List<ErrorValidationDTO> erros = new ArrayList<>();
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isEditBpa()) {
+                List<ErrorValidationDTO> erros = new ArrayList<>();
 
-            if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
-                if(!paramUpdateBpai.getRaca().equals("05")) {
-                    erros.add(new ErrorValidationDTO("etnia", "Preencher somente se o campo raça/cor for 05 - Indígena."));
+                if(!paramUpdateBpai.getEtnia().trim().isEmpty()) {
+                    if(!paramUpdateBpai.getRaca().equals("05")) {
+                        erros.add(new ErrorValidationDTO("etnia", "Preencher somente se o campo raça/cor for 05 - Indígena."));
 
+                        return ResponseEntity.badRequest().body(erros);
+                    }
+                }
+
+                Optional<Bpai> optionalBpai = bpaiService.get(id);
+                if(optionalBpai.isEmpty()) {
+                    erros.add(new ErrorValidationDTO("id", "O id não existe."));
                     return ResponseEntity.badRequest().body(erros);
                 }
+
+                Bpai bpai = optionalBpai.get();
+
+                EnCryptionAESService.decryptBpai(List.of(bpai), false);
+
+                Bpa bpa = bpai.getBpa();
+
+                String qt = bpai.getQt();
+                String pa = bpai.getPa();
+                String sex = bpai.getSexo();
+                String age = bpai.getIdade();
+                String race = bpai.getRaca();
+
+                //TODO tem que atualizar o tamanho do arquivo
+                bpaiService.editAndSave(bpai, paramUpdateBpai);
+
+                List<Bpai> bpaiList = new ArrayList<>();
+
+                boolean paDiff = !pa.equals(paramUpdateBpai.getPa());
+                boolean qtDiff = !qt.equals(paramUpdateBpai.getQt());
+                boolean sexDiff = !sex.equals(paramUpdateBpai.getSexo());
+                boolean ageDiff = !age.equals(paramUpdateBpai.getIdade());
+                boolean raceDiff = !race.equals(paramUpdateBpai.getRaca());
+
+                if( paDiff || qtDiff || sexDiff || raceDiff || ageDiff ) {
+                    bpaiList = bpaiService.get(bpa);
+                }
+
+                if(sexDiff || raceDiff || ageDiff) {
+                    EnCryptionAESService.decryptAgeAndSexAndRace(bpaiList);
+                }
+
+                if(paDiff || qtDiff){
+                    bpaService.calculateInvoicing(bpa, null, null, bpaiList, user, true);
+                }
+
+                if(sexDiff) {
+                    bpaService.calculateSex(bpa, bpaiList);
+                }
+
+                if(raceDiff){
+                    bpaService.calculateRace(bpa, bpaiList);
+                }
+
+                if(ageDiff){
+                    bpaService.calculateAge(bpa, bpaiList);
+                }
+
+                if(sexDiff || raceDiff || ageDiff) {
+                    bpaiService.EntityManagerDetach(bpaiList);
+
+                    bpaService.save(bpa);
+                }
+
+                stockHistoryService.register(ActionEmployee.UPDATE_BPAI.getAction(), ActionType.UPDATE.getAction(), bpa.getDate(), 1, user, employeeOptional.get());
+
+                return ResponseEntity.ok().build();
             }
 
-            Optional<Bpai> optionalBpai = bpaiService.get(id);
-            if(optionalBpai.isEmpty()) {
-                erros.add(new ErrorValidationDTO("id", "O id não existe."));
-                return ResponseEntity.badRequest().body(erros);
-            }
+            return ResponseEntity.status(401).body("FORBIDDEN");
 
-            Bpai bpai = optionalBpai.get();
-
-            EncryptionService.decryptBpai(List.of(bpai), false);
-
-            Bpa bpa = bpai.getBpa();
-
-            String qt = bpai.getQt();
-            String pa = bpai.getPa();
-            String sex = bpai.getSexo();
-            String age = bpai.getIdade();
-            String race = bpai.getRaca();
-
-            //TODO tem que atualizar o tamanho do arquivo
-            bpaiService.editAndSave(bpai, paramUpdateBpai);
-
-            List<Bpai> bpaiList = new ArrayList<>();
-
-            boolean paDiff = !pa.equals(paramUpdateBpai.getPa());
-            boolean qtDiff = !qt.equals(paramUpdateBpai.getQt());
-            boolean sexDiff = !sex.equals(paramUpdateBpai.getSexo());
-            boolean ageDiff = !age.equals(paramUpdateBpai.getIdade());
-            boolean raceDiff = !race.equals(paramUpdateBpai.getRaca());
-
-            if( paDiff || qtDiff || sexDiff || raceDiff || ageDiff ) {
-                bpaiList = bpaiService.get(bpa);
-            }
-
-            if(sexDiff || raceDiff || ageDiff) {
-                EncryptionService.decryptAgeAndSexAndRace(bpaiList);
-            }
-
-            if(paDiff || qtDiff){
-                bpaService.calculateInvoicing(bpa, null, null, bpaiList, user, true);
-            }
-
-            if(sexDiff) {
-                bpaService.calculateSex(bpa, bpaiList);
-            }
-
-            if(raceDiff){
-                bpaService.calculateRace(bpa, bpaiList);
-            }
-
-            if(ageDiff){
-                bpaService.calculateAge(bpa, bpaiList);
-            }
-
-            if(sexDiff || raceDiff || ageDiff) {
-                bpaiService.EntityManagerDetach(bpaiList);
-
-                bpaService.save(bpa);
-            }
-
-            return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
@@ -212,96 +262,126 @@ public class BpaiApi {
      * @param paramBpa
      * @return
      */
-    @PostMapping("/update/{id}")
-    public ResponseEntity<List<ErrorValidationDTO>> updateBpai(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}/{employeeKey}")
+    public ResponseEntity<Object> updateBpai(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
         User user = userService.get(authentication);
 
-        Optional<Bpa> bpaOptional = Optional.empty();
-        List<ErrorValidationDTO> erros = new ArrayList<>();
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        switch (paramBpa.getKey()) {
-            case "pa", "qtService", "race", "sexProcedure", "ageMaxMin", "cbo" , "cnsmedProfessional" , "birthDate" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
-            case "dateBpaInvalid" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid()), user);
-        }
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isEditBpa()) {
+            Optional<Bpa> bpaOptional = Optional.empty();
 
-        Bpai bpai = null;
-        if(id != 0) {
-            Optional<Bpai> optionalBpai = bpaiService.get(id);
-            if(optionalBpai.isEmpty()) {
-                erros.add(new ErrorValidationDTO("ID", "O id não existe."));
-                return ResponseEntity.badRequest().body(erros);
+            List<ErrorValidationDTO> erros = new ArrayList<>();
+
+            switch (paramBpa.getKey()) {
+                case "pa", "qtService", "race", "sexProcedure", "ageMaxMin", "cbo" , "cnsmedProfessional" , "birthDate" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+                case "dateBpaInvalid" -> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpaInvalid()), user);
             }
 
-            bpai = optionalBpai.get();
-        }
+            Bpai bpai = null;
+            if(id != 0) {
+                Optional<Bpai> optionalBpai = bpaiService.get(id);
+                if(optionalBpai.isEmpty()) {
+                    erros.add(new ErrorValidationDTO("ID", "O id não existe."));
+                    return ResponseEntity.badRequest().body(erros);
+                }
 
-        int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
+                bpai = optionalBpai.get();
+            }
 
-        String key = paramBpa.getKey();
+            int count = bpaiService.editAndSave(bpai, paramBpa, bpaOptional.orElse(null), user);
 
-        switch (key) {
-            case "pa", "qtService" -> bpaService.calculateInvoicing(bpaOptional.get(), null, null, null, user, true);
-            case "race", "sexProcedure", "ageMaxMin" -> {
-                Bpa bpa = bpaOptional.get();
-
-                List<Bpai> bpaiList = bpaiService.get(bpa);
+            if(count > 0) {
+                String key = paramBpa.getKey();
 
                 switch (key) {
-                    case "race" -> {
-                        EncryptionService.decryptRace(bpaiList);
-                        bpaService.calculateRace(bpa, bpaiList);
-                    }
-                    case "sexProcedure" -> {
-                        EncryptionService.decryptSex(bpaiList);
-                        bpaService.calculateSex(bpa, bpaiList);
-                    }
-                    case "ageMaxMin" -> {
-                        EncryptionService.decryptBpaiIdade(bpaiList);
-                        bpaService.calculateAge(bpa, bpaiList);
+                    case "pa", "qtService" -> bpaService.calculateInvoicing(bpaOptional.get(), null, null, null, user, true);
+                    case "race", "sexProcedure", "ageMaxMin" -> {
+                        Bpa bpa = bpaOptional.get();
+
+                        List<Bpai> bpaiList = bpaiService.get(bpa);
+
+                        switch (key) {
+                            case "race" -> {
+                                EnCryptionAESService.decryptRace(bpaiList);
+                                bpaService.calculateRace(bpa, bpaiList);
+                            }
+                            case "sexProcedure" -> {
+                                EnCryptionAESService.decryptSex(bpaiList);
+                                bpaService.calculateSex(bpa, bpaiList);
+                            }
+                            case "ageMaxMin" -> {
+                                EnCryptionAESService.decryptBpaiIdade(bpaiList);
+                                bpaService.calculateAge(bpa, bpaiList);
+                            }
+                        }
+
+                        bpaiService.EntityManagerDetach(bpaiList);
+
+                        bpaService.save(bpa);
                     }
                 }
 
-                bpaiService.EntityManagerDetach(bpaiList);
-
-                bpaService.save(bpa);
+                stockHistoryService.register(
+                        ActionEmployee.UPDATE_BPAI.getAction(),
+                        ActionType.UPDATE.getAction(),
+                        bpaOptional.map(Bpa::getDate).orElse(null),
+                        count,
+                        user,
+                        employeeOptional.get()
+                );
             }
+
+            return ResponseEntity.ok(count);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
-    @PostMapping("/delete/{date}")
-    public ResponseEntity<Object> editBpai(@PathVariable String date, @RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
+    @PostMapping("/delete/{date}/{employeeKey}")
+    public ResponseEntity<Object> deleteBpai(@PathVariable String date, @PathVariable String employeeKey, @RequestBody @Valid ParamDeleteBpai paramDeleteBpai, Authentication authentication) {
         try {
+
             User user = userService.get(authentication);
 
-            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            if(bpaOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body("NOT FOUND BPA");
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteBpa()) {
+
+                Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+
+                if(bpaOptional.isEmpty()) {
+                    return ResponseEntity.badRequest().body("NOT FOUND BPA");
+                }
+
+                Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
+
+                if(size == null) {
+                    return ResponseEntity.ok().build();
+                }
+
+                try {
+                    bpaiService.deleteById(paramDeleteBpai.getList());
+                } catch (Exception e) {
+                    return ResponseEntity.badRequest().body("ERROR");
+                }
+
+                Bpa bpa = bpaOptional.get();
+
+                int linesModified = paramDeleteBpai.getList().size();
+
+                bpaService.calculateLineInTitle(bpa, linesModified, 0, false);
+
+                bpaService.calculateAll(user, bpa, null, null, true);
+
+                storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
+
+                stockHistoryService.register(ActionEmployee.DELETE_BPAI.getAction(), ActionType.DELETE_LINE.getAction(), bpa.getDate(), linesModified, user, employeeOptional.get());
+
+                return ResponseEntity.ok(linesModified);
             }
 
-            Long size = bpaiService.sizeByte(paramDeleteBpai.getList());
-
-            if(size == null) {
-                return ResponseEntity.ok().build();
-            }
-
-            try {
-                bpaiService.deleteById(paramDeleteBpai.getList());
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body("ERROR");
-            }
-
-            Bpa bpa = bpaOptional.get();
-
-            bpaService.calculateLineInTitle(bpa, paramDeleteBpai.getList().size(), 0, false);
-
-            bpaService.calculateAll(user, bpa, null, null, true);
-
-            storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
-
-            return ResponseEntity.ok(size);
+            return ResponseEntity.status(401).body("FORBIDDEN");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());

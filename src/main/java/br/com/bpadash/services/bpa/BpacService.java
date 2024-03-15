@@ -55,90 +55,29 @@ public class BpacService {
     public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 
             List<ErrorValidationDTO> errors = new ArrayList<>();
-            List<String> orgsValids = new ArrayList<>(List.of("BPA", "PNI", "SIE", "SIB", "MIN", "PAC", "SCL", "EXT"));
 
             if (line.length() < 48) {
                 errors.add(errorValidation("LINHA","A linha Não contém 49 caracteres."));
+
+                return null;
             }
 
             String iden = line.substring(0, 2);
             String cnes = line.substring(2, 9);
-            if(user.getBpacValidation().isCnes()) {
-                if(!cnes.matches("\\d+")) {
-                    errors.add(errorValidation("CNE","O código CNES deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-                }
-            }
-
             String cmp = line.substring(9, 15);
-            if(user.getBpacValidation().isCmp()) {
-                if(!cmp.matches("\\d+")) {
-                    errors.add(errorValidation("CMP", "O campo deverá ser preenchido apenas com números formato AAAAMM."));
-                }
-            }
-
-            //TODO verificar validação
             String cbo = line.substring(15, 21);
-            if(false) {
-                if(false) {
-                    errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
-                }
-            }
-
             String flh = line.substring(21, 24);
-            if(user.getBpacValidation().isFlh()) {
-                if(!flh.matches("\\d+")) {
-                    errors.add(errorValidation("FLH", "Número da folha do BPA. Domínio [001..999]. Adicionar zeros à esquerda de um inteiro."));
-                }
-            }
-
             String seq = line.substring(24, 26);
-            if(user.getBpacValidation().isSeq()) {
-                if(!seq.matches("\\d+")) {
-                    errors.add(errorValidation("SEQ", "Número sequencial da linha dentro da folha do BPA. Domínio [01..20]. Adicionar zeros à esquerda de um inteiro."));
-                }
-            }
-
             String pa = line.substring(26, 36);
-            if(user.getBpacValidation().isPa()) {
-                if(!pa.matches("\\d+")) {
-                    errors.add(errorValidation("PA", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-                }
-            }
-
             String idade = line.substring(36, 39);
-            if(user.getBpacValidation().isIdade()) {
-                if (!idade.matches("\\d+") || Integer.parseInt(idade) > 130) {
-                    errors.add(errorValidation("IDADE" , "Idade (0 a 130 anos). O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-                }
-            }
-
             String qt = line.substring(39, 45);
-            if(user.getBpacValidation().isQt()) {
-                if(!cmp.matches("\\d+")) {
-                    errors.add(errorValidation("QT", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
-                }
-            }
-
-            //TODO verificar validação
             String org = line.substring(45, 48);
-            if(user.getBpacValidation().isOrg()) {
-                if(!orgsValids.contains(org)) {
-                    errors.add(errorValidation("ORG", "O campo deverá ser preenchido apenas com (\"BPA\", \"PNI\", \"SIE\", \"SIB\", \"MIN\", \"PAC\", \"SCL\" ou \"EXT\")"));
-                }
-            }
-
             String fim;
 
             try {
                 fim = line.substring(48, 50);
             } catch (StringIndexOutOfBoundsException e) {
                 fim = "  ";
-            }
-
-            if(!errors.isEmpty()) {
-                errorsFileList.add(new ErrorsFile(String.valueOf(lineNumber), errors));
-
-                return null;
             }
 
             return new Bpac(
@@ -182,17 +121,18 @@ public class BpacService {
         return this.save(bpac);
     }
 
-    public String editAndSave(Bpac bpac, ParamUpdateErrorsBpa paramBpa, Bpa bpa) {
+    public int editAndSave(Bpac bpac, ParamUpdateErrorsBpa paramBpa, Bpa bpa) {
+        int count = 0;
 
         switch (paramBpa.getKey()) {
-            case "pa" -> this.editPa(paramBpa.getPa(), bpac, bpa);
-            case "cbo" ->  this.editCbo(paramBpa.getCbo(), bpac, bpa);
+            case "pa" -> count =  this.editPa(paramBpa.getPa(), bpac, bpa, count);
+            case "cbo" -> count = this.editCbo(paramBpa.getCbo(), bpac, bpa, count);
         }
 
-        return "OK";
+        return count;
     }
 
-    private void editPa(String pa, Bpac bpac, Bpa bpa) {
+    private int editPa(String pa, Bpac bpac, Bpa bpa, int count) {
         String newPa = pa.split("-")[0];
         String updateAll = pa.split("-")[1];
 
@@ -203,14 +143,18 @@ public class BpacService {
                 bpacx.setPa(newPa);
             });
 
-            this.saveAndFlush(bpacList);
+            count = this.saveAndFlush(bpacList).size();
         } else {
             bpac.setPa(newPa);
             this.saveAndFlush(bpac);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editCbo(String cboParam, Bpac bpac, Bpa bpa) {
+    private int editCbo(String cboParam, Bpac bpac, Bpa bpa, int count) {
         String cbo = cboParam.split("-")[0];
         String updateAll = cboParam.split("-")[1];
 
@@ -221,11 +165,15 @@ public class BpacService {
                 bpaix.setCbo(cbo);
             });
 
-            this.save(bpacList);
+            count = this.save(bpacList).size();
         } else {
             bpac.setCbo(cbo);
             this.save(bpac);
+
+            count = 1;
         }
+
+        return count;
     }
 
     public Bpac save(Bpac bpac) {

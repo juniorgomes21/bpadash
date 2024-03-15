@@ -1,7 +1,7 @@
 package br.com.bpadash.dto;
 
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.user.StorageService;
 
 public class UserDTO {
@@ -24,19 +24,19 @@ public class UserDTO {
     }
 
     public UserDTO(User user) {
-        this.key = EncryptionService.encryptKeyUser(user.getId());
-        this.name = EncryptionService.decrypt(user.getName());
-        this.email = EncryptionService.decrypt(user.getEmail());
-        this.cell = EncryptionService.decrypt(user.getCell());
-        this.cnpj = EncryptionService.decrypt(user.getCnpj());
-        this.packageName = this.formatPackageName(EncryptionService.decrypt(user.getPackageNameUser()));
-        this.packageTotalRules = EncryptionService.decrypt(user.getPackageNumberRules());
+        this.key = EnCryptionAESService.encryptKeyUser(user.getId());
+        this.name = EnCryptionAESService.decrypt(user.getName());
+        this.email = EnCryptionAESService.decrypt(user.getEmail());
+        this.cell = EnCryptionAESService.decrypt(user.getCell());
+        this.cnpj = EnCryptionAESService.decrypt(user.getCnpj());
+        this.packageName = this.formatPackageName(EnCryptionAESService.decrypt(user.getPackageNameUser()));
+        this.packageTotalRules = EnCryptionAESService.decrypt(user.getPackageNumberRules());
         this.valid = user.isValid();
         this.countBpa = user.getBpas().size();
         this.countRules = this.countTotalRules(user);
         this.changePass = user.isChangePass();
         this.storageTotal = StorageService.formatBytes(user.getStorageTotal());
-        this.address = new AddressDTO(EncryptionService.decryptAddressUser(user.getAddressUser()));
+        this.address = new AddressDTO(EnCryptionAESService.decryptAddressUser(user.getAddressUser()));
     }
 
     public Long getKey() {

@@ -4,17 +4,22 @@ import br.com.bpadash.dto.treatment.TreatmentReplaceCustomDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.RuleReplacementCustom;
 import br.com.bpadash.params.bpa.ParamDateBpa;
 import br.com.bpadash.params.treatment.ParamTreatmentReplaceCustom;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.treatment.RuleTreatmentReplaceCustomService;
 import br.com.bpadash.services.treatment.TreatmentFileService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +48,10 @@ public class ReplacementCustom {
     private RuleTreatmentReplaceCustomService ruleReplaceCustomService;
     @Autowired
     private TreatmentFileService treatmentFileService;
-
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
     @GetMapping("/get")
     public ResponseEntity<Object> get(Authentication authentication) {
@@ -84,101 +92,113 @@ public class ReplacementCustom {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/execute/{id}")
-    public ResponseEntity<Object> playTreatmentReplaceCustom(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
+    @PostMapping("/execute/{id}/{employeeKey}")
+    public ResponseEntity<Object> playTreatmentReplaceCustom(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
         User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isEditBpa()) {
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
-        if(bpaOptional.isPresent()) {
-            Bpa bpa = bpaOptional.get();
+            if(bpaOptional.isPresent()) {
+                Bpa bpa = bpaOptional.get();
 
-            List<Bpac> bpacModify = new ArrayList<>();
-            List<Bpai> bpaiModify = new ArrayList<>();
+                List<Bpac> bpacModify = new ArrayList<>();
+                List<Bpai> bpaiModify = new ArrayList<>();
 
-            if(id == 0L) {
-                List<String> values = new ArrayList<>(List.of(
-                        "cnspac",
-                        "cid",
-                        "Nmpac",
-                        "dtnasc",
-                        "cnsmed",
-                        "dtaten",
-                        "idade",
-                        "cepPcnte",
-                        "logradPcnte",
-                        "endPcnte",
-                        "complPcnte",
-                        "numPcnte",
-                        "sexo",
-                        "raca",
-                        "bairroPcnte",
-                        "ddtelPcnte",
-                        "emailPcnte"
-                ));
+                if(id == 0L) {
+                    List<String> values = new ArrayList<>(List.of(
+                            "cnspac",
+                            "cid",
+                            "Nmpac",
+                            "dtnasc",
+                            "cnsmed",
+                            "dtaten",
+                            "idade",
+                            "cepPcnte",
+                            "logradPcnte",
+                            "endPcnte",
+                            "complPcnte",
+                            "numPcnte",
+                            "sexo",
+                            "raca",
+                            "bairroPcnte",
+                            "ddtelPcnte",
+                            "emailPcnte"
+                    ));
 
-                List<RuleReplacementCustom> ruleReplacementCustomList = user.getTreatmentFile().getRuleReplacementCustoms();
+                    List<RuleReplacementCustom> ruleReplacementCustomList = user.getTreatmentFile().getRuleReplacementCustoms();
 
-                boolean countExecuteBpac = ruleReplacementCustomList.stream().anyMatch(RuleReplacementCustom::isExecuteBpac);
-                boolean countExecuteBpai = ruleReplacementCustomList.stream().anyMatch(RuleReplacementCustom::isExecuteBpai);
+                    boolean countExecuteBpac = ruleReplacementCustomList.stream().anyMatch(RuleReplacementCustom::isExecuteBpac);
+                    boolean countExecuteBpai = ruleReplacementCustomList.stream().anyMatch(RuleReplacementCustom::isExecuteBpai);
 
-                List<Bpac> bpacList = new ArrayList<>();
-                if (countExecuteBpac)  bpacList = bpacService.get(bpa);
+                    List<Bpac> bpacList = new ArrayList<>();
+                    if (countExecuteBpac)  bpacList = bpacService.get(bpa);
 
-                List<Bpai> bpaiList = new ArrayList<>();
+                    List<Bpai> bpaiList = new ArrayList<>();
 
-                boolean isDecrypt = false;
-                if (countExecuteBpai) {
-                    bpaiList = bpaiService.get(bpa);
+                    boolean isDecrypt = false;
+                    if (countExecuteBpai) {
+                        bpaiList = bpaiService.get(bpa);
 
-                    isDecrypt = ruleReplacementCustomList.stream().anyMatch( rule ->
-                            values.contains(rule.getField()) ||
-                            values.contains(rule.getCriterionOne()) ||
-                            values.contains(rule.getCriterionTwo()) ||
-                            values.contains(rule.getCriterionThree()));
+                        isDecrypt = ruleReplacementCustomList.stream().anyMatch( rule ->
+                                values.contains(rule.getField()) ||
+                                values.contains(rule.getCriterionOne()) ||
+                                values.contains(rule.getCriterionTwo()) ||
+                                values.contains(rule.getCriterionThree()));
 
-                    if(isDecrypt) EncryptionService.decryptBpai(bpaiList, true);
-                }
+                        if(isDecrypt) EnCryptionAESService.decryptBpai(bpaiList, true);
+                    }
 
-                for (RuleReplacementCustom rule: ruleReplacementCustomList) {
-                    if(rule.isExecuteBpac()) {
-                        ruleReplaceCustomService.executeBpac(rule, bpacList, bpacModify);
+                    for (RuleReplacementCustom rule: ruleReplacementCustomList) {
+                        if(rule.isExecuteBpac()) {
+                            ruleReplaceCustomService.executeBpac(rule, bpacList, bpacModify);
+                        } else {
+                            ruleReplaceCustomService.executeBpai(rule, bpaiList, bpaiModify, true);
+                        }
+                    }
+
+                    if(bpacModify.size() > 0) bpacService.saveAndFlush(bpacModify);
+                    if(bpaiModify.size() > 0) {
+                        if(isDecrypt) EnCryptionAESService.encryptBpai(bpaiList, true);
+                        bpaiService.saveAndFlush(bpaiModify);
+                    }
+
+                } else {
+                    RuleReplacementCustom ruleReplacementCustom = ruleReplaceCustomService.get(id);
+
+                    if(ruleReplacementCustom.isExecuteBpac()) {
+                        List<Bpac> bpacList = bpacService.get(bpa);
+
+                        ruleReplaceCustomService.executeBpac(ruleReplacementCustom, bpacList, bpacModify);
+
+                        bpacService.saveAndFlush(bpacModify);
                     } else {
-                        ruleReplaceCustomService.executeBpai(rule, bpaiList, bpaiModify, true);
+                        List<Bpai> bpaiList = bpaiService.get(bpa);
+
+                        ruleReplaceCustomService.executeBpai(ruleReplacementCustom, bpaiList, bpaiModify, false);
+
+                        bpaiService.saveAndFlush(bpaiModify);
                     }
                 }
 
-                if(bpacModify.size() > 0) bpacService.saveAndFlush(bpacModify);
-                if(bpaiModify.size() > 0) {
-                    if(isDecrypt) EncryptionService.encryptBpai(bpaiList, true);
-                    bpaiService.saveAndFlush(bpaiModify);
+                int linesModified = bpacModify.size() + bpaiModify.size();
+
+                if(linesModified > 0) {
+                    bpaService.calculateAll(user, bpa, null, null, true);
+                    bpaService.save(bpa);
+
+                    stockHistoryService.register(ActionEmployee.UPDATE_RULE_PA.getAction(), ActionType.UPDATE.getAction(), bpa.getDate(), linesModified, user, employeeOptional.get());
+
                 }
 
-            } else {
-                RuleReplacementCustom ruleReplacementCustom = ruleReplaceCustomService.get(id);
-
-                if(ruleReplacementCustom.isExecuteBpac()) {
-                    List<Bpac> bpacList = bpacService.get(bpa);
-
-                    ruleReplaceCustomService.executeBpac(ruleReplacementCustom, bpacList, bpacModify);
-
-                    bpacService.saveAndFlush(bpacModify);
-                } else {
-                    List<Bpai> bpaiList = bpaiService.get(bpa);
-
-                    ruleReplaceCustomService.executeBpai(ruleReplacementCustom, bpaiList, bpaiModify, false);
-
-                    bpaiService.saveAndFlush(bpaiModify);
-                }
+                return ResponseEntity.ok(linesModified);
             }
 
-            bpaService.calculateAll(user, bpa, null, null, true);
-            bpaService.save(bpa);
-
-            return ResponseEntity.ok(bpacModify.size() + bpaiModify.size());
+            return ResponseEntity.badRequest().body("NOT FOUND BPA");
         }
 
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @PostMapping("/delete/{id}")

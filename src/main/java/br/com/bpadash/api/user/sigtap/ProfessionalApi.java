@@ -3,18 +3,22 @@ package br.com.bpadash.api.user.sigtap;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
 import br.com.bpadash.dto.professional.ProfessionalDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.bpa.Bpa;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
 import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.model.sigtap.ProfessionalComplete;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.professional.ParamNewProfessionals;
 import br.com.bpadash.params.professional.ParamUpdateProfessional;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.sigtap.DatesSigtapService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,36 +46,47 @@ public class ProfessionalApi {
     private LinkProfessionalsService linkProfessionalsService;
     @Autowired
     private DatesSigtapService datesSigtapService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
 
-    @GetMapping("/get/{key}")
-    public ResponseEntity<Object> getProfessionals(@PathVariable String key, Authentication authentication) {
+    @GetMapping("/get/{key}/{employeeKey}")
+    public ResponseEntity<Object> getProfessionals(@PathVariable String key, @PathVariable String employeeKey, Authentication authentication) {
         User user = userService.get(authentication);
 
-        DatesSigtap datesSigtap = user.getDatesSigtap();
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        Optional<LinkProfessionals> linkProfessionalsOptional;
-        if(datesSigtap.isDateProfessionalsAuto()) {
-            linkProfessionalsOptional = linkProfessionalsService.get(user);
-        } else {
-            linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals(), user);
-        }
+        if(employeeOptional.isPresent()) {
 
-        if(linkProfessionalsOptional.isPresent()) {
-            LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
+            DatesSigtap datesSigtap = user.getDatesSigtap();
 
-            ProfessionalComplete professionalComplete = professionalService.get(linkProfessionals, key);
-
-            if(professionalComplete == null) {
-                return ResponseEntity.badRequest().body("NOT FOUND");
+            Optional<LinkProfessionals> linkProfessionalsOptional;
+            if(datesSigtap.isDateProfessionalsAuto()) {
+                linkProfessionalsOptional = linkProfessionalsService.get(user);
+            } else {
+                linkProfessionalsOptional = linkProfessionalsService.get(datesSigtap.getDateProfessionals(), user);
             }
 
-            EncryptionService.decrypt(new ArrayList<>(List.of(professionalComplete)));
+            if(linkProfessionalsOptional.isPresent()) {
+                LinkProfessionals linkProfessionals = linkProfessionalsOptional.get();
 
-            return ResponseEntity.ok(new ProfessionalDTO(professionalComplete));
+                ProfessionalComplete professionalComplete = professionalService.get(linkProfessionals, key);
+
+                if(professionalComplete == null) {
+                    return ResponseEntity.badRequest().body("NOT FOUND");
+                }
+
+                EnCryptionAESService.decrypt(new ArrayList<>(List.of(professionalComplete)));
+
+                return ResponseEntity.ok(new ProfessionalDTO(professionalComplete));
+            }
+
+            return ResponseEntity.badRequest().body("NOT EXIST DATE");
         }
 
-        return ResponseEntity.badRequest().body("NOT EXIST DATE");
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @GetMapping("/timeline")
@@ -83,34 +98,28 @@ public class ProfessionalApi {
         return ResponseEntity.ok(userService.timeLineProfessionals(linkProfessionalsList));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Object> createProfFile(@RequestPart("file") MultipartFile file,  @RequestParam("paramNewProfessionals") String paramNewProfessionalsJson, Authentication authentication) throws JsonProcessingException {
+    @PostMapping("/create/{employeeKey}")
+    public ResponseEntity<Object> createProfFile(@PathVariable String employeeKey, @RequestPart("file") MultipartFile file,  @RequestParam("paramNewProfessionals") String paramNewProfessionalsJson, Authentication authentication) throws JsonProcessingException {
         User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ParamNewProfessionals paramNewProfessionals = objectMapper.readValue(paramNewProfessionalsJson, ParamNewProfessionals.class);
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isAddProf()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ParamNewProfessionals paramNewProfessionals = objectMapper.readValue(paramNewProfessionalsJson, ParamNewProfessionals.class);
 
-        List<ErrorsFile> errorsFileList = new ArrayList<>();
+            String response = scannerFile.createProfessionals(file, paramNewProfessionals, user, employeeOptional.get());
 
-        String response = scannerFile.createProfessionals(file, paramNewProfessionals, user);
-
-        switch (response) {
-            case "ERROR" -> {
-                return ResponseEntity.badRequest().body("FILE INVALID");
-            }
-            case "NOT STORAGE" -> {
-                errorsFileList.add(new ErrorsFile("NOT STORAGE"));
-
-                return ResponseEntity.badRequest().body(errorsFileList);
-            }
-            case "EXIST DATE" -> {
-                errorsFileList.add(new ErrorsFile("EXIST DATE"));
-
-                return ResponseEntity.badRequest().body(errorsFileList);
+            switch (response) {
+                case "CREATE" -> {
+                    return ResponseEntity.ok().build();
+                }
+                default -> {
+                    return ResponseEntity.badRequest().body(response);
+                }
             }
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @PostMapping("/edit/{id}")
@@ -127,22 +136,28 @@ public class ProfessionalApi {
     }
 
     @Transactional
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteMany(@RequestBody List<Long> ids, Authentication authentication) {
-        User user = userService.userLogged(authentication);
+    @PostMapping("/delete/{employeeKey}")
+    public ResponseEntity<Object> deleteMany(@PathVariable String employeeKey, @RequestBody List<Long> ids, Authentication authentication) {
+        User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        ids.forEach( id -> {
-            LinkProfessionals link = linkProfessionalsService.get(id);
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteProf()) {
+            ids.forEach( id -> {
+                LinkProfessionals link = linkProfessionalsService.get(id);
 
-            professionalService.delete(link);
+                professionalService.delete(link);
 
-            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
+                userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
 
-            linkProfessionalsService.delete(link);
-        });
+                linkProfessionalsService.delete(link);
 
+                stockHistoryService.register(ActionEmployee.DELETE_PROF.getAction(), ActionType.DELETE.getAction(), link.getDate(), 0, user, employeeOptional.get());
+            });
 
-        return ResponseEntity.ok().build();
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
 }

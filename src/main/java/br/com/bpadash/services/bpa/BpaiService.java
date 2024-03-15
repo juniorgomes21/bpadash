@@ -16,7 +16,7 @@ import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpaiRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.sigtap.*;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,138 +51,49 @@ public class BpaiService {
 
 
     public Bpai create(String line, int lineNumber, Bpa bpa, User user, List<ErrorsFile> errorsFiles) {
+
         List<ErrorValidationDTO> errors = new ArrayList<>();
-        List<String> orgsValids = new ArrayList<>(List.of("BPA", "PNI", "SIE", "SIB", "MIN", "PAC", "SCL", "EXT"));
 
         if (line.length() < 247) {
             errors.add(errorValidation("LINHA","A linha Não contém pelo menos 247 caracteres."));
+
+            errorsFiles.add(new ErrorsFile(String.valueOf(lineNumber), errors));
+
+            return null;
         }
 
         String ident = line.substring(0, 2);
         String cnes = line.substring(2, 9);
-        if(user.getBpaiValidation().isCnes()) {
-            if(!cnes.matches("\\d+")) {
-                errors.add(errorValidation("CNE","O código CNES deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-            }
-        }
-
         String cmp = line.substring(9, 15);
-        if(user.getBpaiValidation().isCmp()) {
-            if(!cmp.matches("\\d+")) {
-                // TODO validar o formato AAAAMM.
-                errors.add(errorValidation("CMP", "O campo deverá ser preenchido apenas com números formato AAAAMM."));
-            }
-        }
-
         String cnsmed = line.substring(15, 30);
-        if(user.getBpaiValidation().isCnsmed()) {
-            if(!cnsmed.matches("\\d+")) {
-                errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
-            }
-        }
-
         String cbo = line.substring(30, 36);
-        if(user.getBpaiValidation().isCbo()) {
-            if(!cbo.matches("\\d+")) {
-                errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
-            }
-        }
-
-        String dtaten = line.substring(36, 44);  // 6
+        String dtaten = line.substring(36, 44);
         String flh = line.substring(44, 47);
-        if(user.getBpaiValidation().isFlh()) {
-            if(!flh.matches("\\d+")) {
-                errors.add(errorValidation("FLH", "Número da folha do BPA. Domínio [001..999]. Adicionar zeros à esquerda de um inteiro."));
-            }
-        }
-
         String seq = line.substring(47, 49);
-        if(user.getBpaiValidation().isSeq()) {
-            if(!seq.matches("\\d+")) {
-                errors.add(errorValidation("SEQ", "Número sequencial da linha dentro da folha do BPA. Domínio [01..20]. Adicionar zeros à esquerda de um inteiro."));
-            }
-        }
-
         String pa = line.substring(49, 59);
-        if(user.getBpaiValidation().isPa()) {
-            if(!pa.matches("\\d+")) {
-                errors.add(errorValidation("PA", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-            }
-        }
-
         String cnspac = line.substring(59, 74);
-        if(user.getBpaiValidation().isCnspac()) {
-            if(!pa.matches("\\d+")) {
-                errors.add(errorValidation("CNSPAC", "O campo deverá ser preenchido apenas com números."));
-            }
-        }
-
         String sexo = line.substring(74, 75);
-        if(user.getBpaiValidation().isSexo()) {
-            List<String> sexos = new ArrayList<>(Arrays.asList("M", "F"));
-            if(!sexos.contains(sexo)) {
-                errors.add(errorValidation("SEXO", "Permitido apenas M - Masculino, F - Feminino."));
-            }
-        }
-
         String ibge = line.substring(75, 81);
-        if(user.getBpaiValidation().isIbge()) {
-            if(!ibge.matches("\\d+")) {
-                errors.add(errorValidation("IBGE", "O campo deverá ser preenchido apenas com números."));
-            }
-        }
-
         String cid = line.substring(81, 85);
-
         String idade = line.substring(85, 88);
-        if(user.getBpaiValidation().isIdade()) {
-            if (!idade.matches("\\d+") || Integer.parseInt(idade) > 130) {
-                errors.add(errorValidation("IDADE" , "Idade (0 a 130 anos). O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
-            }
-        }
-
         String qt = line.substring(88, 94);
-        if(user.getBpaiValidation().isCmp()) {
-            if(!cmp.matches("\\d+")) {
-                errors.add(errorValidation("QT", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
-            }
-        }
-
         String caten = line.substring(94, 96);
-        if(user.getBpaiValidation().isCaten()) {
-            if(!caten.matches("\\d+")) {
-                errors.add(errorValidation("CATEN", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
-            }
-        }
-
         String naut = line.substring(96, 109);
-        if(user.getBpaiValidation().isNaut()) {
-            if(!cmp.matches("\\d+")) {
-                errors.add(errorValidation("NAUT", "O campo deverá ser preenchido apenas com números."));
-            }
-        }
-
         String org = line.substring(109, 112);
-        if(user.getBpaiValidation().isOrg()) {
-            if(!orgsValids.contains(org)) {
-                errors.add(errorValidation("ORG", "O campo deverá ser preenchido apenas com (\"BPA\", \"PNI\", \"SIE\", \"SIB\", \"MIN\", \"PAC\", \"SCL\" ou \"EXT\")"));
-            }
-        }
-
-        String nmpac = line.substring(112, 142);  // 19
-        String dtnasc = line.substring(142, 150);  // 20
-        String raca = line.substring(150, 152);  // 21
-        String etnia = line.substring(152, 156);  // 22
-        String nac = line.substring(156, 159);  // 23
-        String srv = line.substring(159, 162);  // 24
-        String clf = line.substring(162, 165);  // 25
-        String equipe_seq = line.substring(165, 173);  // 26
-        String equipe_area = line.substring(173, 177);  // 27
-        String cnpj = line.substring(177, 191);  // 28
-        String cep_pcnte = line.substring(191, 199);  // 29
-        String lograd_pcnte = line.substring(199, 202);  // 30
-        String end_pcnte = line.substring(202, 232);  // 31
-        String compl_pcnte = line.substring(232, 242);  // 32
+        String nmpac = line.substring(112, 142);
+        String dtnasc = line.substring(142, 150);
+        String raca = line.substring(150, 152);
+        String etnia = line.substring(152, 156);
+        String nac = line.substring(156, 159);
+        String srv = line.substring(159, 162);
+        String clf = line.substring(162, 165);
+        String equipe_seq = line.substring(165, 173);
+        String equipe_area = line.substring(173, 177);
+        String cnpj = line.substring(177, 191);
+        String cep_pcnte = line.substring(191, 199);
+        String lograd_pcnte = line.substring(199, 202);
+        String end_pcnte = line.substring(202, 232);
+        String compl_pcnte = line.substring(232, 242);
 
         String num_pcnte;
         try {
@@ -226,11 +137,6 @@ public class BpaiService {
             fim = "  ";
         }
 
-        if(!errors.isEmpty()) {
-            errorsFiles.add(new ErrorsFile(String.valueOf(lineNumber), errors));
-
-            return null;
-        }
 
         Bpai bpai = new Bpai(
                 bpa,
@@ -288,7 +194,7 @@ public class BpaiService {
 
         List<Bpai> bpaiList = page.getContent();
 
-        EncryptionService.decryptBpai(bpaiList, true);
+        EnCryptionAESService.decryptBpai(bpaiList, true);
 
         List<BpaiDTO> bpaiDTOList = bpaiList.stream()
                 .map(bpai -> new BpaiDTO(bpai, bpa.getIdentifier()))
@@ -341,7 +247,7 @@ public class BpaiService {
         bpai.setIne(paramUpdateBpai.getIne());
         bpai.setFim(paramUpdateBpai.getFim());
 
-        EncryptionService.encryptBpaiInitial(new ArrayList<>(List.of(bpai)));
+        EnCryptionAESService.encryptBpaiInitial(new ArrayList<>(List.of(bpai)));
 
         return this.saveAndFlush(bpai);
     }
@@ -351,27 +257,27 @@ public class BpaiService {
         String key = paramBpa.getKey();
 
         switch (key) {
-            case "pa" -> this.editPa(paramBpa.getPa(), bpai, bpa);
-            case "birthDate" -> this.editDtNasc(paramBpa.getDateBpa(), paramBpa.getIds(), bpai);
-            case "cep" -> this.editCep(paramBpa.getCep(), paramBpa.getIds(), bpai, user);
-            case "cepBlank" -> this.editCepBlank(paramBpa.getIds(), user);
-            case "qtService" -> this.editQtService(paramBpa.getQtService(), paramBpa.getIds(), bpai, user);
-            case "dateBpaInvalid" -> this.editDateBpa(paramBpa.getDateBpaInvalid(), paramBpa.getIds(), bpai);
-            case "race" -> this.editRace(paramBpa.getRace(), paramBpa.getIds(), bpai, user);
-            case "cnsmedProfessional" -> this.editCnsmed(paramBpa.getCnsmed(), bpai, bpa);
-            case "sexProcedure" -> this.editSex(paramBpa.getIds(), user);
-            case "cbo" -> this.editCbo(paramBpa.getCbo(), bpai, bpa);
-            case "ageMaxMin" -> this.editAge(paramBpa.getAge(), paramBpa.getIds(), bpai);
+            case "pa" -> count = this.editPa(paramBpa.getPa(), bpai, bpa, count);
+            case "birthDate" -> count = this.editDtNasc(paramBpa.getDateBpa(), paramBpa.getIds(), bpai, count);
+            case "cep" -> count = this.editCep(paramBpa.getCep(), paramBpa.getIds(), bpai, user, count);
+            case "cepBlank" -> count = this.editCepBlank(paramBpa.getIds(), user, count);
+            case "qtService" -> count = this.editQtService(paramBpa.getQtService(), paramBpa.getIds(), bpai, user, count);
+            case "dateBpaInvalid" -> count = this.editDateBpa(paramBpa.getDateBpaInvalid(), paramBpa.getIds(), bpai, count);
+            case "race" -> count = this.editRace(paramBpa.getRace(), paramBpa.getIds(), bpai, user, count);
+            case "cnsmedProfessional" -> count = this.editCnsmed(paramBpa.getCnsmed(), bpai, bpa, count);
+            case "sexProcedure" -> count = this.editSex(paramBpa.getIds(), user, count);
+            case "cbo" -> count = this.editCbo(paramBpa.getCbo(), bpai, bpa, count);
+            case "ageMaxMin" -> count = this.editAge(paramBpa.getAge(), paramBpa.getIds(), bpai, count);
         }
 
         return count;
     }
 
-    private void editAge(Integer age, List<Long> ids, Bpai bpai) {
+    private int editAge(Integer age, List<Long> ids, Bpai bpai, int count) {
         if(ids != null) {
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
-            EncryptionService.decryptBpaiDtNasc(bpaiList);
+            EnCryptionAESService.decryptBpaiDtNasc(bpaiList);
             LocalDate date = LocalDate.now(ZoneId.of(ZoneTime.BR.getBr()));
 
             bpaiList.forEach( bpaix -> {
@@ -386,21 +292,25 @@ public class BpaiService {
 
                         int yearNasc = date.getYear() - year;
 
-                        bpaix.setIdade(EncryptionService.encrypt(String.valueOf(yearNasc + month + day)));
+                        bpaix.setIdade(EnCryptionAESService.encrypt(String.valueOf(yearNasc + month + day)));
                     }
                 } catch (Exception ignored) {
 
                 }
             });
 
-            this.saveAndFlush(bpaiList);
+            count = this.saveAndFlush(bpaiList).size();
         } else {
-            bpai.setIdade(EncryptionService.encrypt(String.valueOf(age)));
+            bpai.setIdade(EnCryptionAESService.encrypt(String.valueOf(age)));
             this.saveAndFlush(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editCbo(String cboParam , Bpai bpai, Bpa bpa) {
+    private int editCbo(String cboParam , Bpai bpai, Bpa bpa, int count) {
         String cbo = cboParam.split("-")[0];
         String updateAll = cboParam.split("-")[1];
 
@@ -411,14 +321,18 @@ public class BpaiService {
                 bpaix.setCbo(cbo);
             });
 
-            this.save(bpaiList);
+            count = this.save(bpaiList).size();
         } else {
             bpai.setCbo(cbo);
             this.save(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editSex(List<Long> ids, User user) {
+    private int editSex(List<Long> ids, User user, int count) {
         DatesSigtap datesSigtap = user.getDatesSigtap();
         List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
@@ -448,18 +362,20 @@ public class BpaiService {
 
                     if(!sexos.contains(sexo)) {
                         if(!sexo.equals(bpaix.getSexo())) {
-                            bpaix.setSexo(EncryptionService.encrypt(sexo));
+                            bpaix.setSexo(EnCryptionAESService.encrypt(sexo));
                         }
                     }
 
                 }
             }
 
-            this.saveAndFlush(bpaiList);
+            return this.saveAndFlush(bpaiList).size();
         }
+
+        return count;
     }
 
-    private void editCnsmed(String cnsmedParam, Bpai bpai, Bpa bpa) {
+    private int editCnsmed(String cnsmedParam, Bpai bpai, Bpa bpa, int count) {
         String cnsmed = cnsmedParam.split("-")[0];
         String updateAll = cnsmedParam.split("-")[1];
 
@@ -470,15 +386,19 @@ public class BpaiService {
                 bpaix.setCnsmed(cnsmed);
             });
 
-            this.save(bpaiList);
+            count = this.save(bpaiList).size();
         } else {
             bpai.setCnsmed(cnsmed);
             this.save(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
     //TODO terminar esse método --- falta concluir
-    private void editRace(String race, List<Long> ids, Bpai bpai, User user) {
+    private int editRace(String race, List<Long> ids, Bpai bpai, User user, int count) {
         if(ids != null) {
             List<String> racesValids = new ArrayList<>(Arrays.asList("01", "02", "03", "04", "05"));
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
@@ -490,18 +410,18 @@ public class BpaiService {
 
             if(!bpaList.isEmpty()) {
                 System.out.println(LocalDateTime.now());
-                EncryptionService.decryptCnsPac(bpaiList);
+                EnCryptionAESService.decryptCnsPac(bpaiList);
 
                 bpaiList.forEach( bpaix -> {
 
-                    String key = EncryptionService.hashString(bpaix.getCnspac());
+                    String key = EnCryptionAESService.hashString(bpaix.getCnspac());
 
 //                    Optional<Bpai> bpaiOptional = bpaiRepository.findFristByCnspacHas(key); //bpaList
 //
 //                    bpaiOptional.ifPresent(value -> System.out.println(value.getId()));
 
 //                    bpaiOptional.ifPresent(value -> {
-//                        String newRace = EncryptionService.decrypt(value.getRaca());
+//                        String newRace = EnCryptionAESService.decrypt(value.getRaca());
 //
 //                        if (racesValids.contains(newRace)) {
 //                            bpaix.setRaca(value.getRaca());
@@ -510,35 +430,43 @@ public class BpaiService {
                 });
                 System.out.println(LocalDateTime.now());
 
-                EncryptionService.encryptCnsPac(bpaiList);
+                EnCryptionAESService.encryptCnsPac(bpaiList);
                 System.out.println(LocalDateTime.now());
 
-//                this.save(bpaiList);
+//                count = this.save(bpaiList).size();
             }
         } else {
-            bpai.setRaca(EncryptionService.encrypt(race));
+            bpai.setRaca(EnCryptionAESService.encrypt(race));
             this.saveAndFlush(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editDateBpa(String dateBpaInvalid, List<Long> ids , Bpai bpai) {
+    private int editDateBpa(String dateBpaInvalid, List<Long> ids , Bpai bpai, int count) {
         String dateBpa = dateBpaInvalid.replaceAll("-", "");
 
         if(ids != null) {
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
 
             bpaiList.forEach( bpaix -> {
-                bpaix.setDtaten(dateBpa);
+                bpaix.setDtaten(EnCryptionAESService.encrypt(dateBpa));
             });
 
-            this.save(bpaiList);
+            count = this.save(bpaiList).size();
         } else {
-            bpai.setDtaten(dateBpa);
+            bpai.setDtaten(EnCryptionAESService.encrypt(dateBpa));
             this.save(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editQtService(List<Integer> qtService, List<Long> ids, Bpai bpai, User user) {
+    private int editQtService(List<Integer> qtService, List<Long> ids, Bpai bpai, User user, int count) {
         if(ids != null) {
             DatesSigtap datesSigtap = user.getDatesSigtap();
 
@@ -565,16 +493,20 @@ public class BpaiService {
                     }
                 });
 
-                this.saveAndFlush(bpaiList);
+                count = this.saveAndFlush(bpaiList).size();
             }
 
         } else {
             bpai.setQt(String.valueOf(qtService.get(0)));
             this.saveAndFlush(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editCep(String cep , List<Long> cepsIds, Bpai bpai, User user) {
+    private int editCep(String cep , List<Long> cepsIds, Bpai bpai, User user, int count) {
         if(cepsIds != null) {
             DatesSigtap datesSigtap = user.getDatesSigtap();
 
@@ -591,7 +523,7 @@ public class BpaiService {
                 // Ordena a lista
                 List<Bpai> bpaiList = bpaiRepository.findByIdIn(cepsIds);
 
-                EncryptionService.decryptBpaiCep(bpaiList);
+                EnCryptionAESService.decryptBpaiCep(bpaiList);
 
                 for (Bpai cepBpai : bpaiList) {
                     String targetNumber = cepBpai.getCepPcnte();
@@ -608,27 +540,31 @@ public class BpaiService {
                             closestNumber = cepList.get(0);
                         }
 
-                        cepBpai.setCepPcnte(EncryptionService.encrypt(closestNumber));
+                        cepBpai.setCepPcnte(EnCryptionAESService.encrypt(closestNumber));
                     }
                 }
 
-                this.save(bpaiList);
+                count = this.save(bpaiList).size();
             }
 
         } else {
-            bpai.setCepPcnte(EncryptionService.encrypt(cep));
+            bpai.setCepPcnte(EnCryptionAESService.encrypt(cep));
 
             this.save(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editCepBlank(List<Long> cepsIds, User user) {
+    private int editCepBlank(List<Long> cepsIds, User user, int count) {
         if(cepsIds != null) {
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(cepsIds);
 
             AddressUser address = user.getAddressUser();
 
-            EncryptionService.decryptAddressUser(address);
+            EnCryptionAESService.decryptAddressUser(address);
 
             for (Bpai bpai: bpaiList) {
                 bpai.setIbge(address.getIbge());
@@ -639,16 +575,18 @@ public class BpaiService {
                 bpai.setBairroPcnte(address.getBairro());
             }
 
-            this.save(bpaiList);
+           return this.save(bpaiList).size();
         }
+
+        return 0;
     }
 
-    private void editDtNasc(String dtNasc, List<Long> ids, Bpai bpai) {
+    private int editDtNasc(String dtNasc, List<Long> ids, Bpai bpai, int count) {
         if(ids != null) {
             List<Bpai> bpaiList = bpaiRepository.findByIdIn(ids);
             int yearCurrent = LocalDate.now(ZoneId.of(ZoneTime.BR.getBr())).getYear();
 
-            EncryptionService.decryptBpaiIdadeAndDtnasc(bpaiList);
+            EnCryptionAESService.decryptBpaiIdadeAndDtnasc(bpaiList);
 
             bpaiList.forEach( bpaix -> {
                 int age = Integer.parseInt(bpaix.getIdade());
@@ -664,17 +602,21 @@ public class BpaiService {
                 }
             });
 
-            EncryptionService.encryptBpaiIdadeAndDtnasc(bpaiList);
+            EnCryptionAESService.encryptBpaiIdadeAndDtnasc(bpaiList);
 
-            this.save(bpaiList);
+            count = this.save(bpaiList).size();
 
         } else {
-            bpai.setDtnasc(EncryptionService.encrypt(dtNasc));
+            bpai.setDtnasc(EnCryptionAESService.encrypt(dtNasc));
             this.save(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
-    private void editPa(String pa, Bpai bpai, Bpa bpa) {
+    private int editPa(String pa, Bpai bpai, Bpa bpa, int count) {
         String newPa = pa.split("-")[0];
         String updateAll = pa.split("-")[1];
 
@@ -685,12 +627,16 @@ public class BpaiService {
                 bpaix.setPa(newPa);
             });
 
-            this.saveAndFlush(bpaiList);
+           count = this.saveAndFlush(bpaiList).size();
 
         } else {
             bpai.setPa(newPa);
             this.saveAndFlush(bpai);
+
+            count = 1;
         }
+
+        return count;
     }
 
     @Transactional
@@ -817,7 +763,7 @@ public class BpaiService {
                 int qt = Integer.parseInt(bpai.getQt());
 
                 if(qt > qtMax) {
-                    errors.add(new ErrorQtMaxDTODTO(bpai.getId(), flh, seq, "MAXIMUM QUANTITY EXCEEDED", EncryptionService.decrypt(bpai.getNmpac()), qt, qtMax, pa));
+                    errors.add(new ErrorQtMaxDTODTO(bpai.getId(), flh, seq, "MAXIMUM QUANTITY EXCEEDED", EnCryptionAESService.decrypt(bpai.getNmpac()), qt, qtMax, pa));
                 }
             }
         }
@@ -902,3 +848,238 @@ public class BpaiService {
     }
 }
 
+
+// ANTIGO CREATE BPAI COM VALIDAÇÃO
+//    public Bpai create(String line, int lineNumber, Bpa bpa, User user, List<ErrorsFile> errorsFiles) {
+//
+//        List<ErrorValidationDTO> errors = new ArrayList<>();
+//
+//        List<String> orgsValids = new ArrayList<>(List.of("BPA", "PNI", "SIE", "SIB", "MIN", "PAC", "SCL", "EXT"));
+//
+//        if (line.length() < 247) {
+//            errors.add(errorValidation("LINHA","A linha Não contém pelo menos 247 caracteres."));
+//
+//            errorsFiles.add(new ErrorsFile(String.valueOf(lineNumber), errors));
+//
+//            return null;
+//        }
+//
+//        String ident = line.substring(0, 2);
+//        String cnes = line.substring(2, 9);
+//        if(user.getBpaiValidation().isCnes()) {
+//            if(!cnes.matches("\\d+")) {
+//                errors.add(errorValidation("CNE","O código CNES deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
+//            }
+//        }
+//
+//        String cmp = line.substring(9, 15);
+//        if(user.getBpaiValidation().isCmp()) {
+//            if(!cmp.matches("\\d+")) {
+//                // TODO validar o formato AAAAMM.
+//                errors.add(errorValidation("CMP", "O campo deverá ser preenchido apenas com números formato AAAAMM."));
+//            }
+//        }
+//
+//        String cnsmed = line.substring(15, 30);
+//        if(user.getBpaiValidation().isCnsmed()) {
+//            if(!cnsmed.matches("\\d+")) {
+//                errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
+//            }
+//        }
+//
+//        String cbo = line.substring(30, 36);
+//        if(user.getBpaiValidation().isCbo()) {
+//            if(!cbo.matches("\\d+")) {
+//                errors.add(errorValidation("CBO", "Código conforme a Classificação Brasileira de Ocupações (CBO)."));
+//            }
+//        }
+//
+//        String dtaten = line.substring(36, 44);  // 6
+//        String flh = line.substring(44, 47);
+//        if(user.getBpaiValidation().isFlh()) {
+//            if(!flh.matches("\\d+")) {
+//                errors.add(errorValidation("FLH", "Número da folha do BPA. Domínio [001..999]. Adicionar zeros à esquerda de um inteiro."));
+//            }
+//        }
+//
+//        String seq = line.substring(47, 49);
+//        if(user.getBpaiValidation().isSeq()) {
+//            if(!seq.matches("\\d+")) {
+//                errors.add(errorValidation("SEQ", "Número sequencial da linha dentro da folha do BPA. Domínio [01..20]. Adicionar zeros à esquerda de um inteiro."));
+//            }
+//        }
+//
+//        String pa = line.substring(49, 59);
+//        if(user.getBpaiValidation().isPa()) {
+//            if(!pa.matches("\\d+")) {
+//                errors.add(errorValidation("PA", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
+//            }
+//        }
+//
+//        String cnspac = line.substring(59, 74);
+//        if(user.getBpaiValidation().isCnspac()) {
+//            if(!pa.matches("\\d+")) {
+//                errors.add(errorValidation("CNSPAC", "O campo deverá ser preenchido apenas com números."));
+//            }
+//        }
+//
+//        String sexo = line.substring(74, 75);
+//        if(user.getBpaiValidation().isSexo()) {
+//            List<String> sexos = new ArrayList<>(Arrays.asList("M", "F"));
+//            if(!sexos.contains(sexo)) {
+//                errors.add(errorValidation("SEXO", "Permitido apenas M - Masculino, F - Feminino."));
+//            }
+//        }
+//
+//        String ibge = line.substring(75, 81);
+//        if(user.getBpaiValidation().isIbge()) {
+//            if(!ibge.matches("\\d+")) {
+//                errors.add(errorValidation("IBGE", "O campo deverá ser preenchido apenas com números."));
+//            }
+//        }
+//
+//        String cid = line.substring(81, 85);
+//
+//        String idade = line.substring(85, 88);
+//        if(user.getBpaiValidation().isIdade()) {
+//            if (!idade.matches("\\d+") || Integer.parseInt(idade) > 130) {
+//                errors.add(errorValidation("IDADE" , "Idade (0 a 130 anos). O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda."));
+//            }
+//        }
+//
+//        String qt = line.substring(88, 94);
+//        if(user.getBpaiValidation().isCmp()) {
+//            if(!cmp.matches("\\d+")) {
+//                errors.add(errorValidation("QT", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
+//            }
+//        }
+//
+//        String caten = line.substring(94, 96);
+//        if(user.getBpaiValidation().isCaten()) {
+//            if(!caten.matches("\\d+")) {
+//                errors.add(errorValidation("CATEN", "O campo deverá ser preenchido apenas com números. Adicionar zeros à esquerda de um inteiro."));
+//            }
+//        }
+//
+//        String naut = line.substring(96, 109);
+//        if(user.getBpaiValidation().isNaut()) {
+//            if(!cmp.matches("\\d+")) {
+//                errors.add(errorValidation("NAUT", "O campo deverá ser preenchido apenas com números."));
+//            }
+//        }
+//
+//        String org = line.substring(109, 112);
+//        if(user.getBpaiValidation().isOrg()) {
+//            if(!orgsValids.contains(org)) {
+//                errors.add(errorValidation("ORG", "O campo deverá ser preenchido apenas com (\"BPA\", \"PNI\", \"SIE\", \"SIB\", \"MIN\", \"PAC\", \"SCL\" ou \"EXT\")"));
+//            }
+//        }
+//
+//        String nmpac = line.substring(112, 142);  // 19
+//        String dtnasc = line.substring(142, 150);  // 20
+//        String raca = line.substring(150, 152);  // 21
+//        String etnia = line.substring(152, 156);  // 22
+//        String nac = line.substring(156, 159);  // 23
+//        String srv = line.substring(159, 162);  // 24
+//        String clf = line.substring(162, 165);  // 25
+//        String equipe_seq = line.substring(165, 173);  // 26
+//        String equipe_area = line.substring(173, 177);  // 27
+//        String cnpj = line.substring(177, 191);  // 28
+//        String cep_pcnte = line.substring(191, 199);  // 29
+//        String lograd_pcnte = line.substring(199, 202);  // 30
+//        String end_pcnte = line.substring(202, 232);  // 31
+//        String compl_pcnte = line.substring(232, 242);  // 32
+//
+//        String num_pcnte;
+//        try {
+//            num_pcnte = line.substring(242, 247);
+//        } catch (StringIndexOutOfBoundsException e) {
+//            num_pcnte = "     ";
+//        }
+//
+//        String bairro_pcnte;
+//        try {
+//            bairro_pcnte = line.substring(247, 277);
+//        } catch (StringIndexOutOfBoundsException e) {
+//            bairro_pcnte = "                              ";
+//        }
+//
+//        String ddtel_pcnte;
+//        try {
+//            ddtel_pcnte = line.substring(277, 288);
+//        } catch (StringIndexOutOfBoundsException e) {
+//            ddtel_pcnte = "           ";
+//        }
+//
+//        String email_pcnte;
+//        try {
+//            email_pcnte = line.substring(288, 328); // 38
+//        } catch (StringIndexOutOfBoundsException e) {
+//            email_pcnte = "                                        ";
+//        }
+//
+//        String ine;
+//        try {
+//            ine = line.substring(328, 338); // 38
+//        } catch (StringIndexOutOfBoundsException e) {
+//            ine = "          ";
+//        }
+//
+//        String fim;
+//        try {
+//            fim = line.substring(338, 340); // 38
+//        } catch (StringIndexOutOfBoundsException e) {
+//            fim = "  ";
+//        }
+//
+//        if(!errors.isEmpty()) {
+//            errorsFiles.add(new ErrorsFile(String.valueOf(lineNumber), errors));
+//
+//            return null;
+//        }
+//
+//        Bpai bpai = new Bpai(
+//                bpa,
+//                String.valueOf(0),
+//                ident,
+//                cnes,
+//                cmp,
+//                cnsmed,
+//                cbo,
+//                dtaten,
+//                flh,
+//                seq,
+//                pa,
+//                cnspac,
+//                sexo,
+//                ibge,
+//                cid,
+//                idade,
+//                qt,
+//                caten,
+//                naut,
+//                org,
+//                nmpac,
+//                dtnasc,
+//                raca,
+//                etnia,
+//                nac,
+//                srv,
+//                clf,
+//                equipe_seq,
+//                equipe_area,
+//                cnpj,
+//                cep_pcnte,
+//                lograd_pcnte,
+//                end_pcnte,
+//                compl_pcnte,
+//                num_pcnte,
+//                bairro_pcnte,
+//                ddtel_pcnte,
+//                email_pcnte,
+//                ine,
+//                fim
+//        );
+//
+//        return bpai;
+//    }

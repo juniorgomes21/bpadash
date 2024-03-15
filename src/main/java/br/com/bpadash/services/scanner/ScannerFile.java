@@ -5,7 +5,10 @@ import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
 import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.fpo.ParamNewFpo;
@@ -13,17 +16,18 @@ import br.com.bpadash.params.professional.ParamNewProfessionals;
 import br.com.bpadash.params.sigtap.ParamNewCep;
 import br.com.bpadash.params.sigtap.ParamNewOccupation;
 import br.com.bpadash.params.sigtap.ParamNewProcedure;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
 import br.com.bpadash.services.bpa.TitleBpaService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.fpo.FpoService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.DadosVincService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.sigtap.*;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import org.apache.commons.lang3.time.StopWatch;
@@ -48,57 +52,44 @@ public class ScannerFile {
 
     @Autowired
     private BpaService bpaService;
-
     @Autowired
     private TitleBpaService titleBpaService;
-
     @Autowired
     private BpacService bpacService;
-
     @Autowired
     private BpaiService bpaiService;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private StorageService storageService;
-
     @Autowired
     private FpoService fpoService;
-
     @Autowired
     private LinkFpoService linkFpoService;
-
     @Autowired
     private ProfessionalService professionalService;
-
     @Autowired
     private DadosVincService dadosVincService;
-
     @Autowired
     private LinkProfessionalsService linkProfessionalsService;
-
     @Autowired
     private LinkOccupationService linkOccupationService;
-
     @Autowired
     private OccupationService occupationService;
-
     @Autowired
     private LinkProcedureService linkProcedureService;
-
     @Autowired
     private ProcedureService procedureService;
-
     @Autowired
     private CepService cepService;
-
     @Autowired
     private LinkCepService linkCepService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
+
 
     @Transactional
-    public String createBpa(MultipartFile file, User user, ParamNewBpa paramNewBpa, List<ErrorsFile> errorsFileList, StopWatch startTime) throws IllegalArgumentException {
+    public String createBpa(MultipartFile file, User user, ParamNewBpa paramNewBpa, List<ErrorsFile> errorsFileList, StopWatch startTime, Employee employee) throws IllegalArgumentException {
         if(bpaService.isValidFile(file)) {
             TitleBpa titleBpa = new TitleBpa();
             List<Bpac> bpacList = new ArrayList<>();
@@ -161,7 +152,7 @@ public class ScannerFile {
                 bpaService.calculateAll(user, bpa, bpaiList, bpacList, true);
 
                 System.out.println("criptografando: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
-                EncryptionService.encryptBpaiInitial(bpaiList);
+                EnCryptionAESService.encryptBpaiInitial(bpaiList);
 
                 System.out.println("Criptografado: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
@@ -189,6 +180,8 @@ public class ScannerFile {
 
                 System.out.println("Save all: " + startTime.getTime() + " milissegundos: " + startTime.getTime()/1000);
 
+                stockHistoryService.register(ActionEmployee.ADD_BPA.getAction(), ActionType.ADD.getAction(), bpa.getDate(), 0, user, employee);
+
                 return "CREATE";
 
             } catch (IllegalArgumentException e) {
@@ -201,7 +194,7 @@ public class ScannerFile {
         }
     }
 
-    public String createBpac(User user, MultipartFile file, Bpa bpa, Bpac bpacS, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
+    public String createBpac(User user, MultipartFile file, Bpa bpa, Bpac bpacS, List<ErrorsFile> errorsFiles, Employee employee) throws IllegalArgumentException {
         List<Bpac> bpacList = new ArrayList<>();
 
         try {
@@ -269,6 +262,8 @@ public class ScannerFile {
 
             storageService.updateBytesBpaAndUser(user, false, bpa, true, totalBytes);
 
+            stockHistoryService.register(ActionEmployee.ADD_BPAC.getAction(), ActionType.ADD_BPAC.getAction(), bpa.getDate(), lineNumber - 1, user, employee);
+
             return "CREATE";
 
         } catch (IllegalArgumentException e) {
@@ -278,7 +273,7 @@ public class ScannerFile {
         }
     }
 
-    public String createBpai(MultipartFile file , Bpa bpa, Bpai bpaiS, User user, List<ErrorsFile> errorsFiles) throws IllegalArgumentException {
+    public String createBpai(MultipartFile file , Bpa bpa, Bpai bpaiS, User user, List<ErrorsFile> errorsFiles, Employee employee) throws IllegalArgumentException {
         List<Bpai> bpaiList = new ArrayList<>();
 
         try {
@@ -302,6 +297,7 @@ public class ScannerFile {
                 if (line.startsWith("03")) {
 
                      Bpai bpai = bpaiService.create(line, lineNumber, bpa, user, errorsFiles);
+
                      if(bpai != null) {
                          // Verifica se ambos seq e flh atingiram seus valores máximos
                          if (flhInt == 999 && seqInt == 99) {
@@ -335,7 +331,7 @@ public class ScannerFile {
                 return "ERROR FILE";
             }
 
-            EncryptionService.encryptBpaiInitial(bpaiList);
+            EnCryptionAESService.encryptBpaiInitial(bpaiList);
 
             bpaService.calculateLineInTitle(bpa, bpaiList.size(), 0, true);
 
@@ -349,6 +345,8 @@ public class ScannerFile {
             }
 
             storageService.updateBytesBpaAndUser(user, false, bpa, true, totalBytes);
+
+            stockHistoryService.register(ActionEmployee.ADD_BPAI.getAction(), ActionType.ADD_BPAI.getAction(), bpa.getDate(), lineNumber - 1, user, employee);
 
             return "CREATE";
 
@@ -482,7 +480,7 @@ public class ScannerFile {
         }
     }
 
-    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, List<ErrorsFile> errorsFileList, User user) throws IllegalArgumentException {
+    public String createFpo(MultipartFile file, ParamNewFpo paramNewFpo, List<ErrorsFile> errorsFileList, User user, Employee employee) throws IllegalArgumentException {
         try {
 
             if(user.getStorageFree() < file.getSize()) {
@@ -524,6 +522,8 @@ public class ScannerFile {
 
             userService.updateStorageAndSave(user, file.getSize(), false);
 
+            stockHistoryService.register(ActionEmployee.ADD_FPO.getAction(), ActionType.ADD.getAction(), linkFpo.getDate(), 0, user, employee);
+
             return "CREATE";
 
         } catch (IOException e) {
@@ -532,7 +532,7 @@ public class ScannerFile {
     }
 
     @Transactional
-    public String createProfessionals(MultipartFile file, ParamNewProfessionals paramNewProfessionals, User user) {
+    public String createProfessionals(MultipartFile file, ParamNewProfessionals paramNewProfessionals, User user, Employee employee) {
         try {
             LinkProfessionals linkProfessionals = new LinkProfessionals(paramNewProfessionals, 0L, user);
 
@@ -691,7 +691,7 @@ public class ScannerFile {
                 professionalCompleteList.add(professionalComplete);
             }
 
-            EncryptionService.encrypt(professionalCompleteList);
+            EnCryptionAESService.encrypt(professionalCompleteList);
 
             long totalBytes = storageService.quantityBytes(professionalCompleteList);
 
@@ -703,6 +703,8 @@ public class ScannerFile {
             linkProfessionals.setFileSizeInBytes(totalBytes);
 
             linkProfessionalsService.save(linkProfessionals);
+
+            stockHistoryService.register(ActionEmployee.ADD_PROF.getAction() , ActionType.ADD.getAction() , linkProfessionals.getDate(), 0, user , employee);
 
             userService.updateStorageAndSave(user, totalBytes, false);
 

@@ -1,19 +1,14 @@
 package br.com.bpadash.api.user.metrics;
 
 import br.com.bpadash.model.bpa.Bpa;
-import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
-import br.com.bpadash.model.sigtap.Fpo;
-import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.model.sigtap.ProfessionalComplete;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.bpa.BpaiService;
-import br.com.bpadash.services.fpo.FpoService;
-import br.com.bpadash.services.fpo.LinkFpoService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.user.UserService;
@@ -25,8 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +59,8 @@ public class CnsmedMetricsApi {
 
                 List<Bpai> bpaiList = bpaiService.get(bpa);
 
-                EncryptionService.decryptCnsmed(bpaiList);
-                EncryptionService.decryptProfessionalCnsAndName(professionalList);
+                EnCryptionAESService.decryptCnsmed(bpaiList);
+                EnCryptionAESService.decryptProfessionalCnsAndName(professionalList);
 
                 bpaiList.forEach(bpai -> {
                     String cnsmed = bpai.getCnsmed();

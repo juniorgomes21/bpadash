@@ -18,7 +18,7 @@ public class RuleTreatmentPaCboDTO {
     public RuleTreatmentPaCboDTO(RuleTreatmentPaCbo ruleTreatmentPaCbo) {
         this.id = ruleTreatmentPaCbo.getId();
         this.paCurrent = ruleTreatmentPaCbo.getPa();
-        this.cboCurrent = ruleTreatmentPaCbo.getPa();
+        this.cboCurrent = ruleTreatmentPaCbo.getCboCurrent();
         this.cboNew = ruleTreatmentPaCbo.getCboNew();
         this.executeBpac = ruleTreatmentPaCbo.isExecuteBpac();
         this.executeBpai = ruleTreatmentPaCbo.isExecuteBpai();

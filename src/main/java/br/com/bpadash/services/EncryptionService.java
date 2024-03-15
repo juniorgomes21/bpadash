@@ -39,7 +39,7 @@ public class EncryptionService {
             String cnspac = bpai.getCnspac();
 
             bpai.setCnspac(encryptor.encrypt(cnspac));
-            bpai.setCnspacHas(cnspac.isBlank() ? "" : hashString(cnspac));
+            bpai.setCnspacHas(cnspac.isBlank() ? "" : hashStringOld(cnspac));
             bpai.setCnsmed(bpai.getCnsmed().isBlank() ? bpai.getCnsmed() : encryptor.encrypt(bpai.getCnsmed()));
             bpai.setCid(bpai.getCid().isBlank() ? bpai.getCid() : encryptor.encrypt(bpai.getCid()));
             bpai.setNmpac(bpai.getNmpac().isBlank() ? bpai.getNmpac() : encryptor.encrypt(bpai.getNmpac()));
@@ -268,7 +268,6 @@ public class EncryptionService {
         });
     }
 
-
     public static void decryptCnsmed(List<Bpai> bpaiList) {
         bpaiList.forEach(bpai -> {
             bpai.setCnsmed(encryptor.decrypt(bpai.getCnsmed()));
@@ -282,10 +281,10 @@ public class EncryptionService {
             String name = professional.getName();
 
             professional.setProfId(encryptor.encrypt(profId));
-            professional.setKeyProfId(hashString(profId));
+            professional.setKeyProfId(hashStringOld(profId));
             professional.setCpf(encryptor.encrypt(professional.getCpf()));
             professional.setName(encryptor.encrypt(name));
-            professional.setKeyName(hashString(name));
+            professional.setKeyName(hashStringOld(name));
             professional.setNameMother(encryptor.encrypt(professional.getNameMother()));
             professional.setBirthDate(encryptor.encrypt(professional.getBirthDate()));
             professional.setSexo(encryptor.encrypt(professional.getSexo()));
@@ -297,7 +296,7 @@ public class EncryptionService {
             professional.setNumAgenc(encryptor.encrypt(professional.getNumAgenc()));
             professional.setContaCc(encryptor.encrypt(professional.getContaCc()));
             professional.setCodCns(encryptor.encrypt(codCns));
-            professional.setKeyCodCns(hashString(codCns));
+            professional.setKeyCodCns(hashStringOld(codCns));
             professional.setUser(encryptor.encrypt(professional.getUser()));
             professional.setCdRaca(encryptor.encrypt(professional.getCdRaca()));
             professional.setNameFather(encryptor.encrypt(professional.getNameFather()));
@@ -333,11 +332,11 @@ public class EncryptionService {
     public static void encryptUser(User user) {
         user.setName(encryptor.encrypt(user.getName()));
         user.setCnpj(encryptor.encrypt(user.getCnpj()));
-        user.setKeyCnpj(hashString(user.getCnpj()));
+        user.setKeyCnpj(hashStringOld(user.getCnpj()));
         user.setPackageNameUser(encryptor.encrypt(user.getPackageNameUser()));
         user.setCell(encryptor.encrypt(user.getCell()));
         user.setEmail(encryptor.encrypt(user.getEmail()));
-        user.setKeyEmail(hashString(user.getEmail()));
+        user.setKeyEmail(hashStringOld(user.getEmail()));
 
     }
 
@@ -345,9 +344,7 @@ public class EncryptionService {
         return encryptedData.isBlank() ? encryptedData : encryptor.decrypt(encryptedData);
     }
 
-
-
-    public static String hashString(String s) {
+    public static String hashStringOld(String s) {
         try {
             MessageDigest md = MessageDigest.getInstance(dotenv.get("ENCODE_TYPE"));
             byte[] emailHashBytes = md.digest(s.getBytes());
@@ -367,5 +364,21 @@ public class EncryptionService {
         return id + Long.parseLong(ENCODE_KEY_USER);
     }
 
+    public static String encryptId(Long id) {
+        while (true) {
+            String data = encrypt(String.valueOf(id));
+            if(!data.contains("/")) {
+                return data;
+            }
+        }
+    }
 
+    public static String encryptKey(String id) {
+        while (true) {
+            String data = encrypt(String.valueOf(id));
+            if(!data.contains("/")) {
+                return data;
+            }
+        }
+    }
 }

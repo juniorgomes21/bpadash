@@ -2,17 +2,20 @@ package br.com.bpadash.api.user.sigtap;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
-import br.com.bpadash.dto.professional.ProfessionalDTO;
 import br.com.bpadash.dto.sigtap.FpoDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
 import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.fpo.ParamNewFpo;
 import br.com.bpadash.params.fpo.ParamNewLineFpo;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.fpo.FpoService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,33 +42,44 @@ public class FpoApi {
     private FpoService fpoService;
     @Autowired
     private LinkFpoService linkFpoService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
-    @GetMapping("/get/{pa}")
-    public ResponseEntity<Object> getProfessionals(@PathVariable String pa, Authentication authentication) {
+
+    @GetMapping("/get/{pa}/{employeeKey}")
+    public ResponseEntity<Object> getProfessionals(@PathVariable String pa, @PathVariable String employeeKey, Authentication authentication) {
         User user = userService.get(authentication);
 
-        DatesSigtap datesSigtap = user.getDatesSigtap();
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        Optional<LinkFpo> linkFpoOptional;
-        if (datesSigtap.isDateProfessionalsAuto()) {
-            linkFpoOptional = linkFpoService.get(user);
-        } else {
-            linkFpoOptional = linkFpoService.get(datesSigtap.getDateProfessionals() , user);
-        }
+        if(employeeOptional.isPresent()) {
+            DatesSigtap datesSigtap = user.getDatesSigtap();
 
-        if (linkFpoOptional.isPresent()) {
-            LinkFpo linkFpo = linkFpoOptional.get();
-
-            Fpo fpo = fpoService.get(linkFpo , pa);
-
-            if (fpo == null) {
-                return ResponseEntity.badRequest().body("NOT FOUND FPO");
+            Optional<LinkFpo> linkFpoOptional;
+            if (datesSigtap.isDateProfessionalsAuto()) {
+                linkFpoOptional = linkFpoService.get(user);
+            } else {
+                linkFpoOptional = linkFpoService.get(datesSigtap.getDateProfessionals() , user);
             }
 
-            return ResponseEntity.ok(new FpoDTO(fpo));
+            if (linkFpoOptional.isPresent()) {
+                LinkFpo linkFpo = linkFpoOptional.get();
+
+                Fpo fpo = fpoService.get(linkFpo , pa);
+
+                if (fpo == null) {
+                    return ResponseEntity.badRequest().body("NOT FOUND FPO");
+                }
+
+                return ResponseEntity.ok(new FpoDTO(fpo));
+            }
+
+            return ResponseEntity.badRequest().body("NOT EXIST DATE FPO");
         }
 
-        return ResponseEntity.badRequest().body("NOT EXIST DATE FPO");
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @GetMapping("/timeline")
@@ -77,38 +91,35 @@ public class FpoApi {
         return ResponseEntity.ok(userService.timeLineFpo(linkFpos));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<List<ErrorsFile>> createFpo(@RequestPart("file") MultipartFile file, @RequestParam("paramNewFpo") String paramNewBpaJson, Authentication authentication) throws JsonProcessingException {
+    @PostMapping("/create/{employeeKey}")
+    public ResponseEntity<Object> createFpo(@PathVariable String employeeKey, @RequestPart("file") MultipartFile file, @RequestParam("paramNewFpo") String paramNewBpaJson, Authentication authentication) throws JsonProcessingException {
         User user = userService.get(authentication);
-        List<ErrorsFile> errorsFiles = new ArrayList<>();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ParamNewFpo paramNewFpo = objectMapper.readValue(paramNewBpaJson, ParamNewFpo.class);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        String response = scannerFile.createFpo(file, paramNewFpo, errorsFiles, user);
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isAddFpo()) {
 
-        switch (response) {
-            case "FILE INVALID" -> {
-                errorsFiles.add(new ErrorsFile("FILE INVALID"));
+            List<ErrorsFile> errorsFiles = new ArrayList<>();
 
-                return ResponseEntity.badRequest().body(errorsFiles);
-            }
-            case "ERROR FILE" -> {
-                return ResponseEntity.badRequest().body(errorsFiles);
-            }
-            case "NOT STORAGE" -> {
-                errorsFiles.add(new ErrorsFile("NOT STORAGE"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            ParamNewFpo paramNewFpo = objectMapper.readValue(paramNewBpaJson, ParamNewFpo.class);
 
-                return ResponseEntity.badRequest().body(errorsFiles);
-            }
-            case "EXIST DATE" -> {
-                errorsFiles.add(new ErrorsFile("EXIST DATE"));
+            String response = scannerFile.createFpo(file, paramNewFpo, errorsFiles, user, employeeOptional.get());
 
-                return ResponseEntity.badRequest().body(errorsFiles);
+            switch (response) {
+                case "CREATE" -> {
+                    return ResponseEntity.ok().body(response);
+                }
+                case "ERROR FILE" -> {
+                    return ResponseEntity.badRequest().body(errorsFiles);
+                }
+                default -> {
+                    return ResponseEntity.badRequest().body(response);
+                }
             }
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @PostMapping("/create/line")
@@ -127,21 +138,27 @@ public class FpoApi {
     }
 
     @Transactional
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteFpo(@RequestBody List<Long> ids, Authentication authentication) {
+    @PostMapping("/delete/{employeeKey}")
+    public ResponseEntity<Object> deleteFpo(@PathVariable String employeeKey, @RequestBody List<Long> ids, Authentication authentication) {
+        User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        User user = userService.userLogged(authentication);
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteFpo()) {
+            ids.forEach( id -> {
+                LinkFpo link = linkFpoService.get(id);
 
-        ids.forEach( id -> {
-            LinkFpo link = linkFpoService.get(id);
+                fpoService.delete(link);
 
-            fpoService.delete(link);
+                userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
 
-            userService.updateStorageAndSave(user, link.getFileSizeInBytes(), true);
+                linkFpoService.delete(link);
 
-            linkFpoService.delete(link);
-        });
+                stockHistoryService.register(ActionEmployee.DELETE_FPO.getAction(), ActionType.DELETE.getAction(), link.getDate(), 0, user, employeeOptional.get());
+            });
 
-        return ResponseEntity.ok().build();
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 }

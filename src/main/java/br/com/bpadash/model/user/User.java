@@ -5,13 +5,14 @@ import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.enumModel.ZoneTime;
 import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.treatment.TreatmentFile;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -19,7 +20,8 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String cnpj;
@@ -40,22 +42,22 @@ public class User implements UserDetails {
     private boolean valid = true;
     private boolean changePass = false;
     private boolean termsAndUse = true;
-    private String dateCreateAccount = EncryptionService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
-    private String lastLogin = EncryptionService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
+    private String dateCreateAccount = EnCryptionAESService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
+    private String lastLogin = EnCryptionAESService.encrypt(String.valueOf(LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()))));
+    @PositiveOrZero
+    private int countMaxEmployee = 0;
+    @OneToOne(cascade = CascadeType.ALL)
+    private SessionUser sessionUser;
     @OneToMany(fetch = FetchType.EAGER)
     private List<Bpa> bpas = new ArrayList<>();
-    @OneToOne(cascade = CascadeType.ALL)
-    private TitleValidation titleValidation = new TitleValidation();
-    @OneToOne(cascade = CascadeType.ALL)
-    private BpacValidation bpacValidation = new BpacValidation();
-    @OneToOne(cascade = CascadeType.ALL)
-    private BpaiValidation bpaiValidation = new BpaiValidation();
     @OneToOne(cascade = CascadeType.ALL)
     private TreatmentFile treatmentFile;
     @OneToOne(cascade = CascadeType.ALL)
     private AddressUser addressUser;
     @OneToOne(cascade = CascadeType.ALL)
     private DatesSigtap datesSigtap = new DatesSigtap();
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Employee> employeeRegistered = new ArrayList<>();
 
 
     public User() {}
@@ -137,6 +139,14 @@ public class User implements UserDetails {
         this.keyEmail = keyEmail;
     }
 
+    public SessionUser getSessionUser() {
+        return sessionUser;
+    }
+
+    public void setSessionUser(SessionUser sessionUser) {
+        this.sessionUser = sessionUser;
+    }
+
     public boolean isTermsAndUse() {
         return termsAndUse;
     }
@@ -213,30 +223,6 @@ public class User implements UserDetails {
         this.bpas = bpas;
     }
 
-    public TitleValidation getTitleValidation() {
-        return titleValidation;
-    }
-
-    public void setTitleValidation(TitleValidation titleValidation) {
-        this.titleValidation = titleValidation;
-    }
-
-    public BpacValidation getBpacValidation() {
-        return bpacValidation;
-    }
-
-    public void setBpacValidation(BpacValidation bpacValidation) {
-        this.bpacValidation = bpacValidation;
-    }
-
-    public BpaiValidation getBpaiValidation() {
-        return bpaiValidation;
-    }
-
-    public void setBpaiValidation(BpaiValidation bpaiValidation) {
-        this.bpaiValidation = bpaiValidation;
-    }
-
     public TreatmentFile getTreatmentFile() {
         return treatmentFile;
     }
@@ -259,6 +245,22 @@ public class User implements UserDetails {
 
     public void setDatesSigtap(DatesSigtap datesSigtap) {
         this.datesSigtap = datesSigtap;
+    }
+
+    public List<Employee> getEmployeeRegistered() {
+        return employeeRegistered;
+    }
+
+    public void setEmployeeRegistered(List<Employee> employeeRegistered) {
+        this.employeeRegistered = employeeRegistered;
+    }
+
+    public int getCountMaxEmployee() {
+        return countMaxEmployee;
+    }
+
+    public void setCountMaxEmployee(int countMaxEmployee) {
+        this.countMaxEmployee = countMaxEmployee;
     }
 
     @Override

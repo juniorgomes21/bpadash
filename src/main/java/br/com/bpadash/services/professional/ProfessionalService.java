@@ -8,7 +8,7 @@ import br.com.bpadash.model.sigtap.ProfessionalComplete;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.professional.ParamUpdateProfessional;
 import br.com.bpadash.repository.professional.ProfessionalCompleteRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class ProfessionalService {
 
         List<String> cnsmedList = new ArrayList<>();
 
-        EncryptionService.decryptCnsmed(bpaiListDB);
+        EnCryptionAESService.decryptCnsmed(bpaiListDB);
 
         for(Bpai bpai: bpaiListDB) {
 
@@ -70,7 +70,7 @@ public class ProfessionalService {
     public ProfessionalComplete get(LinkProfessionals linkProfessionals , String keyP) {
         boolean isNumber = Pattern.matches("\\d+", keyP);
 
-        String key = EncryptionService.hashString(keyP);
+        String key = EnCryptionAESService.hashString(keyP);
         Optional<ProfessionalComplete> professionalCompleteOptional;
 
         if(isNumber) {
@@ -83,14 +83,14 @@ public class ProfessionalService {
     }
 
     public void updateAndSave(ProfessionalComplete professionalComplete, ParamUpdateProfessional paramUpdateProfessional) {
-        professionalComplete.setLogradouro(EncryptionService.encrypt(paramUpdateProfessional.getLogradouro()));
-        professionalComplete.setNumber(EncryptionService.encrypt(paramUpdateProfessional.getNumber()));
-        professionalComplete.setComplement(EncryptionService.encrypt(paramUpdateProfessional.getComplement()));
-        professionalComplete.setBairrodist(EncryptionService.encrypt(paramUpdateProfessional.getBairrodist()));
-        professionalComplete.setCodCep(EncryptionService.encrypt(paramUpdateProfessional.getCodCep()));
-        professionalComplete.setCodCns(EncryptionService.encrypt(paramUpdateProfessional.getCodCns()));
-        professionalComplete.setTelephone(EncryptionService.encrypt(paramUpdateProfessional.getTelephone()));
-        professionalComplete.getDadosVinc().setCodCbo(EncryptionService.encrypt(paramUpdateProfessional.getCodCbo()));
+        professionalComplete.setLogradouro(EnCryptionAESService.encrypt(paramUpdateProfessional.getLogradouro()));
+        professionalComplete.setNumber(EnCryptionAESService.encrypt(paramUpdateProfessional.getNumber()));
+        professionalComplete.setComplement(EnCryptionAESService.encrypt(paramUpdateProfessional.getComplement()));
+        professionalComplete.setBairrodist(EnCryptionAESService.encrypt(paramUpdateProfessional.getBairrodist()));
+        professionalComplete.setCodCep(EnCryptionAESService.encrypt(paramUpdateProfessional.getCodCep()));
+        professionalComplete.setCodCns(EnCryptionAESService.encrypt(paramUpdateProfessional.getCodCns()));
+        professionalComplete.setTelephone(EnCryptionAESService.encrypt(paramUpdateProfessional.getTelephone()));
+        professionalComplete.getDadosVinc().setCodCbo(EnCryptionAESService.encrypt(paramUpdateProfessional.getCodCbo()));
 
         this.save(professionalComplete);
     }

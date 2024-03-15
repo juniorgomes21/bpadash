@@ -3,6 +3,7 @@ package br.com.bpadash.api.adm.login;
 
 import br.com.bpadash.dto.TokenDTO;
 import br.com.bpadash.security.TokenApp;
+import br.com.bpadash.services.user.ParamLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +28,7 @@ public class LoginAdm {
     private TokenApp tokenApp;
 
     @PostMapping("/auth")
-    public ResponseEntity<TokenDTO> autenticarAdm(@RequestBody @Valid LoginForm form) {
+    public ResponseEntity<TokenDTO> autenticarAdm(@RequestBody @Valid ParamLogin form) {
         UsernamePasswordAuthenticationToken dadosLogin = form.converter();
 
         try {

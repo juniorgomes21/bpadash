@@ -1,8 +1,13 @@
 package br.com.bpadash.api;
 
-import br.com.bpadash.api.adm.login.LoginForm;
+import br.com.bpadash.dto.user.EmployeeDTO;
+import br.com.bpadash.errorValidation.ErrorResponseDTO;
+import br.com.bpadash.model.user.Employee;
+import br.com.bpadash.repository.user.EmployeeRepository;
+import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.ParamLogin;
 import br.com.bpadash.errorValidation.ErrorsFile;
-import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
@@ -11,12 +16,13 @@ import br.com.bpadash.model.user.CodLograd;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.AdministratorRepository;
 import br.com.bpadash.repository.CodLogradRepository;
-import br.com.bpadash.repository.UserRepository;
+import br.com.bpadash.repository.user.SessionUserRepository;
+import br.com.bpadash.repository.user.UserRepository;
 import br.com.bpadash.repository.bpa.*;
 import br.com.bpadash.repository.sigtap.AddressRepository;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.utilities.Utilities;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +35,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import java.io.*;
-import java.security.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/aux")
@@ -52,8 +57,6 @@ public class auxApi {
     @Autowired
     private AddressRepository addressRepository;
     @Autowired
-    private TitleValidationRepository titleValidationRepository;
-    @Autowired
     private CodLogradRepository codLogradRepository;
     @Autowired
     private AdministratorRepository administratorRepository;
@@ -65,18 +68,53 @@ public class auxApi {
     private ModelMapper modelMapper;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private SessionUserRepository sessionUserRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeService employeeService;
 
-    @PostMapping("/auth/aux")
-    public ResponseEntity<Object> auxNext(@RequestBody LoginForm loginForm) {
-        String email = loginForm.getEmail();
-        String password = loginForm.getPassword();
+
+    @PostMapping( value = "/create/bpai", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file)  throws IllegalArgumentException {
+
+        List<Bpai> bpaiList = new ArrayList<>();
+
+        try {
+            InputStream inputStream = file.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                 if (line.startsWith("03")) {
+
+                    Bpai bpai = this.create(line);
+
+                    bpaiList.add(bpai);
+                }
+            }
+
+            EnCryptionAESService.encryptBpaiInitial(bpaiList);
+//            EnCryptionAESService.encryptBpaiInitial(bpaiList);
+
+            return ResponseEntity.ok(bpaiList.size());
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new NullPointerException();
+        }
+    }
+
+    @PostMapping("/auth/auth")
+    public ResponseEntity<Object> auxNext(@RequestBody ParamLogin paramLogin) {
+        String email = paramLogin.getEmail();
+        String password = paramLogin.getPassword();
 
         if(!email.equals("alam.155@gmail.com") || !password.equals("12345678")) {
             return ResponseEntity.badRequest().build();
         }
-
-        System.out.println(email);
-        System.out.println(password);
 
         Map<String, String> map = new HashMap<>();
 
@@ -105,16 +143,35 @@ public class auxApi {
         return ResponseEntity.ok().build();
     }
 
+    public static void main(String[] args) {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] key = new byte[32]; // 256 bits
+        secureRandom.nextBytes(key);
 
-    @PostMapping("/ping")
-    public ResponseEntity<Object> ping() {
+        // Converta a chave para uma string base64
+        String base64Key = Base64.getEncoder().encodeToString(key);
+
+        // Decodificar a chave base64 para obter os bytes originais
+        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+
+        System.out.println("Chave gerada: " + base64Key);
+        System.out.println("Chave decodificada: " + new String(decodedKey));
+    }
+
+    @PostMapping("/ping/{employeeKey}")
+    public ResponseEntity<Object> ping(@PathVariable String employeeKey) {
         User user = userRepository.getById(1L);
-        Bpa bpa = bpaRepository.getById(50L);
 
-        bpaService.calculateInvoicing(bpa, null, null, null, user, true);
+        List<Employee> employeeList = employeeRepository.findAll();
 
 
-        return ResponseEntity.ok().build();
+        List<EmployeeDTO> employeeDTOList = new ArrayList<>();
+
+//        employeeList.forEach( employee -> {
+//            employeeDTOList.add(new EmployeeDTO(employee));
+//        });
+
+        return ResponseEntity.ok(employeeDTOList);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -216,7 +273,7 @@ public class auxApi {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
-            bpaiList.get(index).setIdade(EncryptionService.encrypt(pa.get(indexList)));
+            bpaiList.get(index).setIdade(EnCryptionAESService.encrypt(pa.get(indexList)));
             count ++;
         }
 
@@ -238,7 +295,7 @@ public class auxApi {
 
         bpaiList.forEach( bpai -> {
             if(bpai.getDtnasc().length() == 8) {
-                bpai.setDtnasc(EncryptionService.encrypt(bpai.getDtnasc()));
+                bpai.setDtnasc(EnCryptionAESService.encrypt(bpai.getDtnasc()));
             }
         });
 
@@ -246,7 +303,7 @@ public class auxApi {
 //            int index = random.nextInt(bpaiList.size() - 1);
 //            int indexList = random.nextInt(0, 3);
 //
-//            bpaiList.get(index).setDtnasc(EncryptionService.encrypt(pa.get(indexList)));
+//            bpaiList.get(index).setDtnasc(EnCryptionAESService.encrypt(pa.get(indexList)));
 //            count ++;
 //        }
 
@@ -269,7 +326,7 @@ public class auxApi {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
-            bpaiList.get(index).setCepPcnte(EncryptionService.encrypt(pa.get(indexList)));
+            bpaiList.get(index).setCepPcnte(EnCryptionAESService.encrypt(pa.get(indexList)));
             count ++;
         }
 
@@ -338,7 +395,7 @@ public class auxApi {
             int index = random.nextInt(bpaiList.size() - 1);
             int indexList = random.nextInt(0, 3);
 
-            bpaiList.get(index).setRaca(EncryptionService.encrypt(pa.get(indexList)));
+            bpaiList.get(index).setRaca(EnCryptionAESService.encrypt(pa.get(indexList)));
             count ++;
         }
 
@@ -379,7 +436,7 @@ public class auxApi {
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        EncryptionService.decryptSex(bpaiList);
+        EnCryptionAESService.decryptSex(bpaiList);
 
         for (int i = 0; i <= 1500; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
@@ -390,7 +447,7 @@ public class auxApi {
             count ++;
         }
 
-        EncryptionService.encryptSex(bpaiList);
+        EnCryptionAESService.encryptSex(bpaiList);
 
         bpaiRepository.saveAll(bpaiList);
 
@@ -442,7 +499,7 @@ public class auxApi {
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
         for (Bpai bpai: bpaiList) {
-            bpai.setIdade(EncryptionService.encrypt(bpai.getIdade()));
+            bpai.setIdade(EnCryptionAESService.encrypt(bpai.getIdade()));
         }
 
         bpaiRepository.saveAll(bpaiList);
@@ -461,7 +518,7 @@ public class auxApi {
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
         for (Bpai bpai: bpaiList) {
-            bpai.setRaca(EncryptionService.encrypt(bpai.getRaca()));
+            bpai.setRaca(EnCryptionAESService.encrypt(bpai.getRaca()));
         }
 
         bpaiRepository.saveAll(bpaiList);
@@ -480,7 +537,7 @@ public class auxApi {
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
         for (Bpai bpai: bpaiList) {
-            bpai.setDtnasc(EncryptionService.decrypt(bpai.getDtnasc()));
+            bpai.setDtnasc(EnCryptionAESService.decrypt(bpai.getDtnasc()));
         }
 
         bpaiRepository.saveAll(bpaiList);
@@ -488,4 +545,128 @@ public class auxApi {
         return ResponseEntity.ok().build();
     }
 
+
+    private Bpai create(String line) {
+
+        String ident = line.substring(0, 2);
+        String cnes = line.substring(2, 9);
+        String cmp = line.substring(9, 15);
+        String cnsmed = line.substring(15, 30);
+        String cbo = line.substring(30, 36);
+        String dtaten = line.substring(36, 44);  // 6
+        String flh = line.substring(44, 47);
+        String seq = line.substring(47, 49);
+        String pa = line.substring(49, 59);
+        String cnspac = line.substring(59, 74);
+        String sexo = line.substring(74, 75);
+        String ibge = line.substring(75, 81);
+        String cid = line.substring(81, 85);
+        String idade = line.substring(85, 88);
+        String qt = line.substring(88, 94);
+        String caten = line.substring(94, 96);
+        String naut = line.substring(96, 109);
+        String org = line.substring(109, 112);
+        String nmpac = line.substring(112, 142);  // 19
+        String dtnasc = line.substring(142, 150);  // 20
+        String raca = line.substring(150, 152);  // 21
+        String etnia = line.substring(152, 156);  // 22
+        String nac = line.substring(156, 159);  // 23
+        String srv = line.substring(159, 162);  // 24
+        String clf = line.substring(162, 165);  // 25
+        String equipe_seq = line.substring(165, 173);  // 26
+        String equipe_area = line.substring(173, 177);  // 27
+        String cnpj = line.substring(177, 191);  // 28
+        String cep_pcnte = line.substring(191, 199);  // 29
+        String lograd_pcnte = line.substring(199, 202);  // 30
+        String end_pcnte = line.substring(202, 232);  // 31
+        String compl_pcnte = line.substring(232, 242);  // 32
+
+        String num_pcnte;
+        try {
+            num_pcnte = line.substring(242, 247);
+        } catch (StringIndexOutOfBoundsException e) {
+            num_pcnte = "     ";
+        }
+
+        String bairro_pcnte;
+        try {
+            bairro_pcnte = line.substring(247, 277);
+        } catch (StringIndexOutOfBoundsException e) {
+            bairro_pcnte = "                              ";
+        }
+
+        String ddtel_pcnte;
+        try {
+            ddtel_pcnte = line.substring(277, 288);
+        } catch (StringIndexOutOfBoundsException e) {
+            ddtel_pcnte = "           ";
+        }
+
+        String email_pcnte;
+        try {
+            email_pcnte = line.substring(288, 328); // 38
+        } catch (StringIndexOutOfBoundsException e) {
+            email_pcnte = "                                        ";
+        }
+
+        String ine;
+        try {
+            ine = line.substring(328, 338); // 38
+        } catch (StringIndexOutOfBoundsException e) {
+            ine = "          ";
+        }
+
+        String fim;
+        try {
+            fim = line.substring(338, 340); // 38
+        } catch (StringIndexOutOfBoundsException e) {
+            fim = "  ";
+        }
+
+
+        Bpai bpai = new Bpai(
+                null,
+                String.valueOf(0),
+                ident,
+                cnes,
+                cmp,
+                cnsmed,
+                cbo,
+                dtaten,
+                flh,
+                seq,
+                pa,
+                cnspac,
+                sexo,
+                ibge,
+                cid,
+                idade,
+                qt,
+                caten,
+                naut,
+                org,
+                nmpac,
+                dtnasc,
+                raca,
+                etnia,
+                nac,
+                srv,
+                clf,
+                equipe_seq,
+                equipe_area,
+                cnpj,
+                cep_pcnte,
+                lograd_pcnte,
+                end_pcnte,
+                compl_pcnte,
+                num_pcnte,
+                bairro_pcnte,
+                ddtel_pcnte,
+                email_pcnte,
+                ine,
+                fim
+        );
+
+        return bpai;
+    }
 }

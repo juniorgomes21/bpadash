@@ -30,6 +30,7 @@ public class TitleBpaService {
 
             return null;
         }
+
         String iden = line.substring(0, 2);
 
         String hdr = line.substring(2, 7);
@@ -43,39 +44,12 @@ public class TitleBpaService {
         }
 
         String lin = line.substring(13, 19);
-        if(user.getTitleValidation().isLin()) {
-            if(!lin.matches("\\d+")) {
-                errors.add(errorValidation("LIN", "O número de linhas do BPA gravadas só pode conter números"));
-            }
-        }
-
         String flh = line.substring(19, 25);
-        if(user.getTitleValidation().isFlh()) {
-            if(!flh.matches("\\d+")) {
-                errors.add(errorValidation("FLH", "A quantidades de folhas de BPA gravadas só pode conter números"));
-            }
-        }
-
-
         String smtVrf = line.substring(25, 29);
-        if(user.getTitleValidation().isSmtVrf()) {
-            if(!smtVrf.matches("\\d+")) {
-                errors.add(errorValidation("SMTVRF", "O Campo de controle na linha só pode conter números"));
-            }
-        }
-
         String rsp = line.substring(29, 59);
         String sgl = line.substring(59, 65);
-
         String cgccpf = line.substring(65, 79);
-        if(user.getTitleValidation().isCgccpf()) {
-            if(!cgccpf.matches("\\d+")) {
-                errors.add(errorValidation("CGCCPF", "CGC/CPF do prestador ou do órgão público só pode conter números"));
-            }
-        }
-
         String dst = line.substring(79, 119);
-
         String dstIn = line.substring(119, 120);
 
         String versao;

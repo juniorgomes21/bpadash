@@ -3,24 +3,21 @@ package br.com.bpadash.api.user;
 import br.com.bpadash.dto.StorageDTO;
 import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.BpaiDTO;
-import br.com.bpadash.dto.bpa.ValidationsDTO;
-import br.com.bpadash.dto.professional.ProfessionalDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
-import br.com.bpadash.model.sigtap.DatesSigtap;
-import br.com.bpadash.model.sigtap.LinkProfessionals;
-import br.com.bpadash.model.sigtap.ProfessionalComplete;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.params.bpa.ParamValidationBpac;
-import br.com.bpadash.params.bpa.ParamValidationBpai;
-import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewPassword;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
-import br.com.bpadash.services.fpo.FpoService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.SessionUserService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -44,13 +39,19 @@ public class UserApi {
     @Autowired
     private BpaiService bpaiService;
     @Autowired
+    private SessionUserService sessionUserService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
     private LinkFpoService linkFpoService;
     @Autowired
     private LinkProfessionalsService linkProfessionalsService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
 
     @GetMapping
-    public ResponseEntity<UserDTO> getUser(Authentication authentication) {
+    public ResponseEntity<Object> getUser(Authentication authentication) {
         User user = userService.get(authentication);
 
         UserDTO userDTO = new UserDTO(user);
@@ -79,37 +80,6 @@ public class UserApi {
         return ResponseEntity.ok(new StorageDTO(user));
     }
 
-    @GetMapping("/get/{dateBPA}/{cnsPac}")
-    public ResponseEntity<Object> getUserForCnsPac(@PathVariable String dateBPA, @PathVariable String cnsPac, Authentication authentication) {
-        User user = userService.get(authentication);
-
-        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(dateBPA), user);
-        if(bpaOptional.isPresent()) {
-            Bpa bpa = bpaOptional.get();
-
-            List<Bpai> bpaiList = bpaiService.get(bpa);
-
-            EncryptionService.decryptCnsPac(bpaiList);
-
-            Bpai bpaiOk = null;
-            for(Bpai bpai: bpaiList) {
-                if(bpai.getCnspac().equals(cnsPac)) {
-                    bpaiOk = bpai;
-                }
-            }
-
-            if(bpaiOk == null) {
-                return ResponseEntity.badRequest().body("NOT FOUND");
-            }
-
-            EncryptionService.decryptBpai(List.of(bpaiOk), false);
-
-            return ResponseEntity.ok(new BpaiDTO(bpaiOk, ""));
-        }
-
-        return ResponseEntity.badRequest().body("NOT EXIST DATE BPA");
-    }
-
     @GetMapping("/get/total/rules")
     public ResponseEntity<List<String>> getTotalRules(Authentication authentication) {
         User user = userService.get(authentication);
@@ -123,7 +93,7 @@ public class UserApi {
         int total = rules + rules1 + rules2 + rules3;
 
         rulesDTO.add(String.valueOf(total));
-        rulesDTO.add(EncryptionService.decrypt(user.getPackageNumberRules()));
+        rulesDTO.add(EnCryptionAESService.decrypt(user.getPackageNumberRules()));
 
         return ResponseEntity.ok(rulesDTO);
     }
@@ -135,57 +105,32 @@ public class UserApi {
         return ResponseEntity.ok(user.getBpas().size());
     }
 
-    @GetMapping("/get/validations")
-    public ResponseEntity<Object> getValidations(Authentication authentication) {
-        User user = userService.get(authentication);
-
-        return ResponseEntity.ok(new ValidationsDTO(user));
-    }
-
-    @PostMapping("/set/validations/title")
-    public ResponseEntity<Object> setValidationsTitle(@RequestBody ParamValidationTitle paramValidationTitle, Authentication authentication) {
-        User user = userService.get(authentication);
-
-        userService.setValidationTitle(user, paramValidationTitle);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/set/validations/bpac")
-    public ResponseEntity<Object> setValidationsBpac(@RequestBody ParamValidationBpac paramValidationBpac, Authentication authentication) {
-        User user = userService.get(authentication);
-
-        userService.setValidationBpac(user, paramValidationBpac);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/set/validations/bpai")
-    public ResponseEntity<Object> setValidationsBpai(@RequestBody ParamValidationBpai paramValidationBpai, Authentication authentication) {
-        User user = userService.get(authentication);
-
-        userService.setValidationBpai(user, paramValidationBpai);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/edit/password")
-    public ResponseEntity<Object> editPassword(@RequestBody @Valid ParamNewPassword paramNewPasswordNewPassword, Authentication authentication) {
+    @PostMapping("/edit/password/{employeeKey}")
+    public ResponseEntity<Object> editPassword(@PathVariable String employeeKey, @RequestBody @Valid ParamNewPassword paramNewPassword, Authentication authentication) {
         try {
             User user = userService.get(authentication);
-            String currentPassword = paramNewPasswordNewPassword.getNewPassword();
 
-            if(!(currentPassword.equals(paramNewPasswordNewPassword.getConfPassword()))) {
-                return ResponseEntity.badRequest().body("As senhas não são iguais!");
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
+
+            if(employeeOptional.isPresent() && employeeOptional.get().isMaster()) {
+                String currentPassword = paramNewPassword.getNewPassword();
+
+                if(!(currentPassword.equals(paramNewPassword.getConfPassword()))) {
+                    return ResponseEntity.badRequest().body("NOT EQUALS");
+                }
+
+                if (userService.testPassword(user, currentPassword)) {
+                    return ResponseEntity.badRequest().body("INCORRECT PASSWORD");
+                }
+
+                userService.updatePassword(user, currentPassword);
+
+                stockHistoryService.register(ActionEmployee.UPDATE_PASSWORD.getAction(), ActionType.UPDATE_PASSWORD.getAction(), null, 0, user, employeeOptional.get());
+
+                return ResponseEntity.ok().build();
             }
 
-            if (userService.testPassword(user, currentPassword)) {
-                return ResponseEntity.badRequest().body("Sua senha está incorreta!");
-            }
-
-            UserDTO userDTO = userService.updatePassword(user, currentPassword);
-
-            return ResponseEntity.ok(userDTO);
+            return ResponseEntity.status(401).body("FORBIDDEN");
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Ops, Algo deu errado!");

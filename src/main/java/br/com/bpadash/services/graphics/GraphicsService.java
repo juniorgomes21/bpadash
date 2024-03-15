@@ -3,11 +3,10 @@ package br.com.bpadash.services.graphics;
 import br.com.bpadash.dto.graphics.SexGraphicsDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class GraphicsService {
     public SexGraphicsDTO dataSex(Bpa bpa, String cacheKey) {
         List<Bpai> bpaiList = bpaiService.get(bpa);
 
-        EncryptionService.decryptSex(bpaiList);
+        EnCryptionAESService.decryptSex(bpaiList);
 
         Map<String, List<Bpai>> groupedBySex = bpaiList.stream().collect(Collectors.groupingBy(Bpai::getSexo));
 
@@ -43,7 +42,7 @@ public class GraphicsService {
         for(Bpa bpa: bpaList) {
             List<Bpai> bpaiList = bpaiService.get(bpa);
 
-            EncryptionService.decryptSex(bpaiList);
+            EnCryptionAESService.decryptSex(bpaiList);
 
             Map<String, List<Bpai>> groupedBySex = bpaiList.stream().collect(Collectors.groupingBy(Bpai::getSexo));
 
@@ -57,7 +56,7 @@ public class GraphicsService {
     public SexGraphicsDTO dataAge(Bpa bpa , String cacheId) {
         List<Bpai> bpaiList = bpaiService.get(bpa);
 
-        EncryptionService.decryptBpaiIdade(bpaiList);
+        EnCryptionAESService.decryptBpaiIdade(bpaiList);
 
         Map<String, List<Bpai>> groupedBySex = bpaiList.stream().collect(Collectors.groupingBy(Bpai::getSexo));
 

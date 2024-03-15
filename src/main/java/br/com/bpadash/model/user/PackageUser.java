@@ -10,19 +10,18 @@ public class PackageUser {
     private Long id;
     @Column(unique = true)
     private String packageName;
-    @Column(unique = true)
     private Long sizeStorage;
-    @Column(unique = true)
     private int numberRules;
-
+    private int maxSession;
 
     public PackageUser() {
     }
 
-    public PackageUser(String packageName , Long sizeStorage , int numberRules) {
+    public PackageUser(String packageName , Long sizeStorage, int numberRules, int maxSession) {
         this.packageName = packageName;
         this.sizeStorage = sizeStorage;
         this.numberRules = numberRules;
+        this.maxSession = maxSession;
     }
 
     public Long getId() {
@@ -51,5 +50,13 @@ public class PackageUser {
 
     public void setNumberRules(int numberRules) {
         this.numberRules = numberRules;
+    }
+
+    public int getMaxSession() {
+        return maxSession;
+    }
+
+    public void setMaxSession(int maxSession) {
+        this.maxSession = maxSession;
     }
 }

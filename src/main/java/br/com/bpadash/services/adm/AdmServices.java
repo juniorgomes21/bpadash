@@ -6,7 +6,7 @@ import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.user.AddressUser;
 import br.com.bpadash.params.adm.ParamNewAdm;
 import br.com.bpadash.repository.AdministratorRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,12 +43,12 @@ public class AdmServices {
 
         administrator.setAddressUser(address);
         administrator.setProfile(Role.ADMINISTRATOR.name());
-        administrator.setCpf(EncryptionService.encrypt(paramNewAdm.getCpf()));
-        administrator.setName(EncryptionService.encrypt(paramNewAdm.getName()));
-        administrator.setCell(EncryptionService.encrypt(paramNewAdm.getCell()));
-        administrator.setEmail(EncryptionService.encrypt(paramNewAdm.getEmail()));
-        administrator.setKeyCpf(EncryptionService.hashString(paramNewAdm.getCpf()));
-        administrator.setKeyEmail(EncryptionService.hashString(paramNewAdm.getEmail()));
+        administrator.setCpf(EnCryptionAESService.encrypt(paramNewAdm.getCpf()));
+        administrator.setName(EnCryptionAESService.encrypt(paramNewAdm.getName()));
+        administrator.setCell(EnCryptionAESService.encrypt(paramNewAdm.getCell()));
+        administrator.setEmail(EnCryptionAESService.encrypt(paramNewAdm.getEmail()));
+        administrator.setKeyCpf(EnCryptionAESService.hashString(paramNewAdm.getCpf()));
+        administrator.setKeyEmail(EnCryptionAESService.hashString(paramNewAdm.getEmail()));
         administrator.setPassword(new BCryptPasswordEncoder().encode(paramNewAdm.getPassword()));
 
         return administrator;

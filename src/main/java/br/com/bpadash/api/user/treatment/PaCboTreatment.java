@@ -4,6 +4,9 @@ import br.com.bpadash.dto.treatment.TreatmentPaCboDTO;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.model.treatment.RuleTreatmentPaCbo;
 import br.com.bpadash.params.bpa.ParamDateBpa;
@@ -16,6 +19,8 @@ import br.com.bpadash.services.treatment.RuleTreatmentPaCboService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaDeleteService;
 import br.com.bpadash.services.treatment.RuleTreatmentPaService;
 import br.com.bpadash.services.treatment.TreatmentFileService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +53,10 @@ public class PaCboTreatment {
     private BpaiService bpaiService;
     @Autowired
     private BpacService bpacService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
 
     @GetMapping("/get")
@@ -98,45 +107,55 @@ public class PaCboTreatment {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/execute/{id}")
-    public ResponseEntity<Object> playTreatmentPaCbo(@PathVariable Long id, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
+    @PostMapping("/execute/{id}/{employeeKey}")
+    public ResponseEntity<Object> playTreatmentPaCbo(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamDateBpa paramDateBpa, Authentication authentication) {
         User user = userService.get(authentication);
 
-        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        if(bpaOptional.isPresent()) {
-            Bpa bpa = bpaOptional.get();
-            int count;
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteBpa()) {
 
-            if(id == 0L) {
-                List<RuleTreatmentPaCbo> ruleTreatmentPaCbos = user.getTreatmentFile().getRuleTreatmentPaCboList();
-                List<Bpac> bpacList = bpacService.get(bpa);
-                List<Bpai> bpaiList = bpaiService.get(bpa);
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramDateBpa.getDateBpa()), user);
 
-                count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, ruleTreatmentPaCbos);
-
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
-            } else {
-                RuleTreatmentPaCbo ruleTreatmentPaCbo = ruleTreatmentPaCboService.get(id);
+            if(bpaOptional.isPresent()) {
+                int count;
+                Bpa bpa = bpaOptional.get();
 
                 List<Bpac> bpacList = new ArrayList<>();
-                if(ruleTreatmentPaCbo.isExecuteBpac()) bpacList = bpacService.get(bpa);
-
                 List<Bpai> bpaiList = new ArrayList<>();
-                if(ruleTreatmentPaCbo.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
 
-                count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, new ArrayList<>(List.of(ruleTreatmentPaCbo)));
+                if(id == 0L) {
+                    List<RuleTreatmentPaCbo> ruleTreatmentPaCbos = user.getTreatmentFile().getRuleTreatmentPaCboList();
+                    bpacList = bpacService.get(bpa);
+                    bpaiList = bpaiService.get(bpa);
 
-                bpacService.save(bpacList);
-                bpaiService.save(bpaiList);
+                    count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, ruleTreatmentPaCbos);
+                } else {
+                    RuleTreatmentPaCbo ruleTreatmentPaCbo = ruleTreatmentPaCboService.get(id);
+
+                    if(ruleTreatmentPaCbo.isExecuteBpac()) bpacList = bpacService.get(bpa);
+                    if(ruleTreatmentPaCbo.isExecuteBpai()) bpaiList = bpaiService.get(bpa);
+
+                    count = treatmentFileService.executeRulePaCbo(bpacList, bpaiList, new ArrayList<>(List.of(ruleTreatmentPaCbo)));
+
+                }
+
+                if(count > 0) {
+                    bpacService.save(bpacList);
+                    bpaiService.save(bpaiList);
+
+                    bpaService.calculateAll(user, bpa, null, null, true);
+
+                    stockHistoryService.register(ActionEmployee.UPDATE_RULE_PA_CBO.getAction(), ActionType.UPDATE.getAction(), bpa.getDate(), count, user, employeeOptional.get());
+                }
+
+                return ResponseEntity.ok(count);
             }
 
-            return ResponseEntity.ok(count);
+            return ResponseEntity.badRequest().body("NOT FOUND BPA");
         }
 
-
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
     @PostMapping("/update/execute/file/{id}")

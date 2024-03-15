@@ -3,19 +3,18 @@ package br.com.bpadash.api.adm.configurations;
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.bpa.Address;
-import br.com.bpadash.model.user.AddressUser;
-import br.com.bpadash.model.user.PackageUser;
-import br.com.bpadash.model.user.User;
+import br.com.bpadash.model.user.*;
 import br.com.bpadash.params.adm.ParamNewAdm;
 import br.com.bpadash.params.user.ParamNewUser;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.adm.AdmServices;
 import br.com.bpadash.services.adm.PackageUserService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.sigtap.AddressService;
 import br.com.bpadash.services.sigtap.CepService;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.SessionUserService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +33,11 @@ public class ConfigurationsAdmApi {
     @Autowired
     private AddressService addressService;
     @Autowired
+    private EmployeeService employeeService;
+    @Autowired
     private PackageUserService packageUserService;
+    @Autowired
+    private SessionUserService sessionUserService;
 
 
     @PostMapping("/package")
@@ -42,21 +45,25 @@ public class ConfigurationsAdmApi {
         try {
             String packageName = "bronze";
             Long sizeStorage  = 262144000L;
-            int numberRules  = 20;
+            int numberRules  = 25;
+            int session = 3; // TODO mudar para 5
 
-            PackageUser packageUser = new PackageUser(packageName, sizeStorage, numberRules);
+            PackageUser packageUser = new PackageUser(packageName, sizeStorage, numberRules, session);
 
             String packageName1 = "gold";
             Long sizeStorage1  = 524288000L;
             int numberRules1  = 50;
+            int sessionGold = 10;
 
-            PackageUser packageUser1 = new PackageUser(packageName1, sizeStorage1, numberRules1);
+
+            PackageUser packageUser1 = new PackageUser(packageName1, sizeStorage1, numberRules1, sessionGold);
 
             String packageName2 = "platinum";
             Long sizeStorage2  = 1073741824L;
-            int numberRules2  = 80;
+            int numberRules2  = 100;
+            int sessionPlatinum = 15;
 
-            PackageUser packageUser2 = new PackageUser(packageName2, sizeStorage2, numberRules2);
+            PackageUser packageUser2 = new PackageUser(packageName2, sizeStorage2, numberRules2, sessionPlatinum);
 
             packageUserService.save(packageUser);
             packageUserService.save(packageUser1);
@@ -78,7 +85,7 @@ public class ConfigurationsAdmApi {
 
             AddressUser addressUser = new AddressUser(address);
 
-            EncryptionService.encryptAddressUser(addressUser);
+            EnCryptionAESService.encryptAddressUser(addressUser);
 
             Administrator adm = admServices.createAdministrador(paramNewAdm, addressUser);
 
@@ -102,9 +109,11 @@ public class ConfigurationsAdmApi {
 
             AddressUser addressUser = new AddressUser(address);
 
-            EncryptionService.encryptAddressUser(addressUser);
+            EnCryptionAESService.encryptAddressUser(addressUser);
 
-            User user = userService.createUser(paramNewUser, addressUser);
+            PackageUser packageUser = packageUserService.get(paramNewUser.getPackageUser());
+
+            User user = userService.createUser(paramNewUser, addressUser, packageUser);
 
             if(userService.existe(user)) return ResponseEntity.badRequest().body("USER ALREADY REGISTERED");
 

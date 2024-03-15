@@ -3,9 +3,9 @@ package br.com.bpadash.api.user.graphics;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpaiService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class CnsmedGraphicsApi {
 
             List<Bpai> bpaiList = bpaiService.get(bpa);
 
-            EncryptionService.decryptCnsmed(bpaiList);
+            EnCryptionAESService.decryptCnsmed(bpaiList);
 
             bpaiList.forEach(bpai -> {
                 String cnsmed = bpai.getCnsmed();

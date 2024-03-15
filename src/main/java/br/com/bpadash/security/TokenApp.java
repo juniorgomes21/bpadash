@@ -2,7 +2,7 @@ package br.com.bpadash.security;
 
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -22,28 +22,29 @@ public class TokenApp {
 
     private static final Dotenv dotenv = Dotenv.load();
     private final String expiration = dotenv.get("JWT_EXPIRATION");
+    private final String issuer = dotenv.get("JWT_ISSUER");
     private static final String RSA_PRIVATE_KEY = dotenv.get("RSA_PRIVATE_KEY");
     private static final String RSA_PUBLIC_KEY = dotenv.get("RSA_PUBLIC_KEY");
+
 
     public String gerarTokenAdm(Authentication authentication) {
         Administrator administrator = (Administrator) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setIssuer("Adm App dpadash")
-                .setSubject(EncryptionService.encrypt(administrator.getKeyEmail()))
+                .setIssuer(issuer)
+                .setSubject(EnCryptionAESService.encrypt(administrator.getKeyEmail()))
                 .signWith(SignatureAlgorithm.RS256, getPrivateKey())
                 .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(expiration)))
                 .compact();
     }
 
-    public String gerarToken(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public String gerarToken(User user) {
 
         return Jwts.builder()
-                .setIssuer("User App dpadash")
-                .setSubject(EncryptionService.encrypt(user.getKeyEmail()))
+                .setIssuer(issuer)
+                .setSubject(EnCryptionAESService.encrypt(user.getKeyEmail()))
                 .signWith(SignatureAlgorithm.RS256, getPrivateKey())
-                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 100000)) // 10000
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(expiration))) // 1h 23m // new Date(System.currentTimeMillis() + 3600 * 2000) 1h
                 .compact();
     }
 

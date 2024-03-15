@@ -1,4 +1,4 @@
-package br.com.bpadash.repository;
+package br.com.bpadash.repository.user;
 
 import br.com.bpadash.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

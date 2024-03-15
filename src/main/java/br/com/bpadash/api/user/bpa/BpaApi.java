@@ -8,18 +8,23 @@ import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
 import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.bpa.TitleBpa;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
 import br.com.bpadash.model.sigtap.*;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamNewBpa;
 import br.com.bpadash.params.sigtap.ParamInconsistency;
-import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.bpa.*;
 import br.com.bpadash.services.cache.CacheService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.professional.LinkProfessionalsService;
 import br.com.bpadash.services.professional.ProfessionalService;
 import br.com.bpadash.services.scanner.ScannerFile;
 import br.com.bpadash.services.sigtap.*;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -80,6 +85,10 @@ public class BpaApi {
     private DatesSigtapService datesSigtapService;
     @Autowired
     private OccupationService occupationService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
 
 
     @GetMapping("/get/all")
@@ -230,21 +239,29 @@ public class BpaApi {
         return ResponseEntity.ok(totalInvoicing);
     }
 
-    @GetMapping("/generateFile/{identifier}")
-    public ResponseEntity<byte[]> generateTextFile(@PathVariable String identifier, Authentication authentication) {
+    @GetMapping("/generateFile/{identifier}/{employeeKey}")
+    public ResponseEntity<Object> generateTextFile(@PathVariable String identifier, @PathVariable String employeeKey, Authentication authentication) {
         try {
             User user = userService.get(authentication);
 
-            Bpa bpa = bpaService.get(identifier, user);
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            StringBuilder fileContent = bpaService.createFile(bpa);
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDownloadBpa()) {
+                Bpa bpa = bpaService.get(identifier, user);
 
-            byte[] fileBytes = fileContent.toString().getBytes();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "arquivo.txt");
+                StringBuilder fileContent = bpaService.createFile(bpa);
 
-            return ResponseEntity.ok().headers(headers).body(fileBytes);
+                byte[] fileBytes = fileContent.toString().getBytes();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentDispositionFormData("attachment", "arquivo.txt");
+
+                stockHistoryService.register(ActionEmployee.DOWNLOAD.getAction(), ActionType.DOWNLOAD.getAction(), bpa.getDate(), 0, user, employeeOptional.get());
+
+                return ResponseEntity.ok().headers(headers).body(fileBytes);
+            }
+
+            return ResponseEntity.status(401).body("FORBIDDEN");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -253,64 +270,63 @@ public class BpaApi {
     }
 
     @Transactional
-    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteMany(@RequestBody List<String> identifiers, Authentication authentication) {
+    @PostMapping("/delete/{employeeKey}")
+    public ResponseEntity<Object> deleteMany(@PathVariable String employeeKey, @RequestBody List<String> identifiers, Authentication authentication) {
         User user = userService.get(authentication);
 
-        identifiers.forEach(identifier -> {
-            Bpa bpa = bpaService.get(identifier, user);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            Long totalBytes = bpa.getFileSizeInBytes();
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteBpa()) {
+            identifiers.forEach(identifier -> {
+                Bpa bpa = bpaService.get(identifier, user);
 
-            bpaService.delete(bpa, user);
+                Long totalBytes = bpa.getFileSizeInBytes();
 
-            userService.updateStorageAndSave(user, totalBytes, true);
-        });
+                bpaService.delete(bpa, user);
 
-        return ResponseEntity.ok().build();
+                userService.updateStorageAndSave(user, totalBytes, true);
+
+                stockHistoryService.register(ActionEmployee.DELETE_BPA.getAction(), ActionType.DELETE.getAction(), bpa.getDate(), 0, user, employeeOptional.get());
+            });
+
+
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
     }
 
-    @PostMapping( value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<List<ErrorsFile>> bpaCreate(@RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
+    @PostMapping( value = "/create/{employeeKey}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@PathVariable String employeeKey, @RequestPart("file") MultipartFile file, @RequestParam("paramNewBpa") String paramNewBpaJson, Authentication authentication) {
         try {
             StopWatch stopWatch = StopWatch.createStarted();
 
             User user = userService.get(authentication);
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            ParamNewBpa paramNewBpa = objectMapper.readValue(paramNewBpaJson, ParamNewBpa.class);
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isAddBpa()) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                ParamNewBpa paramNewBpa = objectMapper.readValue(paramNewBpaJson, ParamNewBpa.class);
 
-            List<ErrorsFile> errorsFileList = new ArrayList<>();
+                List<ErrorsFile> errorsFileList = new ArrayList<>();
 
-            String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch);
+                String response = scannerFile.createBpa(file, user, paramNewBpa, errorsFileList, stopWatch, employeeOptional.get());
 
-            switch (response) {
-                case "ERROR FILE" -> {
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "FILE INVALID" -> {
-                    errorsFileList.add(new ErrorsFile("FILE INVALID"));
+                switch (response) {
+                    case "CREATE" -> {
 
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "ERROR FORMAT DATE" -> {
-                    errorsFileList.add(new ErrorsFile("ERROR FORMAT DATE"));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "NOT STORAGE" -> {
-                    errorsFileList.add(new ErrorsFile("NOT STORAGE"));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
-                }
-                case "EXIST DATE" -> {
-                    errorsFileList.add(new ErrorsFile("EXIST DATE"));
-
-                    return ResponseEntity.badRequest().body(errorsFileList);
+                        return ResponseEntity.ok().body(response);
+                    }
+                    case "ERROR FILE" -> {
+                        return ResponseEntity.badRequest().body(errorsFileList);
+                    }
+                    default -> {
+                        return ResponseEntity.badRequest().body(response);
+                    }
                 }
             }
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(401).body("FORBIDDEN");
 
         } catch (StringIndexOutOfBoundsException e) {
             throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
@@ -349,7 +365,7 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptBpaiDtNasc(bpaiListDB);
+            EnCryptionAESService.decryptBpaiDtNasc(bpaiListDB);
 
             List<ErrorAgeDatesDTO> errorAgeDatesDTOS = bpaService.verifyErrorsDate(bpaiListDB);
 
@@ -385,7 +401,7 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptBpaiIdade(bpaiListDB);
+            EnCryptionAESService.decryptBpaiIdade(bpaiListDB);
 
             List<ErrorAgeProcedureDTO> errosDates = procedureService.verifyErrorsAge(bpaiListDB, linkProcedure.getProcedureList());
 
@@ -422,7 +438,7 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptBpaiCep(bpaiListDB);
+            EnCryptionAESService.decryptBpaiCep(bpaiListDB);
 
             List<ErrorCEPsInvalidsDTO> errorsCEPs = cepService.verifyErrors(bpaiListDB, linkCep);
 
@@ -459,7 +475,7 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptBpaiAddress(bpaiListDB);
+            EnCryptionAESService.decryptBpaiAddress(bpaiListDB);
 
             List<ErrorCEPsInvalidsDTO> errorsCEPs = cepService.verifyErrorsBlank(bpaiListDB, linkCep);
 
@@ -549,7 +565,7 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptRace(bpaiListDB);
+            EnCryptionAESService.decryptRace(bpaiListDB);
 
             List<ErrorRaceDTO> errors = bpaService.verifyErrorsRace(bpaiListDB);
 
@@ -588,7 +604,7 @@ public class BpaApi {
 
             List<ProfessionalComplete> professionalCompleteList = linkProfessionals.getProfessionalCompleteList();
 
-            EncryptionService.decryptProfessionalCns(professionalCompleteList);
+            EnCryptionAESService.decryptProfessionalCns(professionalCompleteList);
 
             List<ErrorSigTapDTO> errors = professionalService.verifyErrors(bpaiListDB, professionalCompleteList);
 
@@ -687,7 +703,7 @@ public class BpaApi {
             List<Bpac> bpacListDB = bpacService.get(bpa);
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
-            EncryptionService.decryptSex(bpaiListDB);
+            EnCryptionAESService.decryptSex(bpaiListDB);
 
             List<ErrorPaDTO> errorsPaBpac = procedureService.verifyErrorsPaBpac(bpacListDB, linkProcedure.getProcedureList());
             List<ErrorProcedureDTO> errorsPaBpai = procedureService.verifyErrorsPaAndSexBpai(bpaiListDB, linkProcedure.getProcedureList());

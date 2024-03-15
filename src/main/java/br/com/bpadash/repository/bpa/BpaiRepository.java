@@ -43,11 +43,8 @@ public interface BpaiRepository extends JpaRepository<Bpai, Long> {
 
     List<Bpai> findByIdIn(List<Long> cepsIds);
 
-    List<Bpai> findByCnspacHasAndBpaIn(String key , List<Bpa> bpaList);
-
     List<Bpai> findByCboAndBpa(String s , Bpa bpa);
 
     Bpai findTopByBpaOrderByFlhDescSeqDesc(Bpa bpa);
 
-    Optional<Bpai> findFristByCnspacHas(String key); // Optional<Bpai> findFristByCnspacHasAndBpaIn(String key , List<Bpa> bpaList);
 }

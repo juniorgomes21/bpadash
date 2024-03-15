@@ -11,7 +11,7 @@ import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.bpa.BpaRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import br.com.bpadash.services.fpo.LinkFpoService;
 import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
@@ -181,7 +181,7 @@ public class BpaService {
         List<Bpac> bpacList = bpacService.get(bpa);
         List<Bpai> bpaiList = bpaiService.get(bpa);
 
-        EncryptionService.decryptBpai(bpaiList, true);
+        EnCryptionAESService.decryptBpai(bpaiList, true);
 
         fileContent.append(titleBpa.toString());
         fileContent.append("\n");
@@ -202,7 +202,9 @@ public class BpaService {
     public boolean isValidFile(MultipartFile file) {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
+
             String key = "BPA";
+
             try {
                 String keyGet = br.readLine().substring(3, 6);
                 return keyGet.equals(key);
@@ -263,8 +265,8 @@ public class BpaService {
                 boolean beffore1900 = date.getYear() < 1900;
 
                 if(beffore1900 || comparison < 0) {
-                    String name = bpai.getNmpac().isBlank() ? bpai.getNmpac() : EncryptionService.decrypt(bpai.getNmpac());
-                    String age = bpai.getIdade().isBlank() ? bpai.getIdade() : EncryptionService.decrypt(bpai.getIdade());
+                    String name = EnCryptionAESService.decrypt(bpai.getNmpac());
+                    String age = EnCryptionAESService.decrypt(bpai.getIdade());
 
                     errors.add(new ErrorAgeDatesDTO(
                             bpai.getId(),
@@ -278,8 +280,8 @@ public class BpaService {
                 }
 
             } catch (Exception e) {
-                String name = bpai.getNmpac().isBlank() ? bpai.getNmpac() : EncryptionService.decrypt(bpai.getNmpac());
-                String age = bpai.getIdade().isBlank() ? bpai.getIdade() : EncryptionService.decrypt(bpai.getIdade());
+                String name = EnCryptionAESService.decrypt(bpai.getNmpac());
+                String age = EnCryptionAESService.decrypt(bpai.getIdade());
                 String date = bpai.getDtnasc().isBlank() ? bpai.getDtnasc() : bpai.getDtnasc().substring(0, 4) + "-" + bpai.getDtnasc().substring(4, 6) + "-" + bpai.getDtnasc().substring(6, 8);
 
                 errors.add(new ErrorAgeDatesDTO(
@@ -302,7 +304,7 @@ public class BpaService {
 
         LocalDate dateTitle = LocalDate.of(Integer.parseInt(titleBpa.getMvm().substring(0,4)), Integer.parseInt(titleBpa.getMvm().substring(4,6)), 1);
 
-        EncryptionService.decryptBpaiDtAtendi(bpaiListDB);
+        EnCryptionAESService.decryptBpaiDtAtendi(bpaiListDB);
 
         for (Bpai bpai: bpaiListDB) {
             LocalDate date = LocalDate.of(Integer.parseInt(bpai.getDtaten().substring(0,4)), Integer.parseInt(bpai.getDtaten().substring(4,6)), 1);
@@ -322,7 +324,7 @@ public class BpaService {
         for (Bpai bpai: bpaiListDB) {
 
             if(!races.contains(bpai.getRaca())) {
-                errors.add(new ErrorRaceDTO(bpai.getId(), bpai.getFlh(), bpai.getSeq(), "RACE INVALID", EncryptionService.decrypt(bpai.getNmpac()), bpai.getRaca()));
+                errors.add(new ErrorRaceDTO(bpai.getId(), bpai.getFlh(), bpai.getSeq(), "RACE INVALID", EnCryptionAESService.decrypt(bpai.getNmpac()), bpai.getRaca()));
             }
         }
 
@@ -559,7 +561,7 @@ public class BpaService {
         if(bpaiList == null) {
             bpaiList = bpaiService.get(bpa);
 
-            EncryptionService.decryptRace(bpaiList);
+            EnCryptionAESService.decryptRace(bpaiList);
         }
 
         Map<String, Integer> contagemRace = new HashMap<>();
@@ -620,7 +622,7 @@ public class BpaService {
         if(bpa.getId() != null) {
             bpaiList = bpaiService.get(bpa);
             bpacList = bpacService.get(bpa);
-            EncryptionService.decryptAgeAndSexAndRace(bpaiList);
+            EnCryptionAESService.decryptAgeAndSexAndRace(bpaiList);
 
             bpaiService.EntityManagerDetach(bpaiList);
         }

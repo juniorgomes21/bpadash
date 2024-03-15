@@ -9,7 +9,7 @@ import br.com.bpadash.model.treatment.TreatmentFile;
 import br.com.bpadash.params.treatment.ParamTreatmentReplaceCustom;
 import br.com.bpadash.params.treatment.ParamUpdateExecuteFile;
 import br.com.bpadash.repository.treatment.RuleReplacementCustomRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -224,7 +224,7 @@ public class RuleTreatmentReplaceCustomService {
             criterionThreeB = values.contains(rule.getCriterionThree());
 
             if(fieldB || criterionOneB || criterionTwoB || criterionThreeB) {
-                EncryptionService.decryptBpai(bpaiList, true);
+                EnCryptionAESService.decryptBpai(bpaiList, true);
             }
         }
 
@@ -291,7 +291,7 @@ public class RuleTreatmentReplaceCustomService {
 
         if(!all) {
             if(fieldB || criterionOneB || criterionTwoB || criterionThreeB) {
-                EncryptionService.encryptBpai(bpaiList, true);
+                EnCryptionAESService.encryptBpai(bpaiList, true);
             }
         }
     }

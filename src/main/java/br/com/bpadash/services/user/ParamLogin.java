@@ -1,12 +1,15 @@
-package br.com.bpadash.api.adm.login;
-
-
-import br.com.bpadash.services.EncryptionService;
+package br.com.bpadash.services.user;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-public class LoginForm {
+import javax.validation.constraints.NotBlank;
 
+
+public class ParamLogin {
+
+    @NotBlank
     private String email;
+    @NotBlank
     private String password;
 
     public String getEmail() {
@@ -26,6 +29,6 @@ public class LoginForm {
     }
 
     public UsernamePasswordAuthenticationToken converter() {
-        return new UsernamePasswordAuthenticationToken(EncryptionService.hashString(email), password);
+        return new UsernamePasswordAuthenticationToken(EnCryptionAESService.hashString(email), password);
     }
 }

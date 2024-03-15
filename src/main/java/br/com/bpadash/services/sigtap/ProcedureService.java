@@ -9,7 +9,7 @@ import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.sigtap.LinkProcedure;
 import br.com.bpadash.model.sigtap.Procedure;
 import br.com.bpadash.repository.sigtap.ProcedureRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -181,7 +181,7 @@ public class ProcedureService {
 
                 int ageMin = Integer.parseInt(procedure.getVlIdadeMinima()) / 12;
                 int ageMax = Integer.parseInt(procedure.getVlIdadeMaxima()) / 12;
-                String name = EncryptionService.decrypt(bpai.getNmpac());
+                String name = EnCryptionAESService.decrypt(bpai.getNmpac());
 
                 boolean ageMinB = age < ageMin;
                 if(ageMinB || age > ageMax) {
@@ -195,7 +195,7 @@ public class ProcedureService {
                             ageMin,
                             ageMax,
                             ageMinB,
-                            EncryptionService.decrypt(bpai.getDtnasc())
+                            EnCryptionAESService.decrypt(bpai.getDtnasc())
                     ));
                 }
             }

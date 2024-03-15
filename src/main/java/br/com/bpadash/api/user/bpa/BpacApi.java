@@ -6,6 +6,9 @@ import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.enumModel.ActionEmployee;
+import br.com.bpadash.model.enumModel.ActionType;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpac;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
@@ -14,6 +17,8 @@ import br.com.bpadash.services.bpa.BpaService;
 import br.com.bpadash.services.bpa.BpacService;
 import br.com.bpadash.services.cache.CacheService;
 import br.com.bpadash.services.scanner.ScannerFile;
+import br.com.bpadash.services.user.EmployeeService;
+import br.com.bpadash.services.user.StockHistoryService;
 import br.com.bpadash.services.user.StorageService;
 import br.com.bpadash.services.user.UserService;
 import br.com.bpadash.utilities.Utilities;
@@ -50,6 +55,11 @@ public class BpacApi {
     private UserService userService;
     @Autowired
     private StorageService storageService;
+    @Autowired
+    private EmployeeService employeeService;
+    @Autowired
+    private StockHistoryService stockHistoryService;
+
 
     @GetMapping("/get/{date}")
     public ResponseEntity<Page<BpacDTO>> getBpacForDate(
@@ -69,48 +79,49 @@ public class BpacApi {
         return ResponseEntity.badRequest().body(null);
     }
 
-    @PostMapping( value = "/create/{month}/{year}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, Authentication authentication) {
+    @PostMapping( value = "/create/{month}/{year}/{employeeKey}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> bpaCreate(@RequestPart("file") MultipartFile file, @PathVariable int month, @PathVariable int year, @PathVariable String employeeKey, Authentication authentication) {
         try {
             User user = userService.get(authentication);
-            List<ErrorsFile> errorsFiles = new ArrayList<>();
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            LocalDate localDate = LocalDate.of(year, month, 1);
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isAddBpa()) {
 
-            Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
-            if(bpaOptional.isEmpty()) {
-                errorsFiles.add(new ErrorsFile("NOT STORAGE"));
+                List<ErrorsFile> errorsFiles = new ArrayList<>();
 
-                return ResponseEntity.badRequest().body(errorsFiles);
-            }
+                LocalDate localDate = LocalDate.of(year, month, 1);
 
-            Bpa bpa = bpaOptional.get();
-
-            Bpac bpac = bpacService.getLast(bpa);
-
-            String response = scannerFile.createBpac(user, file, bpa, bpac, errorsFiles);
-
-            switch (response) {
-                case "ERROR FILE" -> {
-                    return ResponseEntity.badRequest().body(errorsFiles);
-                }
-                case "NOT STORAGE" -> {
+                Optional<Bpa> bpaOptional = bpaService.get(localDate, user);
+                if(bpaOptional.isEmpty()) {
                     errorsFiles.add(new ErrorsFile("NOT STORAGE"));
 
                     return ResponseEntity.badRequest().body(errorsFiles);
                 }
-                case "EXIST DATE" -> {
-                    errorsFiles.add(new ErrorsFile("EXIST DATE"));
 
-                    return ResponseEntity.badRequest().body(errorsFiles);
+                Bpa bpa = bpaOptional.get();
+
+                Bpac bpac = bpacService.getLast(bpa);
+
+                String response = scannerFile.createBpac(user, file, bpa, bpac, errorsFiles, employeeOptional.get());
+
+                switch (response) {
+                    case "CREATE" -> {
+                        bpaService.calculateAll(user, bpa, null, null, true);
+
+                        bpaService.updateStateManager(bpa, false);
+
+                        return ResponseEntity.ok().body(response);
+                    }
+                    case "ERROR FILE" -> {
+                        return ResponseEntity.badRequest().body(errorsFiles);
+                    }
+                    default -> {
+                        return ResponseEntity.badRequest().body(response);
+                    }
                 }
             }
 
-            bpaService.calculateAll(user, bpa, null, null, true);
-
-            bpaService.updateStateManager(bpa, false);
-
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(401).body("FORBIDDEN");
 
         } catch (StringIndexOutOfBoundsException e) {
             throw new StringIndexOutOfBoundsException("A estrutura do arquivo está incorreta o erro se encontra em " + e.getMessage());
@@ -119,101 +130,136 @@ public class BpacApi {
         }
     }
 
-    @PostMapping("/edit/{id}")
-    public ResponseEntity<Object> editBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac, Authentication authentication) {
+    @PostMapping("/edit/{id}/{employeeKey}")
+    public ResponseEntity<Object> editBpac(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamUpdateBpac paramUpdateBpac, Authentication authentication) {
         try {
-            User user = userService.userLogged(authentication);
+            User user = userService.get(authentication);
 
-            Bpac bpac = bpacService.bpacId(id);
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-            String pa = bpac.getPa();
-            String qt = bpac.getQt();
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isEditBpa()) {
+                Bpac bpac = bpacService.bpacId(id);
 
-            bpacService.editAndSave(bpac, paramUpdateBpac);
+                String pa = bpac.getPa();
+                String qt = bpac.getQt();
 
-            Bpa bpa = bpac.getBpa();
+                bpacService.editAndSave(bpac, paramUpdateBpac);
 
-            if(!pa.equals(paramUpdateBpac.getPa()) || !qt.equals(paramUpdateBpac.getQt())){
-                List<Bpac> bpacList = bpacService.get(bpa);
+                Bpa bpa = bpac.getBpa();
 
-                bpaService.calculateInvoicing(bpa, null, bpacList, null, user, true);
+                if(!pa.equals(paramUpdateBpac.getPa()) || !qt.equals(paramUpdateBpac.getQt())){
+                    List<Bpac> bpacList = bpacService.get(bpa);
+
+                    bpaService.calculateInvoicing(bpa, null, bpacList, null, user, true);
+                }
+
+                stockHistoryService.register(ActionEmployee.UPDATE_BPAC.getAction(), ActionType.UPDATE.getAction(), bpa.getDate(), 1, user, employeeOptional.get());
+
+                return ResponseEntity.ok().build();
             }
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(401).body("FORBIDDEN");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }
     }
 
-    @PostMapping("/update/{id}")
-    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
+    @PostMapping("/update/{id}/{employeeKey}")
+    public ResponseEntity<Object> updateBpac(@PathVariable Long id, @PathVariable String employeeKey, @RequestBody @Valid ParamUpdateErrorsBpa paramBpa, Authentication authentication) {
         User user = userService.get(authentication);
+        Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
-        Optional<Bpac> optionalBpac = bpacService.get(id);
-        if(optionalBpac.isEmpty()) {
-            return ResponseEntity.badRequest().body("NOT FOUND ID");
-        }
+        if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isEditBpa()) {
 
-        Bpac bpac = optionalBpac.get();
+            Optional<Bpac> optionalBpac = bpacService.get(id);
+            if(optionalBpac.isEmpty()) {
+                return ResponseEntity.badRequest().body("NOT FOUND ID");
+            }
 
-        Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
+            Bpac bpac = optionalBpac.get();
 
-        List<ErrorValidationDTO> erros = new ArrayList<>();
+            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramBpa.getDateBpa()), user);
 
-        if(bpaOptional.isEmpty()) {
-            erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
-
-            return ResponseEntity.badRequest().body(erros);
-        }
-
-        Bpa bpa = bpaOptional.get();
-
-        bpacService.editAndSave(bpac, paramBpa, bpa);
-
-        String key = paramBpa.getKey();
-
-        if (key.equals("pa")) {
-            bpaService.calculateInvoicing(bpa , null , null , null , user , true);
-
-            bpaService.save(bpa);
-        }
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/delete/{date}")
-    public ResponseEntity<Object> deleteBpac(@PathVariable String date, @RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
-        try {
-            User user = userService.get(authentication);
-
-            Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+            List<ErrorValidationDTO> erros = new ArrayList<>();
 
             if(bpaOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body("NOT FOUND BPA");
-            }
+                erros.add(new ErrorValidationDTO("DATE BPA", "A data informada não existe."));
 
-            Long size = bpacService.sizeByte(paramDeleteBpac.getList());
-
-            if(size == null) {
-                return ResponseEntity.ok().build();
-            }
-
-            try {
-                bpacService.deleteByIds(paramDeleteBpac.getList());
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body("ERROR");
+                return ResponseEntity.badRequest().body(erros);
             }
 
             Bpa bpa = bpaOptional.get();
 
-            bpaService.calculateLineInTitle(bpa, 0, paramDeleteBpac.getList().size(), false);
+            int count = bpacService.editAndSave(bpac, paramBpa, bpa);
 
-            bpaService.calculateAll(user, bpa, null, null, true);
+            if(count > 0) {
+                String key = paramBpa.getKey();
 
-            storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
+                if (key.equals("pa")) {
+                    bpaService.calculateInvoicing(bpa , null , null , null , user , true);
 
-            return ResponseEntity.ok(size);
+                    bpaService.save(bpa);
+                }
 
+                stockHistoryService.register(
+                        ActionEmployee.UPDATE_BPAC.getAction(),
+                        ActionType.UPDATE.getAction(),
+                        bpaOptional.map(Bpa::getDate).orElse(null),
+                        count,
+                        user,
+                        employeeOptional.get()
+                );
+            }
+
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(401).body("FORBIDDEN");
+    }
+
+    @PostMapping("/delete/{date}/{employeeKey}")
+    public ResponseEntity<Object> deleteBpac(@PathVariable String date, @PathVariable String employeeKey, @RequestBody @Valid ParamDeleteBpac paramDeleteBpac, Authentication authentication) {
+        try {
+            User user = userService.get(authentication);
+
+            Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
+
+            if(employeeOptional.isPresent() && employeeOptional.get().getPermissions().isDeleteBpa()) {
+
+                Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
+
+                if(bpaOptional.isEmpty()) {
+                    return ResponseEntity.badRequest().body("NOT FOUND BPA");
+                }
+
+                Long size = bpacService.sizeByte(paramDeleteBpac.getList());
+
+                if(size == null) {
+                    return ResponseEntity.ok().build();
+                }
+
+                try {
+                    bpacService.deleteByIds(paramDeleteBpac.getList());
+                } catch (Exception e) {
+                    return ResponseEntity.badRequest().body("ERROR");
+                }
+
+                Bpa bpa = bpaOptional.get();
+
+                int linesModifed = paramDeleteBpac.getList().size();
+
+                bpaService.calculateLineInTitle(bpa, 0, linesModifed, false);
+
+                bpaService.calculateAll(user, bpa, null, null, true);
+
+                storageService.updateBytesBpaAndUser(user, true, bpa, false, size);
+
+                stockHistoryService.register(ActionEmployee.DELETE_BPAC.getAction(), ActionType.DELETE_LINE.getAction(), bpa.getDate(), linesModifed, user, employeeOptional.get());
+
+                return ResponseEntity.ok(linesModifed);
+            }
+
+            return ResponseEntity.status(401).body("FORBIDDEN");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponseDTO());
         }

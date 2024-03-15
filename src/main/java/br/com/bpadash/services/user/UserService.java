@@ -9,15 +9,16 @@ import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.model.sigtap.LinkProfessionals;
 import br.com.bpadash.model.treatment.TreatmentFile;
 import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.PackageUser;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewUser;
 import br.com.bpadash.params.bpa.ParamValidationBpac;
 import br.com.bpadash.params.bpa.ParamValidationBpai;
-import br.com.bpadash.repository.UserRepository;
-import br.com.bpadash.services.EncryptionService;
+import br.com.bpadash.repository.user.UserRepository;
 import br.com.bpadash.services.adm.PackageUserService;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +34,9 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private PackageUserService packageUserService;
+    @Autowired
+    private SessionUserService sessionUserService;
+
 
     public User get(Authentication authentication) {
         User user;
@@ -61,20 +65,23 @@ public class UserService {
     }
 
     @Transactional
-    public User createUser(ParamNewUser paramNewUser, AddressUser address) {
+    public User createUser(ParamNewUser paramNewUser, AddressUser address, PackageUser packageUser) {
         User user = new User();
 
-        PackageUser packageUser = packageUserService.get(paramNewUser.getPackageUser());
+        String email = EnCryptionAESService.encrypt(paramNewUser.getEmail());
 
         user.setAddressUser(address);
-        user.setName(EncryptionService.encrypt(paramNewUser.getName()));
-        user.setCnpj(EncryptionService.encrypt(paramNewUser.getCnpj()));
-        user.setKeyCnpj(EncryptionService.hashString(paramNewUser.getCnpj()));
-        user.setCell(EncryptionService.encrypt(paramNewUser.getCell()));
-        user.setEmail(EncryptionService.encrypt(paramNewUser.getEmail()));
-        user.setKeyEmail(EncryptionService.hashString(paramNewUser.getEmail()));
-        user.setPackageNameUser(EncryptionService.encrypt(packageUser.getPackageName()));
-        user.setPackageNumberRules(EncryptionService.encrypt(String.valueOf(packageUser.getNumberRules())));
+        user.setSessionUser(sessionUserService.create(user, packageUser));
+        user.getEmployeeRegistered().add(new Employee(paramNewUser.getUserName(), email, paramNewUser.getPassword(), true, user));
+        user.setCountMaxEmployee(packageUser.getMaxSession() * 2);
+        user.setName(EnCryptionAESService.encrypt(paramNewUser.getName()));
+        user.setCnpj(EnCryptionAESService.encrypt(paramNewUser.getCnpj()));
+        user.setKeyCnpj(EnCryptionAESService.hashString(paramNewUser.getCnpj()));
+        user.setCell(EnCryptionAESService.encrypt(paramNewUser.getCell()));
+        user.setEmail(email);
+        user.setKeyEmail(EnCryptionAESService.hashString(paramNewUser.getEmail()));
+        user.setPackageNameUser(EnCryptionAESService.encrypt(packageUser.getPackageName()));
+        user.setPackageNumberRules(EnCryptionAESService.encrypt(String.valueOf(packageUser.getNumberRules())));
         user.setStorageFree(packageUser.getSizeStorage());
         user.setStorageTotal(packageUser.getSizeStorage());
         user.setDatesSigtap(new DatesSigtap());
@@ -106,74 +113,9 @@ public class UserService {
         int a = user.getTreatmentFile().getRuleTreatmentPaList().size();
         int b = user.getTreatmentFile().getRuleTreatmentPaCboList().size();
         int c = user.getTreatmentFile().getRuleTreatmentPaDeleteList().size();
+        int d = user.getTreatmentFile().getRuleReplacementCustoms().size();
 
-        return a + b + c;
-    }
-
-    public void setValidationBpac(User user , ParamValidationBpac paramValidationBpac) {
-        user.getBpacValidation().setIdent(paramValidationBpac.isIdent());
-        user.getBpacValidation().setCnes(paramValidationBpac.isCnes());
-        user.getBpacValidation().setCmp(paramValidationBpac.isCmp());
-        user.getBpacValidation().setCbo(paramValidationBpac.isCbo());
-        user.getBpacValidation().setFlh(paramValidationBpac.isFlh());
-        user.getBpacValidation().setSeq(paramValidationBpac.isSeq());
-        user.getBpacValidation().setPa(paramValidationBpac.isPa());
-        user.getBpacValidation().setIdade(paramValidationBpac.isIdade());
-        user.getBpacValidation().setQt(paramValidationBpac.isQt());
-        user.getBpacValidation().setOrg(paramValidationBpac.isOrg());
-
-        this.save(user);
-    }
-
-    public void setValidationTitle(User user , ParamValidationTitle paramValidationTitle) {
-        user.getTitleValidation().setLin(paramValidationTitle.isLin());
-        user.getTitleValidation().setFlh(paramValidationTitle.isFlh());
-        user.getTitleValidation().setSmtVrf(paramValidationTitle.isSmtVrf());
-        user.getTitleValidation().setCgccpf(paramValidationTitle.isCgccpf());
-
-        this.save(user);
-    }
-
-    public void setValidationBpai(User user , ParamValidationBpai paramValidationBpai) {
-        user.getBpaiValidation().setIdent(paramValidationBpai.isIdent());
-        user.getBpaiValidation().setCnes(paramValidationBpai.isCnes());
-        user.getBpaiValidation().setCmp(paramValidationBpai.isCmp());
-        user.getBpaiValidation().setCnsmed(paramValidationBpai.isCnsmed());
-        user.getBpaiValidation().setCbo(paramValidationBpai.isCbo());
-        user.getBpaiValidation().setDtaten(paramValidationBpai.isDtaten());
-        user.getBpaiValidation().setFlh(paramValidationBpai.isFlh());
-        user.getBpaiValidation().setSeq(paramValidationBpai.isSeq());
-        user.getBpaiValidation().setPa(paramValidationBpai.isPa());
-        user.getBpaiValidation().setCnspac(paramValidationBpai.isCnspac());
-        user.getBpaiValidation().setSexo(paramValidationBpai.isSexo());
-        user.getBpaiValidation().setIbge(paramValidationBpai.isIbge());
-        user.getBpaiValidation().setCid(paramValidationBpai.isCid());
-        user.getBpaiValidation().setIdade(paramValidationBpai.isIdade());
-        user.getBpaiValidation().setQt(paramValidationBpai.isQt());
-        user.getBpaiValidation().setCaten(paramValidationBpai.isCaten());
-        user.getBpaiValidation().setNaut(paramValidationBpai.isNaut());
-        user.getBpaiValidation().setOrg(paramValidationBpai.isOrg());
-        user.getBpaiValidation().setNmpac(paramValidationBpai.isNmpac());
-        user.getBpaiValidation().setDtnasc(paramValidationBpai.isDtnasc());
-        user.getBpaiValidation().setRaca(paramValidationBpai.isRaca());
-        user.getBpaiValidation().setEtnia(paramValidationBpai.isEtnia());
-        user.getBpaiValidation().setNac(paramValidationBpai.isNac());
-        user.getBpaiValidation().setSrv(paramValidationBpai.isSrv());
-        user.getBpaiValidation().setClf(paramValidationBpai.isClf());
-        user.getBpaiValidation().setEquipeSeq(paramValidationBpai.isEquipeSeq());
-        user.getBpaiValidation().setEquipeArea(paramValidationBpai.isEquipeArea());
-        user.getBpaiValidation().setCnpj(paramValidationBpai.isCnpj());
-        user.getBpaiValidation().setCepPcnte(paramValidationBpai.isCepPcnte());
-        user.getBpaiValidation().setLogradPcnte(paramValidationBpai.isLogradPcnte());
-        user.getBpaiValidation().setEndPcnte(paramValidationBpai.isEndPcnte());
-        user.getBpaiValidation().setComplPcnte(paramValidationBpai.isComplPcnte());
-        user.getBpaiValidation().setNumPcnte(paramValidationBpai.isNumPcnte());
-        user.getBpaiValidation().setBairroPcnte(paramValidationBpai.isBairroPcnte());
-        user.getBpaiValidation().setDdtelPcnte(paramValidationBpai.isDdtelPcnte());
-        user.getBpaiValidation().setEmailPcnte(paramValidationBpai.isEmailPcnte());
-        user.getBpaiValidation().setIne(paramValidationBpai.isIne());
-
-        this.save(user);
+        return a + b + c + d;
     }
 
     public List<TimeLineDTO> timeLine(User user) {
@@ -253,14 +195,14 @@ public class UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-    public UserDTO updatePassword(User user, String currentPassword) {
+    public User updatePassword(User user, String currentPassword) {
         BCryptPasswordEncoder bc = new BCryptPasswordEncoder();
         String newPassword = bc.encode(currentPassword);
 
         user.setPassword(newPassword);
         user.setChangePass(true);
 
-        return new UserDTO(userRepository.save(user));
+        return userRepository.save(user);
     }
 
 
