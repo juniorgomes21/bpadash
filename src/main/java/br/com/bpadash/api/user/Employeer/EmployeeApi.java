@@ -102,8 +102,10 @@ public class EmployeeApi {
         User user = userService.get(authentication);
 
         Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
+
         if(employeeOptional.isPresent() && employeeOptional.get().isMaster()) {
-            Optional<Employee> employeeEditOptional = employeeService.get(user, id);
+
+            Optional<Employee> employeeEditOptional = employeeService.getRegistered(user, id);
 
             if(employeeEditOptional.isPresent()) {
                 Employee employee = employeeEditOptional.get();
@@ -200,7 +202,7 @@ public class EmployeeApi {
         Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
         if(employeeOptional.isPresent() && employeeOptional.get().isMaster()) {
-            Optional<Employee> employeeDeleteOptional = employeeService.get(user, id);
+            Optional<Employee> employeeDeleteOptional = employeeService.getRegistered(user, id);
 
             if(employeeDeleteOptional.isPresent()) {
                 String response = employeeService.deleteEmployeeAndSave(employeeDeleteOptional.get(), user);

@@ -22,6 +22,6 @@ public class QtServiceValidator implements ConstraintValidator<ValidQtService, L
         int qt = qtServiceList.get(0);
         int qtMax = qtServiceList.get(1);
 
-        return qtMax <= 999 && qt >= 0 && qt <= qtMax;
+        return qtMax <= 999999 && qt >= 0 && qt <= qtMax;
     }
 }

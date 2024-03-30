@@ -1,5 +1,6 @@
 package br.com.bpadash.api;
 
+import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.dto.user.EmployeeDTO;
 import br.com.bpadash.errorValidation.ErrorResponseDTO;
 import br.com.bpadash.model.user.Employee;
@@ -109,19 +110,10 @@ public class auxApi {
 
     @PostMapping("/auth/auth")
     public ResponseEntity<Object> auxNext(@RequestBody ParamLogin paramLogin) {
-        String email = paramLogin.getEmail();
-        String password = paramLogin.getPassword();
 
-        if(!email.equals("alam.155@gmail.com") || !password.equals("12345678")) {
-            return ResponseEntity.badRequest().build();
-        }
+        Bpai bpai = bpaiRepository.getById(11826L);
 
-        Map<String, String> map = new HashMap<>();
-
-        map.put("type", "Bearer");
-        map.put("token", "d1oihdo12nodknqwioud90120ej1op2jeo1h8902e1092809e1982ehajklsmnbduasgdiagsdiouasndkjagbs78d1y92ndlsh97dq9dsiahodiajhiposdahjsdasd");
-
-        return ResponseEntity.ok(map);
+        return ResponseEntity.ok(new BpaiDTO(bpai, "1231231231"));
     }
 
     @PostMapping("/delete/bpai")
@@ -160,18 +152,9 @@ public class auxApi {
 
     @PostMapping("/ping/{employeeKey}")
     public ResponseEntity<Object> ping(@PathVariable String employeeKey) {
-        User user = userRepository.getById(1L);
+        Bpai bpai = bpaiRepository.getById(11826L);
 
-        List<Employee> employeeList = employeeRepository.findAll();
-
-
-        List<EmployeeDTO> employeeDTOList = new ArrayList<>();
-
-//        employeeList.forEach( employee -> {
-//            employeeDTOList.add(new EmployeeDTO(employee));
-//        });
-
-        return ResponseEntity.ok(employeeDTOList);
+        return ResponseEntity.ok(new BpaiDTO(bpai, "1231231231"));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -263,7 +246,7 @@ public class auxApi {
     public ResponseEntity<Object> errosB() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(8L);
+        Bpa bpa = bpaRepository.getById(3L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("135", "256", "768", "999"));
 
@@ -286,26 +269,20 @@ public class auxApi {
     public ResponseEntity<Object> errosC() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(8L);
+        Bpa bpa = bpaRepository.getById(6L);
 
 
-//        List<String> pa = new ArrayList<>(Arrays.asList("17150501", "18950101", "18990301", "18771201"));
+        List<String> pa = new ArrayList<>(Arrays.asList("17150501", "18950101", "18990301", "18771201"));
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
-        bpaiList.forEach( bpai -> {
-            if(bpai.getDtnasc().length() == 8) {
-                bpai.setDtnasc(EnCryptionAESService.encrypt(bpai.getDtnasc()));
-            }
-        });
+        for (int i = 0; i <= 175; i++) {
+            int index = random.nextInt(bpaiList.size() - 1);
+            int indexList = random.nextInt(0, 3);
 
-//        for (int i = 0; i <= 175; i++) {
-//            int index = random.nextInt(bpaiList.size() - 1);
-//            int indexList = random.nextInt(0, 3);
-//
-//            bpaiList.get(index).setDtnasc(EnCryptionAESService.encrypt(pa.get(indexList)));
-//            count ++;
-//        }
+            bpaiList.get(index).setDtnasc(EnCryptionAESService.encrypt(pa.get(indexList)));
+            count ++;
+        }
 
         bpaiRepository.saveAll(bpaiList);
 
@@ -316,7 +293,7 @@ public class auxApi {
     public ResponseEntity<Object> errosD() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(1L);
+        Bpa bpa = bpaRepository.getById(6L);
 
         List<String> pa = new ArrayList<>(Arrays.asList("22200555", "66600000", "65611111", "62655555"));
 
@@ -385,9 +362,9 @@ public class auxApi {
     public ResponseEntity<Object> errosG() {
         Random random = new Random();
         int count = 0;
-        Bpa bpa = bpaRepository.getById(6L);
+        Bpa bpa = bpaRepository.getById(5L);
 
-        List<String> pa = new ArrayList<>(Arrays.asList("08", "07", "09", "99"));
+        List<String> pa = new ArrayList<>(Arrays.asList("08", "07", "09", "10", "99"));
 
         List<Bpai> bpaiList = bpaiRepository.findByBpa(bpa);
 
@@ -440,7 +417,6 @@ public class auxApi {
 
         for (int i = 0; i <= 1500; i++) {
             int index = random.nextInt(bpaiList.size() - 1);
-            int indexList = random.nextInt(0, 3);
 
             String sex = bpaiList.get(index).getSexo();
             bpaiList.get(index).setSexo(sex.equals("M") ? "F" : "M");

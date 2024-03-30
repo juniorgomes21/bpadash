@@ -258,7 +258,7 @@ public class BpaiService {
 
         switch (key) {
             case "pa" -> count = this.editPa(paramBpa.getPa(), bpai, bpa, count);
-            case "birthDate" -> count = this.editDtNasc(paramBpa.getDateBpa(), paramBpa.getIds(), bpai, count);
+            case "birthDate" -> count = this.editDtNasc(paramBpa.getDate(), paramBpa.getIds(), bpai, count);
             case "cep" -> count = this.editCep(paramBpa.getCep(), paramBpa.getIds(), bpai, user, count);
             case "cepBlank" -> count = this.editCepBlank(paramBpa.getIds(), user, count);
             case "qtService" -> count = this.editQtService(paramBpa.getQtService(), paramBpa.getIds(), bpai, user, count);
@@ -376,11 +376,11 @@ public class BpaiService {
     }
 
     private int editCnsmed(String cnsmedParam, Bpai bpai, Bpa bpa, int count) {
-        String cnsmed = cnsmedParam.split("-")[0];
+        String cnsmed = EnCryptionAESService.encrypt(cnsmedParam.split("-")[0]);
         String updateAll = cnsmedParam.split("-")[1];
 
         if(updateAll.equals("1")) {
-            List<Bpai> bpaiList = bpaiRepository.findByCnsmedAndBpa(cnsmedParam.split("-")[2], bpa);
+            List<Bpai> bpaiList = bpaiRepository.findByCnsmedAndBpa(EnCryptionAESService.encrypt(cnsmedParam.split("-")[2]), bpa);
 
             bpaiList.forEach( bpaix -> {
                 bpaix.setCnsmed(cnsmed);
@@ -396,6 +396,7 @@ public class BpaiService {
 
         return count;
     }
+
 
     //TODO terminar esse método --- falta concluir
     private int editRace(String race, List<Long> ids, Bpai bpai, User user, int count) {
@@ -489,7 +490,7 @@ public class BpaiService {
 
                         int qtMax = Integer.parseInt(procedure.getQtMaximaExecucao());
 
-                        bpaix.setQt(String.valueOf(qtMax));
+                        bpaix.setQt(String.format("%06d", qtMax));
                     }
                 });
 
@@ -497,7 +498,7 @@ public class BpaiService {
             }
 
         } else {
-            bpai.setQt(String.valueOf(qtService.get(0)));
+            bpai.setQt(String.format("%06d", qtService.get(0)));
             this.saveAndFlush(bpai);
 
             count = 1;

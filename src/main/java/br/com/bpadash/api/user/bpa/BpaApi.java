@@ -513,6 +513,8 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
+            EnCryptionAESService.decryptFlhSeq(bpaiListDB);
+
             List<ErrorQtMaxDTODTO> errors = bpaiService.verifyErrorsQtServices(linkProcedure.getProcedureList(), bpaiListDB);
 
             return ResponseEntity.ok(errors);
@@ -602,6 +604,8 @@ public class BpaApi {
 
             List<Bpai> bpaiListDB = bpaiService.get(bpa);
 
+            EnCryptionAESService.decryptFlhSeq(bpaiListDB);
+
             List<ProfessionalComplete> professionalCompleteList = linkProfessionals.getProfessionalCompleteList();
 
             EnCryptionAESService.decryptProfessionalCns(professionalCompleteList);
@@ -665,6 +669,8 @@ public class BpaApi {
             Set<String> occupationPa = linkOccupation.getOccupationList().stream().map(Occupation::getCodProcedimento).collect(Collectors.toSet());
             linkProcedure = null;
             linkOccupation = null;
+
+            EnCryptionAESService.decryptFlhSeq(bpaiListDB);
 
             List<ErrorPaDTO> errorsPaBpacDTOS = bpacService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpacListDB);
             List<ErrorPaDTO> errorsPaBpaiDTOS = bpaiService.verifyErrorsPa(linkFpo.getFpoList(), procedurePa, occupationPa, bpaiListDB);
@@ -750,6 +756,8 @@ public class BpaApi {
                     .collect(Collectors.toSet());
 
             linkOccupation = null; // liberar memória
+
+            EnCryptionAESService.decryptFlhSeq(bpaiListDB);
 
             //Verifica se PA de BPAC e BPAI existe no arquivo FPO.
             List<ErrorOccupationDTO> errorsOccupationBpacDTOS = bpacService.verifyErrorsOccupation(occupationPa, occupationCBO, bpacListDB);

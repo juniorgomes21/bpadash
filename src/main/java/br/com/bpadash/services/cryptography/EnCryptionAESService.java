@@ -15,7 +15,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EnCryptionAESService {
@@ -25,8 +27,8 @@ public class EnCryptionAESService {
     private static final String ENCODE_KEY_USER = dotenv.get("ENCODE_KEY_USER");
     private static final String SECRET_KEY = dotenv.get("SECRET_KEY");
     private static final SecretKey secretKey = loadAESKey();
-
     private static final Cipher cipher;
+
 
     static {
         try {
@@ -42,6 +44,7 @@ public class EnCryptionAESService {
     }
 
     public static String encrypt(String data) {
+
         try {
             if (data != null && !data.isBlank()) {
                 byte[] encryptedBytes;
@@ -93,6 +96,9 @@ public class EnCryptionAESService {
             bpai.setCnspac(encrypt(bpai.getCnspac()));
             bpai.setCnspacHas(EnCryptionAESService.hashString(bpai.getCnspac()));
             bpai.setCnsmed(encrypt(bpai.getCnsmed()));
+            bpai.setIbge(encrypt(bpai.getIbge()));
+            bpai.setFlh(encrypt(bpai.getFlh()));
+            bpai.setSeq(encrypt(bpai.getSeq()));
             bpai.setCid(encrypt(bpai.getCid()));
             bpai.setNmpac(encrypt(bpai.getNmpac()));
             bpai.setIdade(encrypt(bpai.getIdade()));
@@ -116,6 +122,9 @@ public class EnCryptionAESService {
             if(isCnsPac) bpai.setCnspac(encrypt(bpai.getCnspac()));
             bpai.setCid(encrypt(bpai.getCid()));
             bpai.setNmpac(encrypt(bpai.getNmpac()));
+            bpai.setIbge(encrypt(bpai.getIbge()));
+            bpai.setFlh(encrypt(bpai.getFlh()));
+            bpai.setSeq(encrypt(bpai.getSeq()));
             if(isCnsPac) bpai.setDtnasc(encrypt(bpai.getDtnasc()));
             bpai.setCnsmed(encrypt(bpai.getCnsmed()));
             bpai.setDtaten(encrypt(bpai.getDtaten()));
@@ -138,6 +147,9 @@ public class EnCryptionAESService {
             if(isCnsPac) bpai.setCnspac(decrypt(bpai.getCnspac()));
             bpai.setCid(decrypt(bpai.getCid()));
             bpai.setNmpac(decrypt(bpai.getNmpac()));
+            bpai.setIbge(decrypt(bpai.getIbge()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
             if(isCnsPac) bpai.setDtnasc(decrypt(bpai.getDtnasc()));
             bpai.setCnsmed(decrypt(bpai.getCnsmed()));
             bpai.setDtaten(decrypt(bpai.getDtaten()));
@@ -158,11 +170,15 @@ public class EnCryptionAESService {
     public static void decryptBpaiCep(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach( bpai -> {
             bpai.setCepPcnte(decrypt(bpai.getCepPcnte()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
         });
     }
 
     public static void decryptBpaiAddress(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
             bpai.setCepPcnte(decrypt(bpai.getCepPcnte()));
             bpai.setLogradPcnte(decrypt(bpai.getLogradPcnte()));
             bpai.setComplPcnte(decrypt(bpai.getComplPcnte()));
@@ -210,6 +226,8 @@ public class EnCryptionAESService {
         bpaiListDB.forEach( bpai -> {
             try {
                 bpai.setDtnasc(decrypt(bpai.getDtnasc()));
+                bpai.setFlh(decrypt(bpai.getFlh()));
+                bpai.setSeq(decrypt(bpai.getSeq()));
             } catch (EncryptionOperationNotPossibleException e) {
                 System.out.println(bpai.getId());
             }
@@ -219,11 +237,15 @@ public class EnCryptionAESService {
     public static void decryptSex(List<Bpai> bpaiListDB) {
         bpaiListDB.parallelStream().forEach(bpai -> {
             bpai.setSexo(decrypt(bpai.getSexo()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
         });
     }
 
     public static void encryptSex(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
+            bpai.setFlh(encrypt(bpai.getFlh()));
+            bpai.setSeq(encrypt(bpai.getSeq()));
             bpai.setSexo(encrypt(bpai.getSexo()));
         });
     }
@@ -231,6 +253,15 @@ public class EnCryptionAESService {
     public static void decryptBpaiIdade(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
             bpai.setIdade(decrypt(bpai.getIdade()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
+        });
+    }
+
+    public static void decryptFlhSeq(List<Bpai> bpaiListDB) {
+        bpaiListDB.forEach(bpai -> {
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
         });
     }
 
@@ -243,12 +274,16 @@ public class EnCryptionAESService {
     public static void decryptBpaiDtAtendi(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach(bpai -> {
             bpai.setDtaten(decrypt(bpai.getDtaten()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
         });
     }
 
     public static void decryptRace(List<Bpai> bpaiListDB) {
         bpaiListDB.forEach( bpai -> {
             bpai.setRaca(decrypt(bpai.getRaca()));
+            bpai.setFlh(decrypt(bpai.getFlh()));
+            bpai.setSeq(decrypt(bpai.getSeq()));
         });
     }
 
@@ -389,4 +424,5 @@ public class EnCryptionAESService {
            }
         }
     }
+
 }

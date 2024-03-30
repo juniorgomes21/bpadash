@@ -3,6 +3,7 @@ package br.com.bpadash.services.user;
 import br.com.bpadash.model.user.*;
 import br.com.bpadash.params.user.*;
 import br.com.bpadash.repository.user.EmployeeRepository;
+import br.com.bpadash.services.EncryptionService;
 import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,12 @@ public class EmployeeService {
     private EmployeeRepository employeeRepository;
     @Autowired
     private UserService userService;
+
+
+    public Optional<Employee> get(Long id, User user) {
+        return employeeRepository.findByIdAndUser(id, user);
+    }
+
 
     public Optional<Employee> get(User user, String employeeKey) {
         List<AccountLogged> accountLoggeds = user.getSessionUser().getAccountLoggeds();
@@ -145,8 +152,9 @@ public class EmployeeService {
      * @return
      */
     public String editMasterAndSave(String id, User user, ParamEditEmployeeMaster paramEditEmployeeMaster) {
+        String idS = EncryptionService.decrypt(id);
 
-        Optional<Employee> employeeOptional = this.get(user, id);
+        Optional<Employee> employeeOptional = this.getRegistered(user, id);
 
         if(employeeOptional.isEmpty()) return "NOT FOUND EMPLOYEE";
 
@@ -262,5 +270,13 @@ public class EmployeeService {
         userService.save(user);
 
         return "OK";
+    }
+
+    public Optional<Employee> getRegistered(User user, String id) {
+        List<Employee> accountLoggeds = user.getEmployeeRegistered();
+
+        return accountLoggeds.stream()
+                .filter( employee -> employee.getId().equals(Long.parseLong(EncryptionService.decrypt(id))))
+                .findFirst();
     }
 }
