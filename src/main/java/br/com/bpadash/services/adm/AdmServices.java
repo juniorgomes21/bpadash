@@ -1,24 +1,31 @@
 package br.com.bpadash.services.adm;
 
-import br.com.bpadash.model.bpa.Address;
 import br.com.bpadash.model.Administrator;
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.model.user.AddressUser;
+import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.adm.ParamNewAdm;
 import br.com.bpadash.repository.AdministratorRepository;
+import br.com.bpadash.repository.user.UserRepository;
 import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AdmServices {
 
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private AdministratorRepository administratorRepository;
 
-    public Administrator admLogado(Authentication authentication) {
+
+    public Administrator logged(Authentication authentication) {
         Administrator adm = null;
         if(authentication.getPrincipal() instanceof Administrator) {
             adm = (Administrator) authentication.getPrincipal();
@@ -30,11 +37,10 @@ public class AdmServices {
         return adm;
     }
 
-    public boolean testPassword(String password, Authentication authentication) {
+    public boolean testPassword(Administrator administrator, String password) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        Administrator adm = this.admLogado(authentication);
 
-        return passwordEncoder.matches(password, adm.getPassword());
+        return passwordEncoder.matches(password, administrator.getPassword());
     }
 
     public Administrator createAdministrador(ParamNewAdm paramNewAdm, AddressUser address) {
@@ -61,5 +67,16 @@ public class AdmServices {
 
     public boolean existe(Administrator adm) {
         return administratorRepository.findByKeyEmail(adm.getKeyEmail()).isPresent();
+    }
+
+    public List<User> getUsers() {
+        return userRepository.findAll(Sort.by(Sort.Direction.DESC, "dateCreateAccount"));
+    }
+
+    public void changeActiveUser(User user) {
+
+        user.setValid(!user.isValid());
+
+        userRepository.save(user);
     }
 }

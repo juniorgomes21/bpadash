@@ -66,13 +66,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // ---- Padrão API ADM ----
                 .antMatchers("/api/adm/auth").permitAll()
-                .antMatchers("/api/adm/configurations/create").permitAll() //.hasAuthority(Role.ADMINISTRATOR.getName())
-                .antMatchers("/api/adm/configurations/package").hasAuthority(Role.ADMINISTRATOR.getName()) //.hasAuthority(Role.ADMINISTRATOR.getName())
-                .antMatchers("/api/adm/configurations/create/user").hasAuthority(Role.ADMINISTRATOR.getName())
-                .antMatchers("/api/adm/sigtap/**").hasAuthority(Role.ADMINISTRATOR.getName())
+                .antMatchers("/api/adm/**").hasAuthority(Role.ADMINISTRATOR.getName())
 
                 // ---- Padrão API USER -------------------------->
-//                .antMatchers("/api/dash/bpa/**").hasAuthority(Role.USER.getName())
+
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/logout/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/auth/login/employee").hasAuthority(Role.USER.getName())

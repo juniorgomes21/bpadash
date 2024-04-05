@@ -115,12 +115,12 @@ public class UserApi {
             if(employeeOptional.isPresent() && employeeOptional.get().isMaster()) {
                 String currentPassword = paramNewPassword.getNewPassword();
 
-                if(!(currentPassword.equals(paramNewPassword.getConfPassword()))) {
-                    return ResponseEntity.badRequest().body("NOT EQUALS");
+                if (!userService.testPassword(user, currentPassword)) {
+                    return ResponseEntity.badRequest().body("INCORRECT PASSWORD");
                 }
 
-                if (userService.testPassword(user, currentPassword)) {
-                    return ResponseEntity.badRequest().body("INCORRECT PASSWORD");
+                if(!(currentPassword.equals(paramNewPassword.getConfPassword()))) {
+                    return ResponseEntity.badRequest().body("NOT EQUALS");
                 }
 
                 userService.updatePassword(user, currentPassword);

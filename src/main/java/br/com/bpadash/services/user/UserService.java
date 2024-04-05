@@ -1,6 +1,5 @@
 package br.com.bpadash.services.user;
 
-import br.com.bpadash.dto.UserDTO;
 import br.com.bpadash.dto.bpa.BpaDTO;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
 import br.com.bpadash.model.bpa.Bpa;
@@ -12,10 +11,7 @@ import br.com.bpadash.model.user.AddressUser;
 import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.PackageUser;
 import br.com.bpadash.model.user.User;
-import br.com.bpadash.params.bpa.ParamValidationTitle;
 import br.com.bpadash.params.user.ParamNewUser;
-import br.com.bpadash.params.bpa.ParamValidationBpac;
-import br.com.bpadash.params.bpa.ParamValidationBpai;
 import br.com.bpadash.repository.user.UserRepository;
 import br.com.bpadash.services.adm.PackageUserService;
 import br.com.bpadash.services.cryptography.EnCryptionAESService;
@@ -72,7 +68,7 @@ public class UserService {
 
         user.setAddressUser(address);
         user.setSessionUser(sessionUserService.create(user, packageUser));
-        user.getEmployeeRegistered().add(new Employee(paramNewUser.getUserName(), email, paramNewUser.getPassword(), true, user));
+        user.getEmployeeRegistered().add(new Employee(paramNewUser.getNameRoot(), email, paramNewUser.getPassword(), true, user));
         user.setCountMaxEmployee(packageUser.getMaxSession() * 2);
         user.setName(EnCryptionAESService.encrypt(paramNewUser.getName()));
         user.setCnpj(EnCryptionAESService.encrypt(paramNewUser.getCnpj()));
@@ -208,6 +204,12 @@ public class UserService {
 
     public boolean existe(User user) {
         Optional<User> userOptinal = userRepository.findByKeyCnpj(user.getKeyCnpj());
+
+        if(userOptinal.isPresent()) {
+            return true;
+        }
+
+        userOptinal = userRepository.findByKeyEmail(user.getKeyEmail());
 
         return userOptinal.isPresent();
     }

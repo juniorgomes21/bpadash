@@ -3,13 +3,16 @@ import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 
 public class ParamLogin {
 
     @NotBlank
+    @Size(min = 10, max = 50)
     private String email;
     @NotBlank
+    @Size(min = 8, max = 50)
     private String password;
 
     public String getEmail() {

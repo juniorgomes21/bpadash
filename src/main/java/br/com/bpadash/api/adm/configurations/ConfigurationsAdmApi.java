@@ -16,6 +16,8 @@ import br.com.bpadash.services.user.SessionUserService;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -101,25 +103,32 @@ public class ConfigurationsAdmApi {
     }
 
     @PostMapping("/create/user")
-    public ResponseEntity<Object> createUser(@RequestBody @Valid ParamNewUser paramNewUser) {
+    public ResponseEntity<Object> createUser(@RequestBody @Valid ParamNewUser paramNewUser, Authentication authentication) {
         try {
-            Address address = addressService.verifyCep(paramNewUser.getCep());
+            Administrator administrator = admServices.logged(authentication);
 
-            if(address == null) return ResponseEntity.badRequest().body(new ErrorResponseDTO("CEP INVALID"));
+            if(admServices.testPassword(administrator, paramNewUser.getPasswordAdm())) {
 
-            AddressUser addressUser = new AddressUser(address);
+                Address address = addressService.verifyCep(paramNewUser.getCep());
 
-            EnCryptionAESService.encryptAddressUser(addressUser);
+                if(address == null) return ResponseEntity.badRequest().body(new ErrorResponseDTO("CEP INVALID"));
 
-            PackageUser packageUser = packageUserService.get(paramNewUser.getPackageUser());
+                AddressUser addressUser = new AddressUser(address);
 
-            User user = userService.createUser(paramNewUser, addressUser, packageUser);
+                EnCryptionAESService.encryptAddressUser(addressUser);
 
-            if(userService.existe(user)) return ResponseEntity.badRequest().body("USER ALREADY REGISTERED");
+                PackageUser packageUser = packageUserService.get(paramNewUser.getPackageUser());
 
-            userService.save(user);
+                User user = userService.createUser(paramNewUser, addressUser, packageUser);
 
-            return ResponseEntity.ok().build();
+                if(userService.existe(user)) return ResponseEntity.badRequest().body("USER ALREADY REGISTERED");
+
+                userService.save(user);
+
+                return ResponseEntity.ok().build();
+            }
+
+            return ResponseEntity.badRequest().body("INCORRECT PASSWORD");
 
         } catch (Exception e) {
             e.printStackTrace();

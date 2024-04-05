@@ -28,7 +28,7 @@ public class LoginAdm {
     private TokenApp tokenApp;
 
     @PostMapping("/auth")
-    public ResponseEntity<TokenDTO> autenticarAdm(@RequestBody @Valid ParamLogin form) {
+    public ResponseEntity<Object> autenticarAdm(@RequestBody @Valid ParamLogin form) {
         UsernamePasswordAuthenticationToken dadosLogin = form.converter();
 
         try {
@@ -37,7 +37,8 @@ public class LoginAdm {
 
             return ResponseEntity.ok(new TokenDTO(token));
         } catch (AuthenticationException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("BAD CREDENTIALS");
+
         }
     }
 }

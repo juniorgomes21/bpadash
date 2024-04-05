@@ -1,41 +1,39 @@
-package br.com.bpadash.model;
+package br.com.bpadash.dto.adm;
 
+import br.com.bpadash.model.ContactMessage;
 import br.com.bpadash.model.enumModel.ZoneTime;
-import br.com.bpadash.params.ContactMessageParam;
 import br.com.bpadash.services.cryptography.EnCryptionAESService;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Entity
-public class ContactMessage {
-
-    @Id
-    @GeneratedValue
+public class ContactMessageDTO {
     private Long id;
     private String name;
     private String email;
     private String packageName;
     private String message;
-    private boolean conclude = false;
-    private LocalDateTime date = LocalDateTime.now(ZoneId.of(ZoneTime.BR.getBr()));
+    private LocalDateTime date;
 
-
-    public ContactMessage() {
+    public ContactMessageDTO() {
     }
 
-    public ContactMessage(ContactMessageParam contactMessageParam) {
-        this.name = EnCryptionAESService.encrypt(contactMessageParam.getName());
-        this.email = EnCryptionAESService.encrypt(contactMessageParam.getEmail());
-        this.packageName = EnCryptionAESService.encrypt(contactMessageParam.getPackageName());
-        this.message = EnCryptionAESService.encrypt(contactMessageParam.getMessage());
+    public ContactMessageDTO(ContactMessage contactMessage) {
+        this.id = contactMessage.getId();
+        this.name = EnCryptionAESService.decrypt(contactMessage.getName());
+        this.email = EnCryptionAESService.decrypt(contactMessage.getEmail());
+        this.packageName = this.formatPackageName(EnCryptionAESService.decrypt(contactMessage.getPackageName()));
+        this.message = EnCryptionAESService.decrypt(contactMessage.getMessage());
+        this.date = contactMessage.getDate();
     }
+
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -70,19 +68,16 @@ public class ContactMessage {
         this.message = message;
     }
 
-    public boolean isConclude() {
-        return conclude;
-    }
-
-    public void setConclude(boolean conclude) {
-        this.conclude = conclude;
-    }
-
     public LocalDateTime getDate() {
         return date;
     }
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    private String formatPackageName(String packageName) {
+
+        return packageName.equals("bronze") ? "Bronze" : packageName.equals("gold") ? "Ouro" : "Platinha";
     }
 }
