@@ -1,7 +1,7 @@
 package br.com.bpadash.dto.error;
 
 public class ErrorDTO {
-    private String message;
+    private String message = "Ops, algo deu errado!";
 
     public ErrorDTO() {
     }

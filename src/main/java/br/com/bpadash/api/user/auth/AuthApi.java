@@ -58,7 +58,7 @@ public class AuthApi {
 
             User user = userService.userLogged(authentication);
 
-            if(user.isValid()) return ResponseEntity.badRequest().body("USER BLOCKED");
+            if(!user.isValid()) return ResponseEntity.badRequest().body("USER BLOCKED");
 
             String token = tokenApp.gerarToken(user);
 

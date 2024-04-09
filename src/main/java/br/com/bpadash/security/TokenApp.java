@@ -27,12 +27,19 @@ public class TokenApp {
     private static final String RSA_PUBLIC_KEY = dotenv.get("RSA_PUBLIC_KEY");
 
 
-    public String gerarTokenAdm(Authentication authentication) {
-        Administrator administrator = (Administrator) authentication.getPrincipal();
-
+    public String gerarTokenAdm(Administrator administrator) {
         return Jwts.builder()
                 .setIssuer(issuer)
                 .setSubject(EnCryptionAESService.encrypt(administrator.getKeyEmail()))
+                .signWith(SignatureAlgorithm.RS256, getPrivateKey())
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(expiration)))
+                .compact();
+    }
+
+    public String gerarTokenTemp() {
+        return Jwts.builder()
+                .setIssuer(issuer)
+                .setSubject(EnCryptionAESService.encrypt("TOKEN TEMP"))
                 .signWith(SignatureAlgorithm.RS256, getPrivateKey())
                 .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(expiration)))
                 .compact();

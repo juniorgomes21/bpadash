@@ -7,6 +7,9 @@ import br.com.bpadash.services.user.StorageService;
 public class UserAdmDTO {
     private Long id;
     private String name;
+    private String email;
+    private String contact;
+    private String cnpj;
     private String packageName;
     private String totalStorage;
     private String storageUsed;
@@ -19,6 +22,9 @@ public class UserAdmDTO {
         this.id = user.getId();
         this.name = EnCryptionAESService.decrypt(user.getName());
         this.packageName = EnCryptionAESService.decrypt(user.getPackageNameUser());
+        this.email = EnCryptionAESService.decrypt(user.getEmail());
+        this.contact = EnCryptionAESService.decrypt(user.getCell());
+        this.cnpj = EnCryptionAESService.decrypt(user.getCnpj());
         this.totalStorage = StorageService.formatBytes(user.getStorageTotal());
         this.storageUsed = StorageService.formatBytes(user.getStorageUsed());
         this.active = user.isValid();
@@ -47,6 +53,30 @@ public class UserAdmDTO {
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
     }
 
     public String getTotalStorage() {

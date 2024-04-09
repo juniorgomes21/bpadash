@@ -1,11 +1,13 @@
 package br.com.bpadash.params.user;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 public class ParamBase {
     @NotBlank
     private String name;
     @NotBlank
+    @Email
     private String email;
     @NotBlank
     private String cell;

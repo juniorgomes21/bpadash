@@ -18,6 +18,7 @@ public class ContactMessage {
     private Long id;
     private String name;
     private String email;
+    private String cell;
     private String packageName;
     private String message;
     private boolean conclude = false;
@@ -30,6 +31,7 @@ public class ContactMessage {
     public ContactMessage(ContactMessageParam contactMessageParam) {
         this.name = EnCryptionAESService.encrypt(contactMessageParam.getName());
         this.email = EnCryptionAESService.encrypt(contactMessageParam.getEmail());
+        this.cell = contactMessageParam.getCell().length() != 11 ? "" : EnCryptionAESService.encrypt(contactMessageParam.getCell());
         this.packageName = EnCryptionAESService.encrypt(contactMessageParam.getPackageName());
         this.message = EnCryptionAESService.encrypt(contactMessageParam.getMessage());
     }
@@ -52,6 +54,14 @@ public class ContactMessage {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCell() {
+        return cell;
+    }
+
+    public void setCell(String cell) {
+        this.cell = cell;
     }
 
     public String getPackageName() {

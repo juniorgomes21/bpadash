@@ -2,6 +2,7 @@ package br.com.bpadash.security;
 
 import br.com.bpadash.model.enumModel.Role;
 import br.com.bpadash.repository.AdministratorRepository;
+import br.com.bpadash.repository.email.EmailActivationsRepository;
 import br.com.bpadash.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -64,12 +65,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/aux/**").permitAll()
                 .antMatchers("/api/contact/message").permitAll()
 
-                // ---- Padrão API ADM ----
+                // ---- Padrão API ADM --------------------------->
                 .antMatchers("/api/adm/auth").permitAll()
+                .antMatchers("/api/adm/configurations/create").permitAll()
+                .antMatchers("/api/adm/verify/code").hasAuthority(Role.TOKEN_TEMP.getName())
                 .antMatchers("/api/adm/**").hasAuthority(Role.ADMINISTRATOR.getName())
 
                 // ---- Padrão API USER -------------------------->
-
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/logout/**").hasAuthority(Role.USER.getName())
                 .antMatchers("/api/auth/login/employee").hasAuthority(Role.USER.getName())

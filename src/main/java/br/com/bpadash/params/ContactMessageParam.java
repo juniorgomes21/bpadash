@@ -14,6 +14,8 @@ public class ContactMessageParam {
     @Email
     @Size(min = 10, max = 50, message = "O email deve ter entre 10 a 50 caracteres")
     private String email;
+    @Size(min = 11, max = 11, message = "O Celular deve ter entre 11 caracteres")
+    private String cell;
     @NotBlank
     @PackageUserValid
     private String packageName;
@@ -38,6 +40,14 @@ public class ContactMessageParam {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCell() {
+        return cell;
+    }
+
+    public void setCell(String cell) {
+        this.cell = cell;
     }
 
     public String getPackageName() {

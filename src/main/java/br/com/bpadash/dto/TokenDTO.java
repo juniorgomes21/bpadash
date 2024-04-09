@@ -1,14 +1,9 @@
 package br.com.bpadash.dto;
 
-import br.com.bpadash.dto.bpa.BpaDTO;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class TokenDTO {
 
     private String token;
-    private String tipo = "Bearer";
+    private String typo = "Bearer";
     private UserDTO userDTO;
     private DatesDTO datesDTO;
 
@@ -31,12 +26,12 @@ public class TokenDTO {
         this.token = token;
     }
 
-    public String getTipo() {
-        return tipo;
+    public String getTypo() {
+        return typo;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTypo(String typo) {
+        this.typo = typo;
     }
 
     public UserDTO getUserDTO() {

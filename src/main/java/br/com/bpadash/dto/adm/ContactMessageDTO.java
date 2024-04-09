@@ -11,6 +11,7 @@ public class ContactMessageDTO {
     private Long id;
     private String name;
     private String email;
+    private String cell;
     private String packageName;
     private String message;
     private LocalDateTime date;
@@ -24,6 +25,7 @@ public class ContactMessageDTO {
         this.email = EnCryptionAESService.decrypt(contactMessage.getEmail());
         this.packageName = this.formatPackageName(EnCryptionAESService.decrypt(contactMessage.getPackageName()));
         this.message = EnCryptionAESService.decrypt(contactMessage.getMessage());
+        this.cell = contactMessage.getCell().isEmpty() ? "" : EnCryptionAESService.decrypt(contactMessage.getCell());
         this.date = contactMessage.getDate();
     }
 
@@ -50,6 +52,14 @@ public class ContactMessageDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCell() {
+        return cell;
+    }
+
+    public void setCell(String cell) {
+        this.cell = cell;
     }
 
     public String getPackageName() {
