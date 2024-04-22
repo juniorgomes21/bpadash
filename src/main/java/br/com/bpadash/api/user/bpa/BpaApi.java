@@ -78,13 +78,7 @@ public class BpaApi {
     @Autowired
     private CepService cepService;
     @Autowired
-    private CacheService cacheService;
-    @Autowired
     private ProcedureService procedureService;
-    @Autowired
-    private DatesSigtapService datesSigtapService;
-    @Autowired
-    private OccupationService occupationService;
     @Autowired
     private EmployeeService employeeService;
     @Autowired

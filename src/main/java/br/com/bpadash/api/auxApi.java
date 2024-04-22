@@ -152,9 +152,8 @@ public class auxApi {
 
     @PostMapping("/ping")
     public ResponseEntity<Object> ping() {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJCUEFEQVNISldUVVNFUkpXVCIsInN1YiI6IkJCcHJ4dlA3WXBXdm9qMDVYTURnMDRReEI0VUpLY0VDZGFxeUQwS3dNT1BrdGgyRVhRNUJHUWYwaktQNWo2NjM5dE5jenJXZUpiVmpnL2ZCaFlqbjFiYUpUL2ttYmZpREdJRnJqUmJlUzhrPSIsImV4cCI6MTcxMjM0ODE2NX0.RIc5cFRJv1qPypdPIkHIuLpBBj66X04T9vS9BYUhKPPfsiJoiBOWN7eigyHj4x-D11xALS7PQ4t7rjXLuGFREuo_vPAdrMeSegsv7FOe7yX5DR_8OcqKo8YB1iRnGdDTpE_UzgIz21h9fK1SRjnHa7UC9MQwJi9mmTo0sgXYG9F82y84Tv1emplsmDoEPQninLrGTj7L43hICOGbmo3I8q8DsUzuDxUdF8P95ocPJxkWZDk5N5aKqCswoR-fJ1QIWoCI0C6fn9v9GsLVChqI_lUypBSBiM7nDVl_w6dKMHH9GMNeZHcGZcoKhllBAK49rZQ3Szfcpi-5TBBbVnX9pA";
 
-        return ResponseEntity.ok(EnCryptionAESService.encrypt(token));
+        return ResponseEntity.ok(EnCryptionAESService.decrypt("0dqeNGpbwNiX5YZBz6PzCQ=="));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

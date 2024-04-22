@@ -27,14 +27,14 @@ public class Employee {
     }
 
     public Employee(ParamCreateEmployee paramCreateEmployee, User user) {
-        this.name = paramCreateEmployee.getName();
+        this.name = EnCryptionAESService.encrypt(paramCreateEmployee.getName());
         this.email = EnCryptionAESService.encrypt(paramCreateEmployee.getEmail());
         this.password = EnCryptionAESService.hashString(paramCreateEmployee.getPassword());
         this.user = user;
     }
 
     public Employee(String name, String email, String password, boolean isMaster, User user) {
-        this.name = name;
+        this.name = EnCryptionAESService.encrypt(name);
         this.password = EnCryptionAESService.hashString(password);
         this.email = email;
         this.isMaster = isMaster;
@@ -46,7 +46,7 @@ public class Employee {
     }
 
     public String getName() {
-        return name;
+        return EnCryptionAESService.decrypt(name);
     }
 
     public void setName(String name) {

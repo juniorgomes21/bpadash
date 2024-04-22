@@ -1,17 +1,21 @@
 package br.com.bpadash.services.bpa;
 
 import br.com.bpadash.dto.bpa.BpacDTO;
+import br.com.bpadash.dto.bpa.BpaiDTO;
 import br.com.bpadash.dto.sigtap.ErrorOccupationDTO;
 import br.com.bpadash.dto.sigtap.ErrorPaDTO;
 import br.com.bpadash.errorValidation.ErrorValidationDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.bpa.Bpa;
 import br.com.bpadash.model.bpa.Bpac;
+import br.com.bpadash.model.bpa.Bpai;
 import br.com.bpadash.model.sigtap.Fpo;
 import br.com.bpadash.model.user.User;
+import br.com.bpadash.params.bpa.ParamFilterCriteria;
 import br.com.bpadash.params.bpa.ParamUpdateBpac;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpacRepository;
+import br.com.bpadash.services.cryptography.EnCryptionAESService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,6 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +37,8 @@ public class BpacService {
     @Autowired
     private BpacRepository bpacRepository;
 
+    @Autowired
+    private EntityManager entityManager;
 
     public Optional<Bpac> get(Long id) {
         return bpacRepository.findById(id);
@@ -51,6 +62,87 @@ public class BpacService {
 
         return new PageImpl<>(bpacDTOList, pageable, page.getTotalElements());
     }
+
+
+    /**
+     * Efetua uma busca personalizada baseado nos paramentros do filtro.
+     * @param bpa
+     * @param paramFilterCriteria
+     * @param pageable
+     * @return
+     */
+    public Page<BpacDTO> getFiltered(Bpa bpa, ParamFilterCriteria paramFilterCriteria, Pageable pageable) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Bpac> query = builder.createQuery(Bpac.class);
+        Root<Bpac> root = query.from(Bpac.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Construir predicados com base nos parâmetros fornecidos
+        if (paramFilterCriteria != null) {
+            if (paramFilterCriteria.getPa() != null && !paramFilterCriteria.getPa().isEmpty()) {
+                predicates.add(builder.equal(root.get("pa"), paramFilterCriteria.getPa()));
+            }
+            if (paramFilterCriteria.getCnes() != null && !paramFilterCriteria.getCnes().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnes"), paramFilterCriteria.getCnes()));
+            }
+            if (paramFilterCriteria.getCbo() != null && !paramFilterCriteria.getCbo().isEmpty()) {
+                predicates.add(builder.equal(root.get("cbo"), paramFilterCriteria.getCbo()));
+            }
+        }
+
+        // Aplicar os predicados à consulta
+        query.where(predicates.toArray(new Predicate[0]));
+
+        // Aplicar a paginação
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        int firstResult = pageNumber * pageSize;
+
+        query.orderBy(builder.asc(root.get("id"))); // Substitua "id" pelo nome do campo que deseja ordenar
+        List<Bpac> bpacList = entityManager.createQuery(query)
+                .setFirstResult(firstResult)
+                .setMaxResults(pageSize)
+                .getResultList();
+
+        // Mapear para DTOs
+        List<BpacDTO> bpaiDTOList = bpacList.stream()
+                .map(bpac -> new BpacDTO(bpac, bpa.getIdentifier()))
+                .collect(Collectors.toList());
+
+        long totalElements = getTotalElements(builder, paramFilterCriteria);
+
+        // Retornar como uma página paginada
+        return new PageImpl<>(bpaiDTOList, pageable, totalElements);
+    }
+
+    private long getTotalElements(CriteriaBuilder builder, ParamFilterCriteria paramFilterCriteria) {
+        CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+        Root<Bpac> root = countQuery.from(Bpac.class);
+        countQuery.select(builder.count(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Construir predicados com base nos parâmetros fornecidos
+        if (paramFilterCriteria != null) {
+            if (paramFilterCriteria.getPa() != null && !paramFilterCriteria.getPa().isEmpty()) {
+                predicates.add(builder.equal(root.get("pa"), paramFilterCriteria.getPa()));
+            }
+            if (paramFilterCriteria.getCnes() != null && !paramFilterCriteria.getCnes().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnes"), paramFilterCriteria.getCnes()));
+            }
+            if (paramFilterCriteria.getCbo() != null && !paramFilterCriteria.getCbo().isEmpty()) {
+                predicates.add(builder.equal(root.get("cbo"), paramFilterCriteria.getCbo()));
+            }
+        }
+
+        // Aplicar os predicados à consulta de contagem
+        countQuery.where(predicates.toArray(new Predicate[0]));
+
+        // Executar a consulta de contagem e retornar o resultado
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
 
     public Bpac create(User user, String line, int lineNumber, Bpa bpa, List<ErrorsFile> errorsFileList) {
 

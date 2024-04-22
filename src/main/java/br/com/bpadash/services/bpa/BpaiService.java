@@ -13,6 +13,7 @@ import br.com.bpadash.model.enumModel.ZoneTime;
 import br.com.bpadash.model.sigtap.*;
 import br.com.bpadash.model.user.AddressUser;
 import br.com.bpadash.model.user.User;
+import br.com.bpadash.params.bpa.ParamFilterCriteria;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.repository.bpa.BpaiRepository;
@@ -23,10 +24,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -201,6 +208,106 @@ public class BpaiService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(bpaiDTOList, pageable, page.getTotalElements());
+    }
+
+
+    public Page<BpaiDTO> getFiltered(Bpa bpa, ParamFilterCriteria paramFilterCriteria, Pageable pageable) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Bpai> query = builder.createQuery(Bpai.class);
+        Root<Bpai> root = query.from(Bpai.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Construir predicados com base nos parâmetros fornecidos
+        if (paramFilterCriteria != null) {
+            if (paramFilterCriteria.getPa() != null && !paramFilterCriteria.getPa().isEmpty()) {
+                predicates.add(builder.equal(root.get("pa"), paramFilterCriteria.getPa()));
+            }
+            if (paramFilterCriteria.getCnes() != null && !paramFilterCriteria.getCnes().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnes"), paramFilterCriteria.getCnes()));
+            }
+            if (paramFilterCriteria.getCnsmed() != null && !paramFilterCriteria.getCnsmed().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnsmed"), EnCryptionAESService.encrypt(paramFilterCriteria.getCnsmed())));
+            }
+            if (paramFilterCriteria.getCbo() != null && !paramFilterCriteria.getCbo().isEmpty()) {
+                predicates.add(builder.equal(root.get("cbo"), paramFilterCriteria.getCbo()));
+            }
+            if (paramFilterCriteria.getSex() != null && !paramFilterCriteria.getSex().isEmpty()) {
+                predicates.add(builder.equal(root.get("sexo"), EnCryptionAESService.encrypt(paramFilterCriteria.getSex())));
+            }
+            if (paramFilterCriteria.getIbge() != null && !paramFilterCriteria.getIbge().isEmpty()) {
+                predicates.add(builder.equal(root.get("ibge"), EnCryptionAESService.encrypt(paramFilterCriteria.getIbge())));
+            }
+            if (paramFilterCriteria.getRace() != null && !paramFilterCriteria.getRace().equals("00")) {
+                predicates.add(builder.equal(root.get("raca"), EnCryptionAESService.encrypt(paramFilterCriteria.getRace())));
+            }
+            // Adicione outras condições conforme necessário para os outros parâmetros
+        }
+
+        // Aplicar os predicados à consulta
+        query.where(predicates.toArray(new Predicate[0]));
+
+        // Aplicar a paginação
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        int firstResult = pageNumber * pageSize;
+
+        query.orderBy(builder.asc(root.get("id"))); // Substitua "id" pelo nome do campo que deseja ordenar
+        List<Bpai> bpaiList = entityManager.createQuery(query)
+                .setFirstResult(firstResult)
+                .setMaxResults(pageSize)
+                .getResultList();
+
+        EnCryptionAESService.decryptBpai(bpaiList, true);
+
+        // Mapear para DTOs
+        List<BpaiDTO> bpaiDTOList = bpaiList.stream()
+                .map(bpai -> new BpaiDTO(bpai, bpa.getIdentifier()))
+                .collect(Collectors.toList());
+
+        long totalElements = getTotalElements(builder, paramFilterCriteria);
+
+        // Retornar como uma página paginada
+        return new PageImpl<>(bpaiDTOList, pageable, totalElements);
+    }
+
+    private long getTotalElements(CriteriaBuilder builder, ParamFilterCriteria paramFilterCriteria) {
+        CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+        Root<Bpai> root = countQuery.from(Bpai.class);
+        countQuery.select(builder.count(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Construir predicados com base nos parâmetros fornecidos
+        if (paramFilterCriteria != null) {
+            if (paramFilterCriteria.getPa() != null && !paramFilterCriteria.getPa().isEmpty()) {
+                predicates.add(builder.equal(root.get("pa"), paramFilterCriteria.getPa()));
+            }
+            if (paramFilterCriteria.getCnes() != null && !paramFilterCriteria.getCnes().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnes"), paramFilterCriteria.getCnes()));
+            }
+            if (paramFilterCriteria.getCnsmed() != null && !paramFilterCriteria.getCnsmed().isEmpty()) {
+                predicates.add(builder.equal(root.get("cnsmed"), EnCryptionAESService.encrypt(paramFilterCriteria.getCnsmed())));
+            }
+            if (paramFilterCriteria.getCbo() != null && !paramFilterCriteria.getCbo().isEmpty()) {
+                predicates.add(builder.equal(root.get("cbo"), paramFilterCriteria.getCbo()));
+            }
+            if (paramFilterCriteria.getSex() != null && !paramFilterCriteria.getSex().isEmpty()) {
+                predicates.add(builder.equal(root.get("sexo"), EnCryptionAESService.encrypt(paramFilterCriteria.getSex())));
+            }
+            if (paramFilterCriteria.getIbge() != null && !paramFilterCriteria.getIbge().isEmpty()) {
+                predicates.add(builder.equal(root.get("ibge"), EnCryptionAESService.encrypt(paramFilterCriteria.getIbge())));
+            }
+            if (paramFilterCriteria.getRace() != null && !paramFilterCriteria.getRace().equals("00")) {
+                predicates.add(builder.equal(root.get("raca"), EnCryptionAESService.encrypt(paramFilterCriteria.getRace())));
+            }
+        }
+
+        // Aplicar os predicados à consulta de contagem
+        countQuery.where(predicates.toArray(new Predicate[0]));
+
+        // Executar a consulta de contagem e retornar o resultado
+        return entityManager.createQuery(countQuery).getSingleResult();
     }
 
     public Bpai getLast(Bpa bpa) {

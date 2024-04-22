@@ -27,12 +27,14 @@ br\com\bpadash\params\bpa\ParamUpdateBpai.class
 br\com\bpadash\validations\bpa\BpaValid.class
 br\com\bpadash\dto\treatment\RuleTreatmentPaDeleteDTO.class
 br\com\bpadash\repository\ContactMessageRepository.class
+br\com\bpadash\repository\email\EmailActivationsRepository.class
 br\com\bpadash\params\sigtap\ParamNewProcedure.class
 br\com\bpadash\dto\sigtap\ErrorCEPsBlankDTO.class
 br\com\bpadash\exceptions\FileUploadExceptionAdvice.class
 br\com\bpadash\api\user\bpa\BpaiApi.class
 br\com\bpadash\repository\ExceptionErroLogRepository.class
 br\com\bpadash\services\user\SessionUserService.class
+br\com\bpadash\services\email\MailConfig.class
 br\com\bpadash\dto\sigtap\ErrorCnsmedDTO.class
 br\com\bpadash\api\user\auth\AuthApi.class
 br\com\bpadash\api\user\treatment\DeletePerPaTreatment.class
@@ -42,6 +44,7 @@ br\com\bpadash\model\Administrator.class
 br\com\bpadash\services\sigtap\AddressService.class
 br\com\bpadash\services\bpa\BpaService.class
 br\com\bpadash\params\bpa\ParamValidationTitle.class
+br\com\bpadash\services\email\SendEmailService.class
 br\com\bpadash\model\bpa\Bpa.class
 br\com\bpadash\dto\user\PermissionsEmployeeDTO.class
 br\com\bpadash\services\bpa\TitleBpaService.class
@@ -70,9 +73,12 @@ br\com\bpadash\dto\treatment\TreatmentReplaceCustomDTO.class
 br\com\bpadash\repository\user\AccountLoggedRepositiry.class
 br\com\bpadash\api\user\bpa\BpaApi.class
 br\com\bpadash\params\bpa\ParamDeleteBpac.class
+br\com\bpadash\services\email\ConfigEmailService.class
 br\com\bpadash\repository\professional\ProfessionalCompleteRepository.class
 br\com\bpadash\model\user\CodLograd.class
 br\com\bpadash\security\CorsConfiguration.class
+br\com\bpadash\model\email\CodeVerify.class
+br\com\bpadash\model\email\TestEmailUser.class
 br\com\bpadash\model\enumModel\ZoneTime.class
 br\com\bpadash\params\bpa\ParamValidationBpai.class
 br\com\bpadash\dto\bpa\TimeLineDTO.class
@@ -82,6 +88,7 @@ br\com\bpadash\model\bpa\TitleBpa.class
 br\com\bpadash\configurations\ModelMapperConfig.class
 br\com\bpadash\dto\treatment\RuleTreatmentPaDTO.class
 br\com\bpadash\services\EncryptionService.class
+br\com\bpadash\model\email\EmailCodeConfirm.class
 br\com\bpadash\model\sigtap\LinkFpo.class
 br\com\bpadash\repository\professional\DadosVincRepository.class
 br\com\bpadash\validations\bpa\BpaValidator.class
@@ -103,6 +110,7 @@ br\com\bpadash\services\bpa\BpaiService.class
 br\com\bpadash\projections\CodProcedureProjection.class
 br\com\bpadash\services\treatment\RuleTreatmentPaService.class
 br\com\bpadash\model\ContactMessage.class
+br\com\bpadash\repository\email\TestEmailUserRepository.class
 br\com\bpadash\params\treatment\ParamTreatmentPaCbo.class
 br\com\bpadash\repository\user\SessionUserRepository.class
 br\com\bpadash\repository\professional\LinkProfessionalsRepository.class
@@ -137,9 +145,12 @@ br\com\bpadash\services\scanner\ScannerFile.class
 br\com\bpadash\repository\CodLogradRepository.class
 br\com\bpadash\params\sigtap\ParamNewCep.class
 br\com\bpadash\model\user\PackageUser.class
+br\com\bpadash\services\email\EmailActivationsService.class
 br\com\bpadash\services\user\ParamLogin.class
 br\com\bpadash\params\bpa\ParamDateBpa.class
+br\com\bpadash\repository\email\SendEmailRecordAdministratorRepository.class
 br\com\bpadash\api\adm\login\LoginAdm.class
+br\com\bpadash\model\email\SendEmailRecordUser.class
 br\com\bpadash\model\sigtap\LinkCep.class
 br\com\bpadash\model\user\AccountLogged.class
 br\com\bpadash\services\fpo\LinkFpoService.class
@@ -166,6 +177,8 @@ br\com\bpadash\services\user\EmployeeService.class
 br\com\bpadash\projections\PaProjection.class
 br\com\bpadash\errorValidation\ResponseTypeError.class
 br\com\bpadash\api\user\history\HistoryAction.class
+br\com\bpadash\model\email\SendEmailRecord.class
+br\com\bpadash\model\email\SendEmailRecordAdministrator.class
 br\com\bpadash\repository\sigtap\LinkOccupationRepository.class
 br\com\bpadash\services\fpo\FpoService.class
 br\com\bpadash\api\user\graphics\DtatenGraphicsApi.class
@@ -187,6 +200,7 @@ br\com\bpadash\params\sigtap\ParamNewOccupation.class
 br\com\bpadash\model\bpa\Bpai.class
 br\com\bpadash\services\sigtap\CepService$1.class
 br\com\bpadash\dto\DatesDTO.class
+br\com\bpadash\params\bpa\ParamFilterCriteria.class
 br\com\bpadash\params\ContactMessageParam.class
 br\com\bpadash\api\adm\messages\MessagesApi.class
 br\com\bpadash\params\sigtap\ParamUpdateDateSigtap.class
@@ -198,11 +212,14 @@ br\com\bpadash\services\sigtap\LinkOccupationService.class
 br\com\bpadash\api\user\graphics\BpaGraphicsApi.class
 br\com\bpadash\model\bpa\ManagerBpa.class
 br\com\bpadash\api\user\treatment\PaCboTreatment.class
+br\com\bpadash\params\adm\ParamCode.class
+br\com\bpadash\model\email\MessageModel.class
 br\com\bpadash\dto\sigtap\DatesSigtapDTO.class
 br\com\bpadash\repository\sigtap\OccupationRepository.class
 br\com\bpadash\utilities\PaChecked.class
 br\com\bpadash\api\user\treatment\AddressTreatment.class
 br\com\bpadash\repository\bpa\BpaiRepository.class
+br\com\bpadash\model\adm\EmailCodeAdministrator.class
 br\com\bpadash\repository\bpa\BpacRepository.class
 br\com\bpadash\dto\bpa\InconsistencyProcedureDTO.class
 br\com\bpadash\params\user\ParamLoginEmployee.class
@@ -220,6 +237,7 @@ br\com\bpadash\model\enumModel\ActionType.class
 br\com\bpadash\services\user\UserService.class
 br\com\bpadash\model\ErrorsInconsistencys.class
 br\com\bpadash\params\professional\ParamNewProfessional.class
+br\com\bpadash\services\email\TestEmailUserService.class
 br\com\bpadash\errorValidation\ErrorResponseDTO.class
 br\com\bpadash\dto\treatment\TreatmentPaCboDTO.class
 br\com\bpadash\repository\PackageUserRepository.class
@@ -235,6 +253,7 @@ br\com\bpadash\services\sigtap\LinkCepService.class
 br\com\bpadash\errorValidation\ErrorInLine.class
 br\com\bpadash\dto\professional\ProfessionalDTO.class
 br\com\bpadash\api\adm\AES\AESExample.class
+br\com\bpadash\model\email\EmailType.class
 br\com\bpadash\dto\treatment\RuleReplaceCustomDTO.class
 br\com\bpadash\params\bpa\ParamValidationBpac.class
 br\com\bpadash\utilities\Utilities.class
@@ -261,6 +280,7 @@ br\com\bpadash\dto\user\StockHistoryDTO.class
 br\com\bpadash\repository\treatment\RuleTreatmentPaRepository.class
 br\com\bpadash\dto\graphics\SexGraphicsDTO.class
 br\com\bpadash\api\adm\sigtap\SigtapAdmApi.class
+br\com\bpadash\params\adm\ParamTestEmailUser.class
 br\com\bpadash\errorValidation\ErrorsFile.class
 br\com\bpadash\services\professional\ProfessionalService.class
 br\com\bpadash\validations\bpa\race\RaceValidator.class

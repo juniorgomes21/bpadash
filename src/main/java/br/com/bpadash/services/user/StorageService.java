@@ -76,8 +76,6 @@ public class StorageService {
         return (long) fileContent.toString().getBytes().length;
     }
 
-
-
     public long quantityBytes(List<ProfessionalComplete> list) {
 
         StringBuilder fileContent = new StringBuilder();
@@ -92,17 +90,5 @@ public class StorageService {
 
         return fileContent.toString().getBytes().length;
     }
-
-    private Long getBytes(Object object) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String json = objectMapper.writeValueAsString(object);
-            return (long) json.length();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return 0L;
-        }
-    }
-
 
 }

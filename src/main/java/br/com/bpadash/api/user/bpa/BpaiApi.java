@@ -11,6 +11,7 @@ import br.com.bpadash.model.enumModel.ActionType;
 import br.com.bpadash.model.user.Employee;
 import br.com.bpadash.model.user.User;
 import br.com.bpadash.params.bpa.ParamDeleteBpai;
+import br.com.bpadash.params.bpa.ParamFilterCriteria;
 import br.com.bpadash.params.bpa.ParamUpdateBpai;
 import br.com.bpadash.params.bpa.ParamUpdateErrorsBpa;
 import br.com.bpadash.services.bpa.BpaService;
@@ -62,20 +63,20 @@ public class BpaiApi {
     private StockHistoryService stockHistoryService;
 
 
-    @GetMapping("/get/{date}")
-    public ResponseEntity<Page<BpaiDTO>> getBpai(
+    @PostMapping("/get/{date}")
+    public ResponseEntity<Object> getBpai(
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10) Pageable pageable,
             @PathVariable String date,
+            @RequestBody ParamFilterCriteria paramFilterCriteria,
             Authentication authentication
     ) {
         User user = userService.get(authentication);
+
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(date), user);
 
-        if(bpaOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        if(bpaOptional.isEmpty()) return ResponseEntity.badRequest().body("NOT FOUND DATE BPA");
 
-        Page<BpaiDTO> page = bpaiService.get(bpaOptional.get(), pageable);
+        Page<BpaiDTO> page = bpaiService.getFiltered(bpaOptional.get(), paramFilterCriteria, pageable);
 
         return ResponseEntity.ok(page);
     }
