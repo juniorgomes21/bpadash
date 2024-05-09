@@ -113,11 +113,12 @@ public class UserApi {
             Optional<Employee> employeeOptional = employeeService.get(user, employeeKey);
 
             if(employeeOptional.isPresent() && employeeOptional.get().isMaster()) {
-                String currentPassword = paramNewPassword.getNewPassword();
 
-                if (!userService.testPassword(user, currentPassword)) {
+                if (!userService.testPassword(user, paramNewPassword.getPassword())) {
                     return ResponseEntity.badRequest().body("INCORRECT PASSWORD");
                 }
+
+                String currentPassword = paramNewPassword.getNewPassword();
 
                 if(!(currentPassword.equals(paramNewPassword.getConfPassword()))) {
                     return ResponseEntity.badRequest().body("NOT EQUALS");

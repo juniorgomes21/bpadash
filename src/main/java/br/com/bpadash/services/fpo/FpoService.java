@@ -9,6 +9,8 @@ import br.com.bpadash.model.user.User;
 import br.com.bpadash.repository.fpo.FpoRepository;
 import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +39,15 @@ public class FpoService {
         return fpoRepository.findByLinkFpo(linkFpo);
     }
 
+    public Page<Fpo> getPageable(LinkFpo linkFpo, Pageable pageable) {
+
+        return fpoRepository.findByLinkFpo(linkFpo, pageable);
+    }
+
+    public Page<Fpo> getPaPageable(LinkFpo linkFpo, String pa, Pageable pageable) {
+
+        return fpoRepository.findByLinkFpoAndPaStartingWith(linkFpo, pa, pageable);
+    }
 
     public Fpo create(LinkFpo linkFpo, String pa, String line, int lineNumber, List<ErrorsFile> errorsFiles) {
         List<ErrorValidationDTO> errors = new ArrayList<>();

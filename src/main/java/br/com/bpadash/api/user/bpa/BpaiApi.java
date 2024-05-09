@@ -235,7 +235,7 @@ public class BpaiApi {
                 }
 
                 if(ageDiff){
-                    bpaService.calculateAge(bpa, bpaiList);
+                    bpaService.calculateAge(bpa, null, bpaiList);
                 }
 
                 if(sexDiff || raceDiff || ageDiff) {
@@ -313,7 +313,7 @@ public class BpaiApi {
                             }
                             case "ageMaxMin" -> {
                                 EnCryptionAESService.decryptBpaiIdade(bpaiList);
-                                bpaService.calculateAge(bpa, bpaiList);
+                                bpaService.calculateAge(bpa, null, bpaiList);
                             }
                         }
 

@@ -54,20 +54,17 @@ public class SigtapApi {
         return ResponseEntity.badRequest().build();
     }
 
+
     @GetMapping("/get/all/dates")
     public ResponseEntity<List<DatesSigtapDTO>> datesSigtap(Authentication authentication) {
         User user = userService.get(authentication);
+
         DatesSigtap datesSigtap = user.getDatesSigtap();
 
-//        DatesSigtapDTO dateOccupation = linkOccupationService.getDates(datesSigtap);
         DatesSigtapDTO dateFpo = linkFpoService.getDates(datesSigtap, user);
         DatesSigtapDTO dateProf = linkProfessionalsService.getDates(datesSigtap, user);
-//        DatesSigtapDTO dateCep = linkCepService.getDates(datesSigtap);
-//        DatesSigtapDTO dateProc = linkProcedureService.getDates(datesSigtap);
 
-//        return ResponseEntity.ok(new ArrayList<>(List.of(dateOccupation, dateFpo, dateProf, dateCep, dateProc)));
         return ResponseEntity.ok(new ArrayList<>(List.of(dateFpo, dateProf)));
-
     }
 
     @PostMapping("/update/date")

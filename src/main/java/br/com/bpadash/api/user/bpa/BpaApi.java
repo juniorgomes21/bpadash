@@ -626,12 +626,7 @@ public class BpaApi {
 
         Optional<Bpa> bpaOptional = bpaService.get(Utilities.formatDate(paramInconsistency.getDateBPA()), user);
 
-        Optional<LinkFpo> linkFpoOptional;
-        if(datesSigtap.isDateFpoAuto()) {
-            linkFpoOptional = linkFpoService.get(user);
-        } else {
-            linkFpoOptional = linkFpoService.get(datesSigtap.getDateFpo(), user);
-        }
+        Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
 
         Optional<LinkProcedure> linkProcedureOptional;
         if(datesSigtap.isDateProcedureAuto()) {

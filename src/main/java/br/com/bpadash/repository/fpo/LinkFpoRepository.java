@@ -32,4 +32,6 @@ public interface LinkFpoRepository extends JpaRepository<LinkFpo, Long> {
     List<LinkFpo> findByUser(User user);
 
     boolean existsByUser(User user);
+
+    List<LinkFpo> findByUserAndDateBetween(User user, LocalDate start , LocalDate end);
 }

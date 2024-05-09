@@ -2,6 +2,7 @@ package br.com.bpadash.api.user.sigtap;
 
 import br.com.bpadash.dto.DatesDTO;
 import br.com.bpadash.dto.bpa.TimeLineDTO;
+import br.com.bpadash.dto.sigtap.DateDTO;
 import br.com.bpadash.dto.sigtap.FpoDTO;
 import br.com.bpadash.errorValidation.ErrorsFile;
 import br.com.bpadash.model.enumModel.ActionEmployee;
@@ -128,6 +129,26 @@ public class FpoApi {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Obtem a data atual do FPO de um usuário.
+     * @param authentication
+     * @return
+     */
+    @GetMapping("/get/date") //TODO concluido
+    public ResponseEntity<Object> getDate(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        Optional<LinkFpo> linkFpoOptional = linkFpoService.verify(user);
+
+        return linkFpoOptional.<ResponseEntity<Object>>map(linkFpo -> ResponseEntity.ok(new DateDTO(linkFpo.getDate()))).orElseGet(() -> ResponseEntity.badRequest().body("NOT FOUND FPO"));
+    }
+
+
+    /**
+     * Obtem todas as datas FPO de um usuário.
+     * @param authentication
+     * @return
+     */
     @GetMapping("/dates") //TODO concluido
     public ResponseEntity<DatesDTO> dates(Authentication authentication) {
         User user = userService.get(authentication);
@@ -135,6 +156,15 @@ public class FpoApi {
         DatesDTO datesDTO = linkFpoService.getDates(user);
 
         return ResponseEntity.ok(datesDTO);
+    }
+
+    @GetMapping("/exist")
+    public ResponseEntity<Boolean> exist(Authentication authentication) {
+        User user = userService.get(authentication);
+
+        boolean b = linkFpoService.exist(user);
+
+        return ResponseEntity.ok(b);
     }
 
     @Transactional

@@ -436,9 +436,16 @@ public class BpaService {
         bpa.getManagerBpa().setCountTotalLine(countBpac + countBpai + 1);
     }
 
-    public Map<String, Integer> calculateAge(Bpa bpa, List<Bpai> bpaiList) {
+    public Map<String, Integer> calculateAge(Bpa bpa, List<Bpac> bpacList, List<Bpai> bpaiList) {
 
         Map<String, Integer> contagemIdades = new HashMap<>();
+
+        if(bpacList != null) {
+            bpacList.forEach( bpac -> {
+                String age = bpac.getIdade();
+                contagemIdades.put(age, contagemIdades.getOrDefault(age, 0) + 1);
+            });
+        }
 
         bpaiList.forEach( bpai -> {
             String age = bpai.getIdade();
@@ -629,7 +636,7 @@ public class BpaService {
 
         if(calculateAll) {
             this.calculateLine(bpa, bpacList.size(), bpaiList.size());
-            this.calculateAge(bpa, bpaiList);
+            this.calculateAge(bpa, bpacList, bpaiList);
             this.calculateSex(bpa, bpaiList);
             this.calculateRace(bpa, bpaiList);
             if(linkFpoService.exist(user)) {

@@ -7,7 +7,6 @@ import br.com.bpadash.model.sigtap.DatesSigtap;
 import br.com.bpadash.model.sigtap.LinkFpo;
 import br.com.bpadash.projections.DateProjection;
 import br.com.bpadash.repository.fpo.LinkFpoRepository;
-import br.com.bpadash.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,6 +24,13 @@ public class LinkFpoService {
 
     public Optional<LinkFpo> get(User user) {
         return linkFpoRepository.findFirstByUser(user, Sort.by(Sort.Direction.DESC, "date"));
+    }
+
+    public List<LinkFpo> get(User user, int year) {
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12, 31);
+
+        return linkFpoRepository.findByUserAndDateBetween(user, start, end);
     }
 
     public LinkFpo get(Long id) {
